@@ -1,4 +1,3 @@
-import React from "react";
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { Canvas } from "@react-three/fiber";
 import Pond from "./components/Pond";

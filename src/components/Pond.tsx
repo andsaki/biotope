@@ -3,7 +3,7 @@ import { useSeason } from "../contexts/SeasonContext";
 
 const Pond: React.FC = () => {
   const { season } = useSeason();
-  const meshRef = useRef<THREE.Mesh>(null!);
+  const meshRef = useRef<any>(null!);
 
   // Define pond color and fog based on season
   let pondColor: string;
