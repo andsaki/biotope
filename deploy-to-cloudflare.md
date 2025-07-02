@@ -41,27 +41,31 @@ Cloudflare Pages は、接続されたリポジトリの本番ブランチに変
 - **ビルドエラー**: Cloudflare Pages のデプロイログを確認してビルドエラーがないかチェックします。`package.json`にすべての依存関係が正しく指定されていることを確認してください。
 - **デプロイの問題**: サイトが期待通りに表示されない場合、ビルド出力ディレクトリを確認し、ビルドスクリプトが期待される出力を`dist`に生成していることを確認してください。
 - **ファイルサイズ制限の問題**: Cloudflare Pages は 1 ファイルあたり 25 MiB までのサイズ制限があります。`assets/Smoked Fish Raw/weflciqaa_tier_0.bin`のような大きなファイルが含まれる場合、デプロイが失敗することがあります。このファイルは`FishManager.tsx`コンポーネントで使用されている 3D モデル（燻製魚）のデータであり、プロジェクトにとって必要なアセットです。以下の方法でサイズの問題を解決し、アプリケーションの機能を維持できます：
-  - **Cloudflare R2 を利用する**: 大きなファイルを Cloudflare R2 にアップロードし、アプリケーション内で URL を介して参照します。Cloudflare R2 を使用する手順は以下の通りです：
-    1. Cloudflare ダッシュボードにログインし、「R2」セクションに移動します。
-    2. 新しいバケットを作成します（例：`biotope-assets`）。
-    3. 作成したバケットに`weflciqaa_tier_0.bin`をアップロードします。ファイルパスは`public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin`です。
-    4. アップロードしたファイルの公開 URL を取得します。Cloudflare R2 では、カスタムドメインを設定するか、R2 のデフォルトドメイン（例：`https://<account-id>.r2.cloudflarestorage.com/<bucket-name>/weflciqaa_tier_0.bin`）を使用します。必要に応じて、公開アクセスを有効にするためにバケットの設定を調整します。
-    5. `FishManager.tsx`内で、直接ファイルパスを参照するのではなく、取得した URL を使用するように変更します：
+  - **外部ホスティングを利用する**: 大きなファイルを外部のストレージサービスや CDN（例：Amazon S3、Google Cloud Storage、または他のファイルホスティングサービス）にアップロードし、アプリケーション内で URL を介して参照します。手順は以下の通りです：
+    1. 選択したストレージサービスにアカウントを作成し、ファイルをアップロードします。ファイルパスは`public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin`と`public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf`です。
+    2. アップロードしたファイルの公開 URL を取得します。サービスによっては、公開アクセスを有効にするための設定が必要な場合があります。
+    3. `FishManager.tsx`内で、直接ファイルパスを参照するのではなく、取得した URL を使用するように変更します：
        ```typescript
        const fishModelUrl =
-         "https://<your-r2-domain>/<bucket-name>/weflciqaa_tier_0.gltf";
+         "https://<your-storage-domain>/<path-to-file>/weflciqaa_tier_0.gltf";
        // URLを使用してモデルを読み込む
        ```
-       こうすることで、ビルド出力のサイズを制限し、Cloudflare Pages の制限内に収めることができます。ビルド出力からファイルを除外するとアプリケーションが動作しなくなるため、Cloudflare R2 での外部ホスティングが推奨されます。
-  - **GitHub から Cloudflare R2 への自動アップロードを設定する**: GitHub へのプッシュ時に自動的にファイルを Cloudflare R2 にアップロードするワークフローを設定できます。以下の手順で設定してください：
+       こうすることで、ビルド出力のサイズを制限し、Cloudflare Pages の制限内に収めることができます。ビルド出力からファイルを除外するとアプリケーションが動作しなくなるため、外部ホスティングが推奨されます。
+  - **ファイルの最適化**: ファイルを外部ホスティングせずにサイズを削減する方法を検討します。3D モデルの場合、以下の最適化を試みることができます：
+    1. Blender や Maya などの 3D モデリングソフトウェアを使用して、モデルのポリゴン数を減らします。
+    2. テクスチャの解像度を下げたり、圧縮形式を適用したりします。
+    3. glTF 最適化ツール（例：glTF-Pipeline）を使用して、ファイルを圧縮します。以下のコマンドを試すことができます：
+       ```bash
+       npx gltf-pipeline -i public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf -o public/assets/Smoked Fish Raw/optimized_weflciqaa_tier_0.gltf --draco.compressionLevel=7
+       ```
+       圧縮後、プロジェクト内で新しい最適化されたファイルパスを参照するように更新してください。
+  - **GitHub から外部ストレージへの自動アップロードを設定する**: GitHub へのプッシュ時に自動的にファイルを外部ストレージにアップロードするワークフローを設定できます。以下の手順で設定してください：
     1. GitHub リポジトリの「Settings」タブに移動します。
     2. 「Secrets and variables」セクションで「Actions」を選択し、「New repository secret」をクリックします。
-    3. 以下のシークレットを追加します：
-       - `CLOUDFLARE_API_TOKEN`: Cloudflare アカウントの API トークン（Cloudflare ダッシュボードの「My Profile」→「API Tokens」で作成）。
-       - `CLOUDFLARE_ACCOUNT_ID`: Cloudflare アカウント ID（Cloudflare ダッシュボードの「Account Home」で確認）。
-    4. `.github/workflows/upload-to-r2.yml`ファイルがリポジトリに含まれていることを確認します。このファイルは、プッシュ時に指定したファイルを Cloudflare R2 にアップロードする GitHub Actions ワークフローを定義しています。
+    3. 使用するストレージサービスの認証情報をシークレットとして追加します（例：AWS の場合は`AWS_ACCESS_KEY_ID`と`AWS_SECRET_ACCESS_KEY`、Google Cloud の場合はサービスアカウントキーなど）。
+    4. `.github/workflows/upload-to-storage.yml`ファイルを作成し、選択したストレージサービスにファイルをアップロードする GitHub Actions ワークフローを定義します。現在の`.github/workflows/upload-to-r2.yml`を参考に、適切なツールやコマンドに置き換えてください。
     5. 必要に応じて、ワークフロー内のバケット名やファイルパスをプロジェクトに合わせて調整します。
-       こうすることで、GitHub にプッシュするたびに、指定したアセットが自動的に Cloudflare R2 にアップロードされます。
+       こうすることで、GitHub にプッシュするたびに、指定したアセットが自動的に外部ストレージにアップロードされます。
 
 ## 追加リソース
 
