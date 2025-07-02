@@ -32,11 +32,10 @@ function App() {
     // Set the time to evening, around 17:00 (5 PM), which is 17 * 60 = 1020 minutes
     setSimulatedTime({ minutes: 1020, seconds: 0 });
     setIsDay(true); // Evening is still considered day
-    // Optionally, comment out the interval if you want the time to remain fixed
-    /*
+    // Enable time progression for a 24-hour day to pass in 30 minutes of real time
     const interval = setInterval(() => {
       setSimulatedTime((prev) => {
-        const totalSeconds = (prev.minutes * 60 + prev.seconds + 2) % 86400; // Increment by 2 seconds every second for faster simulation (86400 seconds in a day)
+        const totalSeconds = (prev.minutes * 60 + prev.seconds + 48) % 86400; // Increment by 48 seconds every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
         const newMinutes = Math.floor(totalSeconds / 60);
         const newSeconds = totalSeconds % 60;
         setIsDay(newMinutes < 720); // Day for first 12 hours (720 minutes), Night for next 12 hours
@@ -44,7 +43,6 @@ function App() {
       });
     }, 1000); // Update every second
     return () => clearInterval(interval);
-    */
   }, []);
 
   // useFrame cannot be used outside Canvas, moved to a component inside Canvas
@@ -97,7 +95,7 @@ function App() {
             }
             size={200} // Increased size for better visibility
             renderNumbers={true}
-            renderSecondHand={true} // Enable second hand
+            renderSecondHand={false} // Disable second hand
             hourHandLength={60} // Longer hour hand
             hourHandWidth={5} // Thicker hour hand
             minuteHandLength={80} // Longer minute hand
@@ -114,16 +112,16 @@ function App() {
           <div
             style={{
               position: "absolute",
-              bottom: "-30px", // Adjusted for larger clock size
+              bottom: "-50px", // Positioned further below the clock face
               width: "100%",
               textAlign: "center",
               color: "white",
-              fontSize: "22px", // Larger font for better readability
+              fontSize: "18px", // Slightly smaller font for a cleaner look
               fontWeight: "bold",
-              textShadow: "1px 1px 4px black", // Stronger shadow for visibility
+              textShadow: "1px 1px 3px black", // Subtle shadow for visibility
             }}
           >
-            {isDay ? "昼" : "夜"}
+            {isDay ? "Day" : "Night"}
           </div>
         </div>
         <Canvas
@@ -157,15 +155,11 @@ function App() {
             ref={directionalLightRef}
             position={[
               15 *
-                Math.cos(
-                  (((simulatedTime.minutes / 60) % 12) + 3) * (Math.PI / 6)
-                ), // X position moves with time (12-hour cycle), offset by +3 hours to align shadow with hour marks (12 at top, clockwise)
+                Math.cos(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)), // X position moves with time (12-hour cycle), no offset to match clock time
               15, // Constant height
               15 *
-                Math.sin(
-                  (((simulatedTime.minutes / 60) % 12) + 3) * (Math.PI / 6)
-                ), // Z position moves with time, offset by +3 hours
-            ]} // Sun moves in a circular path based on time, adjusted to align shadow with hour marks
+                Math.sin(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)), // Z position moves with time, no offset to match clock time
+            ]} // Sun moves in a circular path based on time, synchronized with clock
             intensity={8.0} // Increased intensity further for stronger shadow visibility
             color="#FFD700" // Warm yellow color to mimic sunlight
             castShadow={true} // Enable shadows for realistic effect
@@ -178,6 +172,23 @@ function App() {
             shadow-camera-bottom={-20}
           />{" "}
           {/* Directional light adjusted to simulate sunlight or moonlight */}
+          {/* Visible representation of the sun as a small sphere */}
+          <mesh
+            position={[
+              15 *
+                Math.cos(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)),
+              15,
+              15 *
+                Math.sin(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)),
+            ]}
+          >
+            <sphereGeometry args={[0.5, 16, 16]} />
+            <meshStandardMaterial
+              color="#FFD700"
+              emissive="#FFD700"
+              emissiveIntensity={5.0}
+            />
+          </mesh>
           <spotLight
             ref={spotLightRef}
             position={[5, 8, 5]}
@@ -442,7 +453,7 @@ const SundialBase: React.FC = () => {
             key={i}
             ref={(el) => (hourTextRefs.current[i] = el!)}
             position={[4.5 * Math.cos(angle), 0.1, 4.5 * Math.sin(angle)]}
-            rotation={[-Math.PI / 2, 0, -Math.PI / 2]} // Rotate -90 degrees to align with 12 at the top
+            rotation={[-Math.PI / 2, 0, angle + Math.PI / 2]} // Orient numbers to face towards the sun's position
             fontSize={0.3}
             color="white"
             anchorX="center"
