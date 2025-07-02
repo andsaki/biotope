@@ -1,6 +1,6 @@
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Text } from "@react-three/drei";
 import Pond from "./components/Pond";
 import FishManager from "./components/FishManager";
 import ParticleLayer from "./components/ParticleLayer";
@@ -59,7 +59,7 @@ function App() {
             dampingFactor={0.05} // Add damping for smoother camera movement
             enableDamping={true}
           />
-          <Pond />
+          {/* <Pond /> */}
           <Ground />
           <FishManager />
           <ParticleLayer />
@@ -68,8 +68,39 @@ function App() {
             <boxGeometry args={[1, 1, 1]} />
             <meshBasicMaterial color="#FFFFFF" wireframe={true} />
           </mesh>
-          {/* XYZ Axes Helper to visualize coordinate system */}
+          {/* XYZ Axes Helper to visualize coordinate system with labels */}
           <axesHelper args={[5]} />
+          {/* Text labels for XYZ axes */}
+          <Text
+            position={[5.2, 0, 0]}
+            rotation={[0, 0, 0]}
+            fontSize={0.5}
+            color="red"
+            anchorX="left"
+            anchorY="middle"
+          >
+            X
+          </Text>
+          <Text
+            position={[0, 5.2, 0]}
+            rotation={[0, 0, 0]}
+            fontSize={0.5}
+            color="green"
+            anchorX="center"
+            anchorY="bottom"
+          >
+            Y
+          </Text>
+          <Text
+            position={[0, 0, 5.2]}
+            rotation={[0, 0, 0]}
+            fontSize={0.5}
+            color="blue"
+            anchorX="center"
+            anchorY="middle"
+          >
+            Z
+          </Text>
         </Canvas>
         <UI />
       </div>

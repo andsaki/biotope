@@ -25,6 +25,7 @@ const ParticleLayer: React.FC = () => {
     let particleColor: string;
     let particleCount: number;
     let speedYRange: [number, number];
+    let particleSizeModifier: number = 1.0; // Default size modifier
 
     switch (season) {
       case "spring":
@@ -36,6 +37,7 @@ const ParticleLayer: React.FC = () => {
         particleColor = "#98FB98"; // PaleGreen (leaves)
         particleCount = 20;
         speedYRange = [0.01, 0.025]; // Reduced speed for slower animation
+        particleSizeModifier = 0.5; // Even smaller particles for summer
         break;
       case "autumn":
         particleColor = "#FFA500"; // Orange (fallen leaves)
@@ -46,6 +48,7 @@ const ParticleLayer: React.FC = () => {
         particleColor = "#FFFFFF"; // White (snow)
         particleCount = 60;
         speedYRange = [0.005, 0.015]; // Reduced speed for slower animation
+        particleSizeModifier = 0.5; // Even smaller particles for winter
         break;
       default:
         particleColor = "#FFB6C1";
@@ -54,6 +57,8 @@ const ParticleLayer: React.FC = () => {
     }
 
     for (let i = 0; i < particleCount; i++) {
+      const baseSize = 0.03 + Math.random() * 0.07; // Reduced particle size slightly
+      const finalSize = baseSize * (particleSizeModifier || 1.0); // Apply seasonal size modifier if exists
       newParticles.push({
         id: i,
         x: Math.random() * 10 - 5,
@@ -64,7 +69,7 @@ const ParticleLayer: React.FC = () => {
           speedYRange[0] + Math.random() * (speedYRange[1] - speedYRange[0]),
         speedZ: Math.random() * 0.02 - 0.01,
         color: particleColor,
-        size: 0.05 + Math.random() * 0.1,
+        size: finalSize,
         life: Math.random() * 100 + 100,
       });
     }

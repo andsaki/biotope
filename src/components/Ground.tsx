@@ -15,7 +15,7 @@ const Ground: React.FC = () => {
         <planeGeometry args={[30, 30, 4, 4]} />{" "}
         {/* Reduced subdivisions for better performance */}
         <meshStandardMaterial
-          color="#5C4033"
+          color="#8B4513" // Changed to a darker brown color (SaddleBrown)
           transparent={false}
           opacity={1.0}
         />
