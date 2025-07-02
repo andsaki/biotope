@@ -10,6 +10,8 @@ import WaterPlants from "./components/WaterPlants";
 import WaterPlantsLarge from "./components/WaterPlantsLarge";
 import PottedPlant from "./components/PottedPlant";
 import Rocks from "./components/Rocks";
+import KnobbedWhelk from "./components/KnobbedWhelk";
+import BubbleEffect from "./components/BubbleEffect";
 import UI from "./components/UI";
 import "./App.css";
 
@@ -80,6 +82,8 @@ function App() {
           <WaterPlantsLarge />
           <PottedPlant />
           <Rocks />
+          <KnobbedWhelk />
+          <BubbleEffect />
           {/* Custom Water Surface - positioned at the top face of the bounding box */}
           <mesh
             position={[0, 8, 0]}
