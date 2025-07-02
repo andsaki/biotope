@@ -33,7 +33,7 @@ function App() {
             width: "100vw",
             height: "100vh",
           }}
-          camera={{ position: [0, 5, 5], fov: 70 }}
+          camera={{ position: [5, 3, 0], fov: 70 }}
         >
           <color attach="background" args={["#4A90E2"]} />{" "}
           {/* Water-like blue background for 3D scene */}
