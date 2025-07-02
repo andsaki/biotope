@@ -108,7 +108,8 @@ const FishManager: React.FC = () => {
   // 以下のURLを実際のストレージサービスのURLに置き換えてください。
   // 例: "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/weflciqaa_tier_0.gltf"
   // 一時的にモデル読み込みを無効にしてエラーを防ぎます。実際のURLに置き換えてください。
-  const modelUrl = ""; // 実際のURLをここに設定してください。
+  const modelUrl =
+    "https://18d9f5bea76f6a13f7314a6c13864c4b.r2.cloudflarestorage.com/biotope-assets/weflciqaa_tier_0.gltf"; // 実際のURLを設定
   const { scene } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
