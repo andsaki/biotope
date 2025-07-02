@@ -20,6 +20,16 @@ jobs:
           # バケット名とファイルパスはプロジェクトに合わせて調整してください
           npx wrangler r2 object put biotope-assets/weflciqaa_tier_0.gltf -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf"
           npx wrangler r2 object put biotope-assets/weflciqaa_tier_0.bin -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin"
+          npx wrangler r2 object put biotope-assets/potted-plant-1-scene.gltf -f "public/assets/Potted Plant 1/scene.gltf"
+          npx wrangler r2 object put biotope-assets/potted-plant-1-scene.bin -f "public/assets/Potted Plant 1/scene.bin"
+          npx wrangler r2 object put biotope-assets/knobbed-whelk-scene.gltf -f "public/assets/Knobbed Whelk GLTF/scene.gltf"
+          npx wrangler r2 object put biotope-assets/knobbed-whelk-scene.bin -f "public/assets/Knobbed Whelk GLTF/scene.bin"
+          npx wrangler r2 object put biotope-assets/knobbed-whelk-material_0_baseColor.jpeg -f "public/assets/Knobbed Whelk GLTF/textures/material_0_baseColor.jpeg"
+          npx wrangler r2 object put biotope-assets/potted-plant-1-01_-_Default_0_baseColor.png -f "public/assets/Potted Plant 1/textures/01_-_Default_0_baseColor.png"
+          npx wrangler r2 object put biotope-assets/potted-plant-1-01_-_Default_baseColor.png -f "public/assets/Potted Plant 1/textures/01_-_Default_baseColor.png"
+          npx wrangler r2 object put biotope-assets/smoked-fish-raw-T_weflciqaa_8K_B.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png"
+          npx wrangler r2 object put biotope-assets/smoked-fish-raw-T_weflciqaa_8K_N.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png"
+          npx wrangler r2 object put biotope-assets/smoked-fish-raw-T_weflciqaa_8K_ORM.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
