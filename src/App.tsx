@@ -3,7 +3,6 @@ import { SeasonProvider } from "./contexts/SeasonContext";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
-import Pond from "./components/Pond";
 import FishManager from "./components/FishManager";
 import ParticleLayer from "./components/ParticleLayer";
 import Ground from "./components/Ground";

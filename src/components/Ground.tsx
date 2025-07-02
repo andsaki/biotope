@@ -1,13 +1,6 @@
-import React, { useEffect, useState } from "react";
-import * as THREE from "three";
-import { useThree } from "@react-three/fiber";
+import React from "react";
 
 const Ground: React.FC = () => {
-  const { scene } = useThree();
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-
-  // Texture loading removed to use solid color
-
   return (
     <group>
       {/* Ground plane to simulate the bottom of the pond, extended much further, positioned at slightly negative Y */}
