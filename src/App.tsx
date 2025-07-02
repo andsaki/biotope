@@ -9,6 +9,7 @@ import Ground from "./components/Ground";
 import WaterPlants from "./components/WaterPlants";
 import WaterPlantsLarge from "./components/WaterPlantsLarge";
 import PottedPlant from "./components/PottedPlant";
+import Rocks from "./components/Rocks";
 import UI from "./components/UI";
 import "./App.css";
 
@@ -78,6 +79,7 @@ function App() {
           <WaterPlants />
           <WaterPlantsLarge />
           <PottedPlant />
+          <Rocks />
           {/* Custom Water Surface - positioned at the top face of the bounding box */}
           <mesh
             position={[0, 8, 0]}
