@@ -46,8 +46,8 @@ function App() {
         >
           <color attach="background" args={["#4A90E2"]} />{" "}
           {/* Water-like blue background for 3D scene */}
-          <fog attach="fog" args={["#4A90E2", 5, 20]} />{" "}
-          {/* Fog to simulate underwater depth */}
+          {/* Fog removed to ensure maximum visibility of all objects */}
+          {/* <fog attach="fog" args={["#4A90E2", 5, 40]} /> */}
           <ambientLight intensity={0.8} color="#87CEEB" />{" "}
           {/* Light blue ambient light */}
           <pointLight position={[10, 10, 10]} intensity={1.0} color="#FFFFFF" />

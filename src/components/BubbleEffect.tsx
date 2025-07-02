@@ -19,11 +19,18 @@ const BubbleEffect: React.FC = () => {
   const createBubble = () => {
     const size = Math.random() * 0.03 + 0.01; // Further reduced size range for even smaller bubbles (0.01 to 0.04)
     const speed = Math.random() * 0.08 + 0.03; // Increased speed range for faster rising bubbles
-    // Define three specific locations for bubble emission, potentially outside the bounding box
+    // Define ten specific locations for bubble emission, potentially outside the bounding box
     const locations = [
-      { x: -3.0, z: -3.0 }, // Location 1 - further out
-      { x: 3.0, z: 0.0 }, // Location 2 - further out
-      { x: -2.0, z: 3.0 }, // Location 3 - further out
+      { x: -3.0, z: -3.0 }, // Location 1
+      { x: 3.0, z: 0.0 }, // Location 2
+      { x: -2.0, z: 3.0 }, // Location 3
+      { x: -1.5, z: -2.0 }, // Location 4
+      { x: 2.0, z: -1.5 }, // Location 5
+      { x: -2.5, z: 1.5 }, // Location 6
+      { x: 1.5, z: 2.0 }, // Location 7
+      { x: -1.0, z: -1.0 }, // Location 8
+      { x: 1.0, z: 1.0 }, // Location 9
+      { x: 0.0, z: -2.5 }, // Location 10
     ];
     // Randomly select one of the three locations
     const location = locations[Math.floor(Math.random() * locations.length)];
@@ -40,7 +47,7 @@ const BubbleEffect: React.FC = () => {
 
   // Initialize bubbles
   useEffect(() => {
-    const initialBubbles = Array.from({ length: 30 }, createBubble); // Reduced number of bubbles slightly for clarity at specific points
+    const initialBubbles = Array.from({ length: 50 }, createBubble); // Increased number of bubbles to account for more locations
     setBubbleData(initialBubbles);
   }, []);
 

@@ -30,29 +30,29 @@ const ParticleLayer: React.FC = () => {
     switch (season) {
       case "spring":
         particleColor = "#FFB6C1"; // LightPink (petals)
-        particleCount = 50;
+        particleCount = 15; // Reduced from 50
         speedYRange = [0.025, 0.05]; // Reduced speed for slower animation
         break;
       case "summer":
         particleColor = "#98FB98"; // PaleGreen (leaves)
-        particleCount = 20;
+        particleCount = 10; // Reduced from 20
         speedYRange = [0.01, 0.025]; // Reduced speed for slower animation
         particleSizeModifier = 0.5; // Even smaller particles for summer
         break;
       case "autumn":
         particleColor = "#FFA500"; // Orange (fallen leaves)
-        particleCount = 40;
+        particleCount = 15; // Reduced from 40
         speedYRange = [0.015, 0.035]; // Reduced speed for slower animation
         break;
       case "winter":
         particleColor = "#FFFFFF"; // White (snow)
-        particleCount = 60;
+        particleCount = 20; // Reduced from 60
         speedYRange = [0.005, 0.015]; // Reduced speed for slower animation
         particleSizeModifier = 0.5; // Even smaller particles for winter
         break;
       default:
         particleColor = "#FFB6C1";
-        particleCount = 50;
+        particleCount = 15; // Reduced from 50
         speedYRange = [0.025, 0.05]; // Reduced speed for slower animation
     }
 
