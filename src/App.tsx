@@ -16,6 +16,7 @@ import KnobbedWhelk from "./components/KnobbedWhelk";
 import BubbleEffect from "./components/BubbleEffect";
 import UI from "./components/UI";
 import "./App.css";
+import { useSeason } from "./contexts/SeasonContext";
 
 function App() {
   const [isDay, setIsDay] = useState(true);
@@ -47,6 +48,16 @@ function App() {
 
   // useFrame cannot be used outside Canvas, moved to a component inside Canvas
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate a loading delay or wait for assets to load
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // 2 seconds delay for loading screen
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <SeasonProvider>
       <div
@@ -62,6 +73,50 @@ function App() {
           transition: "background-color 2s ease", // Smooth transition for background color
         }}
       >
+        {isLoading && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "#1A1A2E", // Darker background for initial loading
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "white",
+              fontSize: "24px",
+              fontWeight: "bold",
+              zIndex: 100,
+              flexDirection: "column",
+              opacity: 1,
+              transition: "opacity 1s ease-out", // Fade-out effect
+            }}
+            onAnimationEnd={() => setIsLoading(false)}
+          >
+            <h1>Loading Biotope...</h1>
+            <div
+              style={{
+                width: "50px",
+                height: "50px",
+                border: "5px solid white",
+                borderTop: "5px solid transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                marginTop: "20px",
+              }}
+            />
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}
+            </style>
+          </div>
+        )}
         <h1 style={{ textAlign: "center", paddingTop: "20px", color: "white" }}>
           ビオトープ
         </h1>
@@ -237,6 +292,8 @@ function App() {
           <SundialGnomon />
           {/* Circular base on water surface with hour marks for sundial, animated to move with waves */}
           <SundialBase />
+          <FallenLeaves />{" "}
+          {/* Add fallen leaves component to float on water during autumn */}
           <ParticleLayer />
           {/* Bounding Box to confine fish movement - vertically enlarged (Y-axis), horizontally reduced (X-axis), bottom face above Y=0, top face lowered further */}
           <mesh position={[0, 4, 0.5]} scale={[12, 8, 5]}>
@@ -471,6 +528,59 @@ const SundialBase: React.FC = () => {
       })}
     </group>
   );
+};
+
+const FallenLeaves: React.FC = () => {
+  const { season } = useSeason();
+  const leavesRefs = useRef<THREE.Mesh[]>([]);
+
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+    leavesRefs.current.forEach((ref, i) => {
+      if (ref) {
+        // Simplified movement to reduce computational load
+        ref.position.y = 8.05 + Math.sin(time * 0.5 + i) * 0.05;
+        // Minimal rotation to reduce calculations
+        ref.rotation.y += 0.01;
+      }
+    });
+  });
+
+  if (season !== "autumn") {
+    return null; // Only render leaves during autumn
+  }
+
+  // Create minimal leaves with no texture to eliminate performance impact
+  const leaves = Array.from({ length: 2 }, (_, i) => {
+    const x = (Math.random() - 0.5) * 10; // Minimal range for positions
+    const z = (Math.random() - 0.5) * 10;
+    return (
+      <mesh
+        key={i}
+        ref={(el) => (leavesRefs.current[i] = el!)}
+        position={[x, 8.05, z]} // Slightly above water surface
+        rotation={[-Math.PI / 2, 0, Math.random() * Math.PI * 2]} // Random initial rotation
+        scale={[0.2, 0.2, 0.2]} // Small scale for leaves
+      >
+        <planeGeometry args={[1, 1]} />
+        <meshStandardMaterial
+          color="#8B4513" // Fallback color if texture loading fails
+          map={new THREE.TextureLoader().load(
+            "/assets/AI Dried Bay Leaves.png",
+            undefined,
+            undefined,
+            (err) => {
+              console.error("Failed to load leaf texture", err);
+            }
+          )}
+          transparent={true}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    );
+  });
+
+  return <group>{leaves}</group>;
 };
 
 export default App;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSeason } from "../contexts/SeasonContext";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 interface Particle {
   id: number;
@@ -41,8 +42,9 @@ const ParticleLayer: React.FC = () => {
         break;
       case "autumn":
         particleColor = "#FFA500"; // Orange (fallen leaves)
-        particleCount = 15; // Reduced from 40
-        speedYRange = [0.015, 0.035]; // Reduced speed for slower animation
+        particleCount = 5; // Further reduced for better performance
+        speedYRange = [0.005, 0.015]; // Slower speed for gentler fall
+        particleSizeModifier = 1.2; // Larger particles for autumn leaves
         break;
       case "winter":
         particleColor = "#FFFFFF"; // White (snow)
@@ -115,7 +117,11 @@ const ParticleLayer: React.FC = () => {
               ]}
             />
           )}
-          <meshStandardMaterial color={particle.color} />
+          <meshStandardMaterial
+            color={particle.color}
+            transparent={true}
+            side={THREE.DoubleSide}
+          />
         </mesh>
       ))}
     </group>
