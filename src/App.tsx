@@ -1,5 +1,6 @@
+import React, { useRef } from "react";
 import { SeasonProvider } from "./contexts/SeasonContext";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
 import Pond from "./components/Pond";
@@ -46,8 +47,8 @@ function App() {
         >
           <color attach="background" args={["#4A90E2"]} />{" "}
           {/* Water-like blue background for 3D scene */}
-          {/* Fog removed to ensure maximum visibility of all objects */}
-          {/* <fog attach="fog" args={["#4A90E2", 5, 40]} /> */}
+          {/* Fog reintroduced with adjusted parameters to blur distant objects for depth effect */}
+          <fog attach="fog" args={["#4A90E2", 10, 60]} />
           <ambientLight intensity={0.8} color="#87CEEB" />{" "}
           {/* Light blue ambient light */}
           <pointLight position={[10, 10, 10]} intensity={1.0} color="#FFFFFF" />
@@ -84,20 +85,8 @@ function App() {
           <Rocks />
           <KnobbedWhelk />
           <BubbleEffect />
-          {/* Custom Water Surface - positioned at the top face of the bounding box */}
-          <mesh
-            position={[0, 8, 0]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            scale={[30, 30, 1]} // Extended further to cover a wider area
-          >
-            <planeGeometry args={[1, 1]} />
-            <meshStandardMaterial
-              color="#4A90E2"
-              transparent={true}
-              opacity={0.7}
-              side={THREE.DoubleSide} // Double-sided rendering to be visible from below
-            />
-          </mesh>
+          {/* Custom Water Surface with movement - positioned at the top face of the bounding box */}
+          <WaterSurface />
           <ParticleLayer />
           {/* Bounding Box to confine fish movement - vertically enlarged (Y-axis), horizontally reduced (X-axis), bottom face above Y=0, top face lowered further */}
           <mesh position={[0, 4, 0.5]} scale={[12, 8, 5]}>
@@ -143,5 +132,53 @@ function App() {
     </SeasonProvider>
   );
 }
+
+const WaterSurface: React.FC = () => {
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const geometryRef = useRef<THREE.PlaneGeometry>(null!);
+
+  useFrame((state) => {
+    if (meshRef.current && geometryRef.current) {
+      const time = state.clock.getElapsedTime();
+      // Simulate more pronounced waves by adjusting the y position with a sine wave
+      meshRef.current.position.y = 8 + Math.sin(time * 1.5) * 0.5;
+
+      // Create a rippling effect by modifying the geometry vertices
+      const positions = geometryRef.current.attributes.position
+        .array as Float32Array;
+      const width = 80; // Matches the scale
+      const height = 80; // Matches the scale
+      const segments = 32; // Increased resolution for smoother ripples
+      for (let i = 0; i <= segments; i++) {
+        for (let j = 0; j <= segments; j++) {
+          const index = (i * (segments + 1) + j) * 3 + 2; // z-coordinate index
+          const x = (i / segments - 0.5) * width;
+          const y = (j / segments - 0.5) * height;
+          positions[index] =
+            Math.sin(x * 0.2 + time * 2) * Math.cos(y * 0.2 + time * 2) * 0.8;
+        }
+      }
+      geometryRef.current.attributes.position.needsUpdate = true;
+    }
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={[0, 8, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
+      scale={[80, 80, 1]} // Extended much further to cover an even larger area
+    >
+      <planeGeometry ref={geometryRef} args={[1, 1, 32, 32]} />{" "}
+      {/* Increased resolution for ripples */}
+      <meshStandardMaterial
+        color="#4A90E2"
+        transparent={true}
+        opacity={0.7}
+        side={THREE.DoubleSide} // Double-sided rendering to be visible from below
+      />
+    </mesh>
+  );
+};
 
 export default App;
