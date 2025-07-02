@@ -18,8 +18,8 @@ jobs:
           # 必要なファイルをCloudflare R2にアップロードします
           # 以下のコマンドは、指定したファイルを指定したバケットにアップロードします
           # バケット名とファイルパスはプロジェクトに合わせて調整してください
-          npx wrangler r2 object put biotope-assets/weflciqaa_tier_0.gltf -f public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf
-          npx wrangler r2 object put biotope-assets/weflciqaa_tier_0.bin -f public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin
+          npx wrangler r2 object put biotope-assets/weflciqaa_tier_0.gltf -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf"
+          npx wrangler r2 object put biotope-assets/weflciqaa_tier_0.bin -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
