@@ -470,7 +470,6 @@ const SundialGnomon: React.FC = () => {
 // 水波と一緒に動く時間目と数字付き日時計ベースコンポーネント
 const SundialBase: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null!);
-  const hourMarkRefs = useRef<THREE.Mesh[]>([]);
   const hourTextRefs = useRef<THREE.Mesh[]>([]);
 
   useFrame((state) => {
