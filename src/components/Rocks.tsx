@@ -3,7 +3,7 @@ import React from "react";
 const Rocks: React.FC = () => {
   return (
     <group>
-      {/* Rock 1 - positioned on the ground */}
+      {/* 岩1 - 地面に配置する */}
       <mesh
         position={[-2.5, -1, -2.5]}
         rotation={[0, 0, 0]}
@@ -11,12 +11,12 @@ const Rocks: React.FC = () => {
       >
         <dodecahedronGeometry args={[1, 0]} />
         <meshStandardMaterial
-          color="#808080" // Gray color for rock
+          color="#808080" // 岩のための灰色にする
           roughness={0.8}
           metalness={0.1}
         />
       </mesh>
-      {/* Rock 2 - positioned on the ground */}
+      {/* 岩2 - 地面に配置する */}
       <mesh
         position={[2.5, -1, -1.5]}
         rotation={[0, Math.PI / 6, 0]}
@@ -24,12 +24,12 @@ const Rocks: React.FC = () => {
       >
         <dodecahedronGeometry args={[1, 0]} />
         <meshStandardMaterial
-          color="#696969" // Slightly darker gray
+          color="#696969" // やや濃い灰色にする
           roughness={0.9}
           metalness={0.05}
         />
       </mesh>
-      {/* Rock 3 - positioned on the ground */}
+      {/* 岩3 - 地面に配置する */}
       <mesh
         position={[-1.5, -1, 2.5]}
         rotation={[0, Math.PI / 3, 0]}
@@ -37,12 +37,12 @@ const Rocks: React.FC = () => {
       >
         <dodecahedronGeometry args={[1, 0]} />
         <meshStandardMaterial
-          color="#A9A9A9" // Lighter gray for variation
+          color="#A9A9A9" // 変化のための明るい灰色にする
           roughness={0.7}
           metalness={0.2}
         />
       </mesh>
-      {/* Rock 4 - positioned on the ground */}
+      {/* 岩4 - 地面に配置する */}
       <mesh
         position={[3.5, -1, -3.5]}
         rotation={[0, -Math.PI / 4, 0]}
@@ -50,7 +50,7 @@ const Rocks: React.FC = () => {
       >
         <dodecahedronGeometry args={[1, 0]} />
         <meshStandardMaterial
-          color="#778899" // Slate gray for diversity
+          color="#778899" // 多様性のためのスレートグレーにする
           roughness={0.85}
           metalness={0.15}
         />

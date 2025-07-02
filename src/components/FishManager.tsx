@@ -21,7 +21,7 @@ const FishManager: React.FC = () => {
   const [fishList, setFishList] = useState<Fish[]>([]);
 
   useEffect(() => {
-    // Initialize fish based on season
+    // 季節に基づいて魚を初期化する
     const newFishList: Fish[] = [];
     let fishSpeed: number;
     let fishColor: string;
@@ -29,23 +29,23 @@ const FishManager: React.FC = () => {
 
     switch (season) {
       case "spring":
-        fishSpeed = 0.015; // Further reduced speed for gentler movement
-        fishColor = "#FF6347"; // Tomato
+        fishSpeed = 0.015; // より穏やかな動きのために速度をさらに減らす
+        fishColor = "#FF6347"; // トマト
         break;
       case "summer":
-        fishSpeed = 0.02; // Further reduced speed for gentler movement
-        fishColor = "#FF4500"; // OrangeRed
+        fishSpeed = 0.02; // より穏やかな動きのために速度をさらに減らす
+        fishColor = "#FF4500"; // オレンジレッド
         break;
       case "autumn":
-        fishSpeed = 0.01; // Further reduced speed for gentler movement
-        fishColor = "#DAA520"; // GoldenRod
+        fishSpeed = 0.01; // より穏やかな動きのために速度をさらに減らす
+        fishColor = "#DAA520"; // ゴールデンロッド
         break;
       case "winter":
-        fishSpeed = 0.005; // Further reduced speed for gentler movement
-        fishColor = "#4682B4"; // SteelBlue
+        fishSpeed = 0.005; // より穏やかな動きのために速度をさらに減らす
+        fishColor = "#4682B4"; // スティールブルー
         break;
       default:
-        fishSpeed = 0.015; // Further reduced speed for gentler movement
+        fishSpeed = 0.015; // より穏やかな動きのために速度をさらに減らす
         fishColor = "#FF6347";
     }
 
@@ -53,8 +53,8 @@ const FishManager: React.FC = () => {
       newFishList.push({
         id: i,
         x: Math.random() * 10 - 5,
-        y: Math.random() * 8 + 0.0, // Adjusted to start from Y=0 upwards with top face lowered further
-        z: Math.random() * 4.5 - 1.5, // Adjusted to utilize the box space starting slightly above ground level
+        y: Math.random() * 8 + 0.0, // Y=0から上向きに開始し、上面をさらに下げるように調整する
+        z: Math.random() * 4.5 - 1.5, // 地面より少し上から始まるボックス空間を利用するように調整する
         speed: fishSpeed + (Math.random() * 0.02 - 0.01),
         directionX: Math.random() * Math.PI * 2,
         directionY: Math.random() * Math.PI * 2,
@@ -71,29 +71,29 @@ const FishManager: React.FC = () => {
         let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * 60;
         let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * 60;
         let newZ =
-          fish.z + Math.sin(fish.directionX) * fish.speed * 0.2 * delta * 60; // Reduced Z movement influence
-        // Clamp Z position to ensure it stays within the box starting slightly above ground level
+          fish.z + Math.sin(fish.directionX) * fish.speed * 0.2 * delta * 60; // Z方向の動きの影響を減らす
+        // Z位置をクランプして、地面より少し上から始まるボックス内に収まるようにする
         newZ = Math.max(-1.5, Math.min(3.0, newZ));
 
-        // Add slight vertical oscillation to mimic swimming
+        // 泳ぐ動きを模倣するためにわずかな垂直振動を追加する
         newY += Math.sin(Date.now() * 0.002 + fish.id) * 0.01;
 
-        // Boundary check - strictly enforce vertically enlarged and horizontally reduced box boundaries
+        // 境界チェック - 垂直に拡大し、水平に縮小したボックスの境界を厳密に適用する
         if (newX < -6.0 || newX > 6.0) {
           fish.directionX = Math.PI - fish.directionX;
-          newX = Math.max(-6.0, Math.min(6.0, newX)); // Clamp to horizontally reduced box boundary
+          newX = Math.max(-6.0, Math.min(6.0, newX)); // 水平に縮小したボックス境界にクランプする
         }
         if (newY < 0.0 || newY > 8.0) {
           fish.directionY = -fish.directionY;
-          newY = Math.max(0.0, Math.min(8.0, newY)); // Clamp to box boundary with bottom face above Y=0 and top face lowered further
+          newY = Math.max(0.0, Math.min(8.0, newY)); // 底面がY=0より上で上面がさらに下がったボックス境界にクランプする
         }
         if (newZ < -1.5 || newZ > 3.0) {
-          // Adjusted to keep fish within box vertical range starting slightly above ground level
+          // 地面より少し上から始まるボックスの垂直範囲内に魚を保持するように調整する
           fish.directionX = Math.PI - fish.directionX;
-          newZ = Math.max(-1.5, Math.min(3.0, newZ)); // Clamp to box boundary starting slightly above ground level
+          newZ = Math.max(-1.5, Math.min(3.0, newZ)); // 地面より少し上から始まるボックス境界にクランプする
         }
 
-        // Random direction change - reduced frequency for smoother movement
+        // ランダムな方向変更 - よりスムーズな動きのために頻度を減らす
         if (Math.random() < 0.005) {
           fish.directionX += (Math.random() * Math.PI) / 4 - Math.PI / 8;
           fish.directionY += (Math.random() * Math.PI) / 4 - Math.PI / 8;
@@ -109,13 +109,13 @@ const FishManager: React.FC = () => {
     true
   );
 
-  // Log successful model loading and scene details for debugging
+  // デバッグのためにモデルの読み込み成功とシーンの詳細をログする
   useEffect(() => {
     console.log("GLTF model loaded successfully:", scene);
     console.log("Scene children:", scene.children);
   }, [scene]);
 
-  // Create refs for each fish to update positions dynamically
+  // 各魚の位置を動的に更新するための参照を作成する
   const fishRefs = React.useRef<THREE.Group[]>([]);
 
   useEffect(() => {
@@ -127,13 +127,13 @@ const FishManager: React.FC = () => {
       const fish = fishList[index];
       if (ref && fish) {
         ref.position.set(fish.x, fish.y, fish.z);
-        // Align rotation with movement direction for more natural look
+        // より自然な見た目のために移動方向に回転を合わせるようにする
         ref.rotation.set(0, fish.directionX + Math.PI / 2, 0);
       }
     });
   });
 
-  // Log positions for debugging
+  // デバッグのために位置をログする
   useEffect(() => {
     const interval = setInterval(() => {
       if (fishList.length > 0) {
@@ -155,11 +155,11 @@ const FishManager: React.FC = () => {
         >
           <primitive
             object={scene.clone()}
-            scale={[fish.size * 10, fish.size * 10, fish.size * 10]} // Much larger scale for maximum visibility
-            rotation={[Math.PI / 2, 0, 0]} // Adjust rotation on X-axis to correct orientation
-            // Material override removed to preserve original model textures
+            scale={[fish.size * 10, fish.size * 10, fish.size * 10]} // 最大限の視認性のために非常に大きなスケールにする
+            rotation={[Math.PI / 2, 0, 0]} // X軸の回転を調整して正しい向きにする
+            // オリジナルのモデルテクスチャを保持するためにマテリアルの上書きを削除する
           />
-          {/* Temporarily hide fallback to focus on GLTF model */}
+          {/* GLTFモデルに焦点を当てるために一時的にフォールバックを非表示にする */}
           {/* <mesh>
             <boxGeometry
               args={[fish.size * 0.5, fish.size * 0.3, fish.size * 0.15]}

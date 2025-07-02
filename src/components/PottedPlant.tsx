@@ -11,7 +11,7 @@ const PottedPlant: React.FC = () => {
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
-    // Add subtle swaying motion to each plant with slight variations
+    // 各植物にわずかな揺れを追加し、微妙な変化をつける
     if (plant1Ref.current) {
       plant1Ref.current.rotation.z = Math.sin(time * 0.5) * 0.05;
     }
@@ -28,7 +28,7 @@ const PottedPlant: React.FC = () => {
 
   return (
     <group>
-      {/* Potted Plant 1 - positioned further away on the ground */}
+      {/* 鉢植え植物1 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant1Ref}
         object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
@@ -38,7 +38,7 @@ const PottedPlant: React.FC = () => {
         castShadow={true}
         receiveShadow={true}
       />
-      {/* Potted Plant 2 - positioned further away on the ground */}
+      {/* 鉢植え植物2 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant2Ref}
         object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
@@ -48,7 +48,7 @@ const PottedPlant: React.FC = () => {
         castShadow={true}
         receiveShadow={true}
       />
-      {/* Potted Plant 3 - positioned further away on the ground */}
+      {/* 鉢植え植物3 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant3Ref}
         object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
@@ -58,7 +58,7 @@ const PottedPlant: React.FC = () => {
         castShadow={true}
         receiveShadow={true}
       />
-      {/* Potted Plant 4 - positioned further away on the ground */}
+      {/* 鉢植え植物4 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant4Ref}
         object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}

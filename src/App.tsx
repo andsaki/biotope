@@ -46,15 +46,15 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // useFrame cannot be used outside Canvas, moved to a component inside Canvas
+  // useFrameはCanvasの外では使用できません、Canvas内のコンポーネントに移動しました
 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate a loading delay or wait for assets to load
+    // 読み込みの遅延をシミュレートするか、アセットの読み込みを待つ
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // 2 seconds delay for loading screen
+    }, 2000); // 読み込み画面のための2秒の遅延
     return () => clearTimeout(timer);
   }, []);
 
@@ -68,9 +68,9 @@ function App() {
           height: "100vh",
           margin: 0,
           border: "none",
-          backgroundColor: isDay ? "#4A90E2" : "#1A1A2E", // Transition between day and night background
+          backgroundColor: isDay ? "#4A90E2" : "#1A1A2E", // 昼と夜の背景の切り替え
           overflow: "hidden",
-          transition: "background-color 2s ease", // Smooth transition for background color
+          transition: "background-color 2s ease", // 背景色のスムーズな切り替え
         }}
       >
         {isLoading && (
@@ -81,7 +81,7 @@ function App() {
               left: 0,
               width: "100vw",
               height: "100vh",
-              backgroundColor: "#1A1A2E", // Darker background for initial loading
+              backgroundColor: "#1A1A2E", // 初期読み込みのための暗い背景
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -91,7 +91,7 @@ function App() {
               zIndex: 100,
               flexDirection: "column",
               opacity: 1,
-              transition: "opacity 1s ease-out", // Fade-out effect
+              transition: "opacity 1s ease-out", // フェードアウト効果
             }}
             onAnimationEnd={() => setIsLoading(false)}
           >
@@ -123,15 +123,15 @@ function App() {
         <div
           style={{
             position: "absolute",
-            top: "150px", // Moved further down to be slightly below the previous position
+            top: "150px", // 前の位置より少し下に移動
             right: "20px",
             width: "220px",
             height: "220px",
             zIndex: 10,
-            backgroundColor: "rgba(0, 0, 0, 0.75)", // Darker background for better contrast
+            backgroundColor: "rgba(0, 0, 0, 0.75)", // コントラストを良くするための暗い背景
             borderRadius: "50%",
             border: "6px solid white",
-            boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)", // Stronger shadow for depth
+            boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)", // 奥行きのための強い影
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -148,32 +148,32 @@ function App() {
                 simulatedTime.seconds
               )
             }
-            size={200} // Increased size for better visibility
+            size={200} // 視認性を向上させるためにサイズを増加
             renderNumbers={true}
-            renderSecondHand={false} // Disable second hand
-            hourHandLength={60} // Longer hour hand
-            hourHandWidth={5} // Thicker hour hand
-            minuteHandLength={80} // Longer minute hand
-            minuteHandWidth={4} // Thicker minute hand
-            secondHandLength={90} // Length of second hand
-            secondHandWidth={2} // Width of second hand
-            hourMarksLength={12} // Longer hour marks
-            hourMarksWidth={4} // Thicker hour marks
-            minuteMarksLength={6} // Longer minute marks
-            minuteMarksWidth={2} // Thicker minute marks
+            renderSecondHand={false} // 秒針を無効化
+            hourHandLength={60} // 長い時針
+            hourHandWidth={5} // 太い時針
+            minuteHandLength={80} // 長い分針
+            minuteHandWidth={4} // 太い分針
+            secondHandLength={90} // 秒針の長さ
+            secondHandWidth={2} // 秒針の幅
+            hourMarksLength={12} // 長い時の目盛り
+            hourMarksWidth={4} // 太い時の目盛り
+            minuteMarksLength={6} // 長い分の目盛り
+            minuteMarksWidth={2} // 太い分の目盛り
             className="custom-clock"
           />
           {/* Day/Night indicator */}
           <div
             style={{
               position: "absolute",
-              bottom: "-50px", // Positioned further below the clock face
+              bottom: "-50px", // 時計の文字盤よりさらに下に配置
               width: "100%",
               textAlign: "center",
               color: "white",
-              fontSize: "18px", // Slightly smaller font for a cleaner look
+              fontSize: "18px", // すっきりした見た目のために少し小さいフォント
               fontWeight: "bold",
-              textShadow: "1px 1px 3px black", // Subtle shadow for visibility
+              textShadow: "1px 1px 3px black", // 視認性のための微妙な影
             }}
           >
             {isDay ? "Day" : "Night"}
@@ -188,46 +188,46 @@ function App() {
             height: "100vh",
           }}
           camera={{ position: [5, 3, 0], fov: 70 }}
-          gl={{ antialias: true }} // Enable antialiasing for smoother rendering
+          gl={{ antialias: true }} // よりスムーズなレンダリングのためにアンチエイリアシングを有効化
         >
           <color attach="background" args={[isDay ? "#4A90E2" : "#1A1A2E"]} />{" "}
-          {/* Transition background color for 3D scene */}
-          {/* Fog adjusted for day and night */}
+          {/* 3Dシーンの背景色の切り替え */}
+          {/* 昼と夜のための霧の調整 */}
           <fog
             attach="fog"
             args={[isDay ? "#4A90E2" : "#1A1A2E", 10, isDay ? 60 : 40]}
           />
           <ambientLight ref={ambientLightRef} intensity={0.5} color="#87CEEB" />{" "}
-          {/* Ambient light adjusts for day/night */}
+          {/* 昼と夜のための環境光の調整 */}
           <pointLight
             ref={pointLightRef}
             position={[10, 10, 10]}
             intensity={0.5}
             color="#FFFFFF"
           />{" "}
-          {/* Point light adjusts for day/night */}
+          {/* 昼と夜のためのポイントライトの調整 */}
           <directionalLight
             ref={directionalLightRef}
             position={[
               15 *
-                Math.cos(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)), // X position moves with time (12-hour cycle), no offset to match clock time
-              15, // Constant height
+                Math.cos(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)), // X位置は時間とともに移動（12時間サイクル）、時計時間に合わせるためのオフセットなし
+              15, // 一定の高さ
               15 *
-                Math.sin(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)), // Z position moves with time, no offset to match clock time
-            ]} // Sun moves in a circular path based on time, synchronized with clock
-            intensity={8.0} // Increased intensity further for stronger shadow visibility
-            color="#FFD700" // Warm yellow color to mimic sunlight
-            castShadow={true} // Enable shadows for realistic effect
-            shadow-mapSize={[1024, 1024]} // Higher resolution shadow map for better quality
-            shadow-camera-near={0.5} // Adjusted near plane for shadow camera
-            shadow-camera-far={50} // Adjusted far plane to cover larger area
-            shadow-camera-left={-20} // Expanded shadow camera bounds
+                Math.sin(((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)), // Z位置は時間とともに移動、時計時間に合わせるためのオフセットなし
+            ]} // 太陽は時間に基づいて円形のパスで移動し、時計と同期
+            intensity={8.0} // 影の視認性を高めるために強度をさらに増加
+            color="#FFD700" // 太陽光を模倣するための暖かい黄色
+            castShadow={true} // リアルな効果のための影を有効化
+            shadow-mapSize={[1024, 1024]} // より良い品質のための高解像度のシャドウマップ
+            shadow-camera-near={0.5} // シャドウカメラの近面を調整
+            shadow-camera-far={50} // より広い範囲をカバーするために遠面を調整
+            shadow-camera-left={-20} // シャドウカメラの範囲を拡張
             shadow-camera-right={20}
             shadow-camera-top={20}
             shadow-camera-bottom={-20}
           />{" "}
-          {/* Directional light adjusted to simulate sunlight or moonlight */}
-          {/* Visible representation of the sun as a small sphere */}
+          {/* 太陽光または月光をシミュレートするために調整された指向性ライト */}
+          {/* 小さな球体として太陽の可視表現 */}
           <mesh
             position={[
               15 *
@@ -249,11 +249,11 @@ function App() {
             position={[5, 8, 5]}
             angle={0.5}
             penumbra={0.2}
-            intensity={1.0} // Reduced intensity to balance with sunlight
+            intensity={1.0} // 太陽光とのバランスを取るために強度を減少
             color="#FFFFFF"
             castShadow={true}
           />{" "}
-          {/* Spotlight adjusts for day/night */}
+          {/* 昼と夜のためのスポットライトの調整 */}
           <LightingController
             isDay={isDay}
             directionalLightRef={directionalLightRef}
@@ -265,44 +265,43 @@ function App() {
             enableZoom={true}
             enablePan={true}
             enableRotate={true}
-            maxDistance={20} // Increased to allow viewing from further away
-            minDistance={1} // Decreased to allow closer inspection
-            dampingFactor={0.1} // Increased damping for smoother movement
+            maxDistance={20} // 遠くから見ることを可能にするために増加
+            minDistance={1} // 近くで検査することを可能にするために減少
+            dampingFactor={0.1} // よりスムーズな動きのためのダンピングを増加
             enableDamping={true}
           />
-          {/* <Pond /> Commented out as per user request */}
+          {/* <Pond /> ユーザーのリクエストによりコメントアウト */}
           <Ground />{" "}
-          {/* Ground component to receive shadows - to be handled within component */}
+          {/* 影を受けるための地面コンポーネント - コンポーネント内で処理 */}
           <FishManager />{" "}
-          {/* Fish to cast and receive shadows - to be handled within component */}
+          {/* 影を投げ、受けるための魚 - コンポーネント内で処理 */}
           <WaterPlants />{" "}
-          {/* Plants to cast and receive shadows - to be handled within component */}
+          {/* 影を投げ、受けるための植物 - コンポーネント内で処理 */}
           <WaterPlantsLarge />{" "}
-          {/* Large plants to cast and receive shadows - to be handled within component */}
+          {/* 影を投げ、受けるための大きな植物 - コンポーネント内で処理 */}
           <PottedPlant />{" "}
-          {/* Potted plants to cast and receive shadows - to be handled within component */}
-          <Rocks />{" "}
-          {/* Rocks to cast and receive shadows - to be handled within component */}
+          {/* 影を投げ、受けるための鉢植え植物 - コンポーネント内で処理 */}
+          <Rocks /> {/* 影を投げ、受けるための岩 - コンポーネント内で処理 */}
           <KnobbedWhelk />{" "}
-          {/* Whelk to cast and receive shadows - to be handled within component */}
+          {/* 影を投げ、受けるためのノブドウェルク - コンポーネント内で処理 */}
           <BubbleEffect />
-          {/* Custom Water Surface with movement - positioned at the top face of the bounding box */}
+          {/* 動きのあるカスタム水面 - バウンディングボックスの上面に配置 */}
           <WaterSurface />
-          {/* Gnomon for sundial effect on water surface, animated to move with waves */}
+          {/* 水面上の日時計効果のためのノモン、波と一緒に動くようにアニメーション */}
           <SundialGnomon />
-          {/* Circular base on water surface with hour marks for sundial, animated to move with waves */}
+          {/* 水面上の日時計のための時間目付き円形ベース、波と一緒に動くようにアニメーション */}
           <SundialBase />
           <FallenLeaves />{" "}
-          {/* Add fallen leaves component to float on water during autumn */}
+          {/* 秋の間に水面に浮かぶ落ち葉コンポーネントを追加 */}
           <ParticleLayer />
-          {/* Bounding Box to confine fish movement - vertically enlarged (Y-axis), horizontally reduced (X-axis), bottom face above Y=0, top face lowered further */}
+          {/* 魚の動きを制限するためのバウンディングボックス - 垂直方向に拡大（Y軸）、水平方向に縮小（X軸）、底面はY=0より上、上面はさらに下げた */}
           <mesh position={[0, 4, 0.5]} scale={[12, 8, 5]}>
             <boxGeometry args={[1, 1, 1]} />
             <meshBasicMaterial color="#FFFFFF" wireframe={true} />
           </mesh>
-          {/* XYZ Axes Helper to visualize coordinate system with labels */}
+          {/* 座標系を視覚化するためのXYZ軸ヘルパー、ラベル付き */}
           <axesHelper args={[5]} />
-          {/* Text labels for XYZ axes */}
+          {/* XYZ軸のためのテキストラベル */}
           <Text
             position={[5.2, 0, 0]}
             rotation={[0, 0, 0]}
@@ -347,21 +346,21 @@ const WaterSurface: React.FC = () => {
   useFrame((state) => {
     if (meshRef.current && geometryRef.current) {
       const time = state.clock.getElapsedTime();
-      // Simulate more pronounced waves by adjusting the y position with a sine wave
+      // サイン波でy位置を調整して、より顕著な波をシミュレート
       meshRef.current.position.y = 8 + Math.sin(time * 1.5) * 0.5;
 
-      // Create a more pronounced rippling effect by modifying the geometry vertices to affect light reflection
+      // 光の反射に影響を与えるためにジオメトリの頂点を変更して、より顕著な波紋効果を作成
       const positions = geometryRef.current.attributes.position
         .array as Float32Array;
-      const width = 80; // Matches the scale
-      const height = 80; // Matches the scale
-      const segments = 32; // Increased resolution for smoother ripples
+      const width = 80; // スケールに一致
+      const height = 80; // スケールに一致
+      const segments = 32; // より滑らかな波紋のための解像度を増加
       for (let i = 0; i <= segments; i++) {
         for (let j = 0; j <= segments; j++) {
-          const index = (i * (segments + 1) + j) * 3 + 2; // z-coordinate index
+          const index = (i * (segments + 1) + j) * 3 + 2; // z座標インデックス
           const x = (i / segments - 0.5) * width;
           const y = (j / segments - 0.5) * height;
-          // Increase amplitude and vary wave pattern for more dynamic light reflection
+          // よりダイナミックな光の反射のために振幅を増加し、波のパターンを変化
           positions[index] =
             Math.sin(x * 0.3 + time * 2.5) *
             Math.cos(y * 0.3 + time * 2.5) *
@@ -377,19 +376,19 @@ const WaterSurface: React.FC = () => {
       ref={meshRef}
       position={[0, 8, 0]}
       rotation={[-Math.PI / 2, 0, 0]}
-      scale={[80, 80, 1]} // Extended much further to cover an even larger area
-      receiveShadow={true} // Ensure water surface can receive shadows
+      scale={[80, 80, 1]} // さらに広い範囲をカバーするために大幅に拡張
+      receiveShadow={true} // 水面が影を受け取れるようにする
     >
       <planeGeometry ref={geometryRef} args={[1, 1, 32, 32]} />{" "}
-      {/* Increased resolution for ripples */}
+      {/* 波紋のための解像度を増加 */}
       <meshStandardMaterial
         color="#4A90E2"
         transparent={true}
-        opacity={0.3} // Further reduced opacity for clearer reflections
-        side={THREE.DoubleSide} // Double-sided rendering to be visible from below
-        metalness={0.9} // Increased metalness for stronger mirror-like effect
-        roughness={0.1} // Further reduced roughness for sharper, more defined reflections
-        envMapIntensity={1.5} // Increase environment map intensity for better reflection visibility
+        opacity={0.3} // より明確な反射のために不透明度をさらに減少
+        side={THREE.DoubleSide} // 下から見えるように両面レンダリング
+        metalness={0.9} // より強い鏡のような効果のために金属性を増加
+        roughness={0.1} // よりシャープで明確な反射のために粗さをさらに減少
+        envMapIntensity={1.5} // より良い反射の視認性のために環境マップの強度を増加
       />
     </mesh>
   );
@@ -415,7 +414,7 @@ const LightingController: React.FC<{
       pointLightRef.current &&
       spotLightRef.current
     ) {
-      // Smooth transition for lighting changes
+      // 照明の変更のためのスムーズな切り替え
       const targetIntensity = isDay ? 5.0 : 0.2;
       const targetAmbientIntensity = isDay ? 0.5 : 0.1;
       const targetPointIntensity = isDay ? 0.5 : 0.2;
@@ -438,17 +437,17 @@ const LightingController: React.FC<{
     }
   });
 
-  return null; // This component doesn't render anything visible
+  return null; // このコンポーネントは目に見えるものをレンダリングしません
 };
 
-// Sundial Gnomon component to move with water waves
+// 水波と一緒に動く日時計ノモンコンポーネント
 const SundialGnomon: React.FC = () => {
   const meshRef = useRef<THREE.Mesh>(null!);
 
   useFrame((state) => {
     if (meshRef.current) {
       const time = state.clock.getElapsedTime();
-      // Move with the same wave pattern as the water surface
+      // 水面と同じ波パターンで移動
       meshRef.current.position.y = 8.2 + Math.sin(time * 1.5) * 0.5;
     }
   });
@@ -463,12 +462,12 @@ const SundialGnomon: React.FC = () => {
     >
       <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
       <meshStandardMaterial color="#8B4513" />{" "}
-      {/* Brownish color for wood-like appearance */}
+      {/* 木のような外観のための茶色がかった色 */}
     </mesh>
   );
 };
 
-// Sundial Base component with hour marks and numbers to move with water waves
+// 水波と一緒に動く時間目と数字付き日時計ベースコンポーネント
 const SundialBase: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null!);
   const hourMarkRefs = useRef<THREE.Mesh[]>([]);
@@ -477,17 +476,17 @@ const SundialBase: React.FC = () => {
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     if (groupRef.current) {
-      // Move the base with the same wave pattern as the water surface
+      // 水面と同じ波パターンでベースを移動
       groupRef.current.position.y = 8.1 + Math.sin(time * 1.5) * 0.5;
     }
-    // Enhanced ripple effect for hour numbers to sync with water waves
+    // 水波と同期する時間数字のための強化された波紋効果
     hourTextRefs.current.forEach((ref, i) => {
       if (ref) {
-        const angle = i * (Math.PI / 6); // 30 degrees per hour
+        const angle = i * (Math.PI / 6); // 1時間ごとに30度
         const x = 5 * Math.cos(angle);
         const z = 5 * Math.sin(angle);
         const rippleHeight =
-          Math.sin(x * 0.2 + time * 1.5) * Math.cos(z * 0.2 + time * 1.5) * 0.4; // Increased amplitude and synced with water wave speed
+          Math.sin(x * 0.2 + time * 1.5) * Math.cos(z * 0.2 + time * 1.5) * 0.4; // 振幅を増加し、水波の速度と同期
         ref.position.y = 0.1 + rippleHeight;
       }
     });
@@ -503,20 +502,20 @@ const SundialBase: React.FC = () => {
         <circleGeometry args={[1, 32]} />
         <meshStandardMaterial
           color="#4682B4"
-          opacity={0.4} // Reduced opacity to make shadows more visible on the base
+          opacity={0.4} // ベース上で影をより見えるようにするために不透明度を減少
           transparent={true}
           side={THREE.DoubleSide}
         />
       </mesh>
       {[...Array(12)].map((_, i) => {
         const hour = i === 0 ? 12 : i;
-        const angle = i * (Math.PI / 6); // 30 degrees per hour
+        const angle = i * (Math.PI / 6); // 1時間ごとに30度
         return (
           <Text
             key={i}
             ref={(el) => (hourTextRefs.current[i] = el!)}
             position={[4.5 * Math.cos(angle), 0.1, 4.5 * Math.sin(angle)]}
-            rotation={[-Math.PI / 2, 0, angle + Math.PI / 2]} // Orient numbers to face towards the sun's position
+            rotation={[-Math.PI / 2, 0, angle + Math.PI / 2]} // 太陽の位置に向かって数字が向き合うようにする
             fontSize={0.3}
             color="white"
             anchorX="center"
@@ -538,33 +537,33 @@ const FallenLeaves: React.FC = () => {
     const time = state.clock.getElapsedTime();
     leavesRefs.current.forEach((ref, i) => {
       if (ref) {
-        // Simplified movement to reduce computational load
+        // 計算負荷を減らすための簡略化された動き
         ref.position.y = 8.05 + Math.sin(time * 0.5 + i) * 0.05;
-        // Minimal rotation to reduce calculations
+        // 計算を減らすための最小限の回転
         ref.rotation.y += 0.01;
       }
     });
   });
 
   if (season !== "autumn") {
-    return null; // Only render leaves during autumn
+    return null; // 秋の間だけ葉をレンダリング
   }
 
-  // Create minimal leaves with no texture to eliminate performance impact
+  // パフォーマンスへの影響を排除するためにテクスチャなしで最小限の葉を作成
   const leaves = Array.from({ length: 2 }, (_, i) => {
-    const x = (Math.random() - 0.5) * 10; // Minimal range for positions
+    const x = (Math.random() - 0.5) * 10; // 位置のための最小限の範囲
     const z = (Math.random() - 0.5) * 10;
     return (
       <mesh
         key={i}
         ref={(el) => (leavesRefs.current[i] = el!)}
-        position={[x, 8.05, z]} // Slightly above water surface
-        rotation={[-Math.PI / 2, 0, Math.random() * Math.PI * 2]} // Random initial rotation
-        scale={[0.2, 0.2, 0.2]} // Small scale for leaves
+        position={[x, 8.05, z]} // 水面の少し上
+        rotation={[-Math.PI / 2, 0, Math.random() * Math.PI * 2]} // ランダムな初期回転
+        scale={[0.2, 0.2, 0.2]} // 葉のための小さなスケール
       >
         <planeGeometry args={[1, 1]} />
         <meshStandardMaterial
-          color="#8B4513" // Fallback color if texture loading fails
+          color="#8B4513" // テクスチャの読み込みに失敗した場合のフォールバックカラー
           map={new THREE.TextureLoader().load(
             "/assets/AI Dried Bay Leaves.png",
             undefined,

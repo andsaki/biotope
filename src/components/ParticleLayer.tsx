@@ -21,7 +21,7 @@ const ParticleLayer: React.FC = () => {
   const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
-    // Initialize particles based on season
+    // 季節に基づいてパーティクルを初期化
     const newParticles: Particle[] = [];
     let particleColor: string;
     let particleCount: number;
@@ -30,37 +30,37 @@ const ParticleLayer: React.FC = () => {
 
     switch (season) {
       case "spring":
-        particleColor = "#FFB6C1"; // LightPink (petals)
-        particleCount = 15; // Reduced from 50
-        speedYRange = [0.025, 0.05]; // Reduced speed for slower animation
+        particleColor = "#FFB6C1"; // ライトピンク (花びら)
+        particleCount = 15; // 50から減少
+        speedYRange = [0.025, 0.05]; // アニメーションを遅くするために速度を減少
         break;
       case "summer":
-        particleColor = "#98FB98"; // PaleGreen (leaves)
-        particleCount = 10; // Reduced from 20
-        speedYRange = [0.01, 0.025]; // Reduced speed for slower animation
-        particleSizeModifier = 0.5; // Even smaller particles for summer
+        particleColor = "#98FB98"; // ペールグリーン (葉)
+        particleCount = 10; // 20から減少
+        speedYRange = [0.01, 0.025]; // アニメーションを遅くするために速度を減少
+        particleSizeModifier = 0.5; // 夏のためにさらに小さいパーティクル
         break;
       case "autumn":
-        particleColor = "#FFA500"; // Orange (fallen leaves)
-        particleCount = 5; // Further reduced for better performance
-        speedYRange = [0.005, 0.015]; // Slower speed for gentler fall
-        particleSizeModifier = 1.2; // Larger particles for autumn leaves
+        particleColor = "#FFA500"; // オレンジ (落ち葉)
+        particleCount = 5; // パフォーマンス向上のためにさらに減少
+        speedYRange = [0.005, 0.015]; // 穏やかな落下のために速度を遅く
+        particleSizeModifier = 1.2; // 秋の葉のために大きいパーティクル
         break;
       case "winter":
-        particleColor = "#FFFFFF"; // White (snow)
-        particleCount = 20; // Reduced from 60
-        speedYRange = [0.005, 0.015]; // Reduced speed for slower animation
-        particleSizeModifier = 0.5; // Even smaller particles for winter
+        particleColor = "#FFFFFF"; // ホワイト (雪)
+        particleCount = 20; // 60から減少
+        speedYRange = [0.005, 0.015]; // アニメーションを遅くするために速度を減少
+        particleSizeModifier = 0.5; // 冬のためにさらに小さいパーティクル
         break;
       default:
         particleColor = "#FFB6C1";
-        particleCount = 15; // Reduced from 50
-        speedYRange = [0.025, 0.05]; // Reduced speed for slower animation
+        particleCount = 15; // 50から減少
+        speedYRange = [0.025, 0.05]; // アニメーションを遅くするために速度を減少
     }
 
     for (let i = 0; i < particleCount; i++) {
-      const baseSize = 0.03 + Math.random() * 0.07; // Reduced particle size slightly
-      const finalSize = baseSize * (particleSizeModifier || 1.0); // Apply seasonal size modifier if exists
+      const baseSize = 0.03 + Math.random() * 0.07; // パーティクルサイズをわずかに減少
+      const finalSize = baseSize * (particleSizeModifier || 1.0); // 存在する場合、季節のサイズ修飾子を適用
       newParticles.push({
         id: i,
         x: Math.random() * 10 - 5,

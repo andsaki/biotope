@@ -4,33 +4,33 @@ import { useGLTF } from "@react-three/drei";
 const KnobbedWhelk: React.FC = () => {
   return (
     <group>
-      {/* Knobbed Whelk 1 - positioned on the ground */}
+      {/* ノブドウェルク1 - 地面に配置する */}
       <primitive
         object={useGLTF("/assets/Knobbed Whelk GLTF/scene.gltf").scene}
-        position={[-0.5, -1, -0.5]} // Moved closer to center
+        position={[-0.5, -1, -0.5]} // 中心に近づける
         rotation={[0, 0, 0]}
-        scale={[0.3, 0.3, 0.3]} // Increased scale to make slightly larger
+        scale={[0.3, 0.3, 0.3]} // 少し大きくするためにスケールを増やす
       />
-      {/* Knobbed Whelk 2 - positioned on the ground */}
+      {/* ノブドウェルク2 - 地面に配置する */}
       <primitive
         object={useGLTF("/assets/Knobbed Whelk GLTF/scene.gltf").scene}
-        position={[0.5, -1, -0.3]} // Moved closer to center
+        position={[0.5, -1, -0.3]} // 中心に近づける
         rotation={[0, Math.PI / 4, 0]}
-        scale={[0.25, 0.25, 0.25]} // Increased scale to make slightly larger
+        scale={[0.25, 0.25, 0.25]} // 少し大きくするためにスケールを増やす
       />
-      {/* Knobbed Whelk 3 - positioned on the ground */}
+      {/* ノブドウェルク3 - 地面に配置する */}
       <primitive
         object={useGLTF("/assets/Knobbed Whelk GLTF/scene.gltf").scene}
-        position={[-0.3, -1, 0.5]} // Moved closer to center
+        position={[-0.3, -1, 0.5]} // 中心に近づける
         rotation={[0, Math.PI / 2, 0]}
-        scale={[0.35, 0.35, 0.35]} // Increased scale to make slightly larger
+        scale={[0.35, 0.35, 0.35]} // 少し大きくするためにスケールを増やす
       />
-      {/* Knobbed Whelk 4 - positioned on the ground */}
+      {/* ノブドウェルク4 - 地面に配置する */}
       <primitive
         object={useGLTF("/assets/Knobbed Whelk GLTF/scene.gltf").scene}
-        position={[0.8, -1, -0.8]} // Moved closer to center
+        position={[0.8, -1, -0.8]} // 中心に近づける
         rotation={[0, -Math.PI / 4, 0]}
-        scale={[0.2, 0.2, 0.2]} // Increased scale to make slightly larger
+        scale={[0.2, 0.2, 0.2]} // 少し大きくするためにスケールを増やす
       />
     </group>
   );

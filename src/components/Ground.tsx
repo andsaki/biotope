@@ -3,16 +3,16 @@ import React from "react";
 const Ground: React.FC = () => {
   return (
     <group>
-      {/* Ground plane to simulate the bottom of the pond, extended much further, positioned at slightly negative Y */}
+      {/* 池の底をシミュレートする地面平面、大幅に拡張され、わずかに負のYに配置 */}
       <mesh
         position={[0, -1, -2]}
         rotation={[-Math.PI / 2, 0, 0]}
         receiveShadow={true}
       >
         <planeGeometry args={[80, 80, 4, 4]} />{" "}
-        {/* Reduced subdivisions for better performance */}
+        {/* パフォーマンス向上のために分割数を減らす */}
         <meshStandardMaterial
-          color="#8B4513" // Changed to a darker brown color (SaddleBrown)
+          color="#8B4513" // より濃い茶色に変更（サドルブラウン）
           transparent={false}
           opacity={1.0}
         />

@@ -5,7 +5,7 @@ const Pond: React.FC = () => {
   const { season } = useSeason();
   const meshRef = useRef<any>(null!);
 
-  // Define pond color and fog based on season
+  // 季節に基づいて池の色と霧を定義する
   let pondColor: string;
   let fogLevel: number;
 
