@@ -104,13 +104,14 @@ const FishManager: React.FC = () => {
     );
   });
 
-  const { scene } = useGLTF(
-    "https://<your-r2-domain>/<bucket-name>/weflciqaa_tier_0.gltf",
-    true
-  );
-  // 注意: Cloudflare R2にアップロードしたGLTFファイルと関連するBINファイルを参照するために、
-  // 上記のURLを実際のR2バケットのURLに置き換えてください。
+  // 注意: Cloudflare R2または他のストレージサービスにアップロードしたGLTFファイルと関連するBINファイルを参照するために、
+  // 以下のURLを実際のストレージサービスのURLに置き換えてください。
   // 例: "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/weflciqaa_tier_0.gltf"
+  // 一時的にモデル読み込みを無効にしてエラーを防ぎます。実際のURLに置き換えてください。
+  const modelUrl = ""; // 実際のURLをここに設定してください。
+  const { scene } = modelUrl
+    ? useGLTF(modelUrl, true)
+    : { scene: new THREE.Group() };
 
   // デバッグのためにモデルの読み込み成功とシーンの詳細をログする
   useEffect(() => {
