@@ -113,11 +113,11 @@ const FishManager: React.FC = () => {
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
 
-  // デバッグのためにモデルの読み込み成功とシーンの詳細をログする
-  useEffect(() => {
-    console.log("GLTF model loaded successfully:", scene);
-    console.log("Scene children:", scene.children);
-  }, [scene]);
+  // デバッグのためにモデルの読み込み成功とシーンの詳細をログする（コメントアウト）
+  // useEffect(() => {
+  //   console.log("GLTF model loaded successfully:", scene);
+  //   console.log("Scene children:", scene.children);
+  // }, [scene]);
 
   // 各魚の位置を動的に更新するための参照を作成する
   const fishRefs = React.useRef<THREE.Group[]>([]);
@@ -137,18 +137,18 @@ const FishManager: React.FC = () => {
     });
   });
 
-  // デバッグのために位置をログする
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (fishList.length > 0) {
-        console.log(
-          "Fish positions:",
-          fishList.map((f) => ({ x: f.x, y: f.y, z: f.z }))
-        );
-      }
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [fishList]);
+  // デバッグのために位置をログする（コメントアウト）
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (fishList.length > 0) {
+  //       console.log(
+  //         "Fish positions:",
+  //         fishList.map((f) => ({ x: f.x, y: f.y, z: f.z }))
+  //       );
+  //     }
+  //   }, 2000);
+  //   return () => clearInterval(interval);
+  // }, [fishList]);
 
   return (
     <group>
