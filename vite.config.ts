@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
-      external: ["/assets/Smoked Fish Raw/weflciqaa_tier_0.bin"],
+      external: [
+        "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin",
+        "public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf",
+      ],
     },
   },
 });
