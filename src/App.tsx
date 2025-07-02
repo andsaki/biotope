@@ -29,16 +29,16 @@ function App() {
   const spotLightRef = useRef<THREE.SpotLight>(null!);
 
   useEffect(() => {
-    // Set the time to evening, around 17:00 (5 PM), which is 17 * 60 = 1020 minutes
-    setSimulatedTime({ minutes: 1020, seconds: 0 });
-    setIsDay(true); // Evening is still considered day
+    // Set the time to morning, around 5:00 AM, which is 5 * 60 = 300 minutes
+    setSimulatedTime({ minutes: 300, seconds: 0 });
+    setIsDay(false); // 5 AM is before 6 AM, so it's night
     // Enable time progression for a 24-hour day to pass in 30 minutes of real time
     const interval = setInterval(() => {
       setSimulatedTime((prev) => {
         const totalSeconds = (prev.minutes * 60 + prev.seconds + 48) % 86400; // Increment by 48 seconds every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
         const newMinutes = Math.floor(totalSeconds / 60);
         const newSeconds = totalSeconds % 60;
-        setIsDay(newMinutes < 720); // Day for first 12 hours (720 minutes), Night for next 12 hours
+        setIsDay(newMinutes % 1440 < 360 || newMinutes % 1440 >= 1080); // Day from 6 AM (360 minutes) to 6 PM (1080 minutes)
         return { minutes: newMinutes, seconds: newSeconds };
       });
     }, 1000); // Update every second
@@ -293,7 +293,7 @@ const WaterSurface: React.FC = () => {
       // Simulate more pronounced waves by adjusting the y position with a sine wave
       meshRef.current.position.y = 8 + Math.sin(time * 1.5) * 0.5;
 
-      // Create a rippling effect by modifying the geometry vertices
+      // Create a more pronounced rippling effect by modifying the geometry vertices to affect light reflection
       const positions = geometryRef.current.attributes.position
         .array as Float32Array;
       const width = 80; // Matches the scale
@@ -304,8 +304,11 @@ const WaterSurface: React.FC = () => {
           const index = (i * (segments + 1) + j) * 3 + 2; // z-coordinate index
           const x = (i / segments - 0.5) * width;
           const y = (j / segments - 0.5) * height;
+          // Increase amplitude and vary wave pattern for more dynamic light reflection
           positions[index] =
-            Math.sin(x * 0.2 + time * 2) * Math.cos(y * 0.2 + time * 2) * 0.8;
+            Math.sin(x * 0.3 + time * 2.5) *
+            Math.cos(y * 0.3 + time * 2.5) *
+            1.2;
         }
       }
       geometryRef.current.attributes.position.needsUpdate = true;
@@ -325,8 +328,11 @@ const WaterSurface: React.FC = () => {
       <meshStandardMaterial
         color="#4A90E2"
         transparent={true}
-        opacity={0.5} // Reduced opacity to make shadows more visible on water
+        opacity={0.3} // Further reduced opacity for clearer reflections
         side={THREE.DoubleSide} // Double-sided rendering to be visible from below
+        metalness={0.9} // Increased metalness for stronger mirror-like effect
+        roughness={0.1} // Further reduced roughness for sharper, more defined reflections
+        envMapIntensity={1.5} // Increase environment map intensity for better reflection visibility
       />
     </mesh>
   );
@@ -417,14 +423,14 @@ const SundialBase: React.FC = () => {
       // Move the base with the same wave pattern as the water surface
       groupRef.current.position.y = 8.1 + Math.sin(time * 1.5) * 0.5;
     }
-    // Individual ripple effect for hour numbers
+    // Enhanced ripple effect for hour numbers to sync with water waves
     hourTextRefs.current.forEach((ref, i) => {
       if (ref) {
         const angle = i * (Math.PI / 6); // 30 degrees per hour
         const x = 5 * Math.cos(angle);
         const z = 5 * Math.sin(angle);
         const rippleHeight =
-          Math.sin(x * 0.2 + time * 2) * Math.cos(z * 0.2 + time * 2) * 0.2;
+          Math.sin(x * 0.2 + time * 1.5) * Math.cos(z * 0.2 + time * 1.5) * 0.4; // Increased amplitude and synced with water wave speed
         ref.position.y = 0.1 + rippleHeight;
       }
     });
