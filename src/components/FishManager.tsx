@@ -52,9 +52,9 @@ const FishManager: React.FC = () => {
     for (let i = 0; i < fishCount; i++) {
       newFishList.push({
         id: i,
-        x: Math.random() * 8 - 4,
-        y: Math.random() * 2 - 1,
-        z: Math.random() * 2 - 1.5,
+        x: Math.random() * 10 - 5,
+        y: Math.random() * 8 + 0.0, // Adjusted to start from Y=0 upwards with top face lowered further
+        z: Math.random() * 4.5 - 1.5, // Adjusted to utilize the box space starting slightly above ground level
         speed: fishSpeed + (Math.random() * 0.02 - 0.01),
         directionX: Math.random() * Math.PI * 2,
         directionY: Math.random() * Math.PI * 2,
@@ -71,21 +71,26 @@ const FishManager: React.FC = () => {
         let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * 60;
         let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * 60;
         let newZ =
-          fish.z + Math.sin(fish.directionX) * fish.speed * 0.5 * delta * 60;
+          fish.z + Math.sin(fish.directionX) * fish.speed * 0.2 * delta * 60; // Reduced Z movement influence
+        // Clamp Z position to ensure it stays within the box starting slightly above ground level
+        newZ = Math.max(-1.5, Math.min(3.0, newZ));
 
         // Add slight vertical oscillation to mimic swimming
         newY += Math.sin(Date.now() * 0.002 + fish.id) * 0.01;
 
-        // Boundary check - tightened to keep fish closer to center
-        if (newX < -2 || newX > 2) {
+        // Boundary check - strictly enforce vertically enlarged and horizontally reduced box boundaries
+        if (newX < -6.0 || newX > 6.0) {
           fish.directionX = Math.PI - fish.directionX;
+          newX = Math.max(-6.0, Math.min(6.0, newX)); // Clamp to horizontally reduced box boundary
         }
-        if (newY < -0.5 || newY > 0.5) {
+        if (newY < 0.0 || newY > 8.0) {
           fish.directionY = -fish.directionY;
+          newY = Math.max(0.0, Math.min(8.0, newY)); // Clamp to box boundary with bottom face above Y=0 and top face lowered further
         }
-        if (newZ < -1.5 || newZ > -0.5) {
-          // Adjusted to keep fish in visible z-range
+        if (newZ < -1.5 || newZ > 3.0) {
+          // Adjusted to keep fish within box vertical range starting slightly above ground level
           fish.directionX = Math.PI - fish.directionX;
+          newZ = Math.max(-1.5, Math.min(3.0, newZ)); // Clamp to box boundary starting slightly above ground level
         }
 
         // Random direction change - reduced frequency for smoother movement
@@ -152,6 +157,7 @@ const FishManager: React.FC = () => {
             object={scene.clone()}
             scale={[fish.size * 10, fish.size * 10, fish.size * 10]} // Much larger scale for maximum visibility
             rotation={[Math.PI / 2, 0, 0]} // Adjust rotation on X-axis to correct orientation
+            // Material override removed to preserve original model textures
           />
           {/* Temporarily hide fallback to focus on GLTF model */}
           {/* <mesh>

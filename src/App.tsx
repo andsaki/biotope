@@ -1,5 +1,6 @@
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import Pond from "./components/Pond";
 import FishManager from "./components/FishManager";
 import ParticleLayer from "./components/ParticleLayer";
@@ -34,6 +35,7 @@ function App() {
             height: "100vh",
           }}
           camera={{ position: [5, 3, 0], fov: 70 }}
+          gl={{ antialias: true }} // Enable antialiasing for smoother rendering
         >
           <color attach="background" args={["#4A90E2"]} />{" "}
           {/* Water-like blue background for 3D scene */}
@@ -48,10 +50,26 @@ function App() {
             color="#ADD8E6"
           />{" "}
           {/* Light blue directional light */}
+          <OrbitControls
+            enableZoom={true}
+            enablePan={true}
+            enableRotate={true}
+            maxDistance={10}
+            minDistance={2}
+            dampingFactor={0.05} // Add damping for smoother camera movement
+            enableDamping={true}
+          />
           <Pond />
           <Ground />
           <FishManager />
           <ParticleLayer />
+          {/* Bounding Box to confine fish movement - vertically enlarged (Y-axis), horizontally reduced (X-axis), bottom face above Y=0, top face lowered further */}
+          <mesh position={[0, 4, 0.5]} scale={[12, 8, 5]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#FFFFFF" wireframe={true} />
+          </mesh>
+          {/* XYZ Axes Helper to visualize coordinate system */}
+          <axesHelper args={[5]} />
         </Canvas>
         <UI />
       </div>
