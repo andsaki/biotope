@@ -26,12 +26,30 @@ const PottedPlant: React.FC = () => {
     }
   });
 
+  // 注意: Cloudflare R2または他のストレージサービスにアップロードしたGLTFファイルと関連するBINファイルを参照するために、
+  // 以下のURLを実際のストレージサービスのURLに置き換えてください。
+  // 例: "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/scene.gltf"
+  // 一時的にモデル読み込みを無効にしてエラーを防ぎます。実際のURLに置き換えてください。
+  const modelUrl = ""; // 実際のURLをここに設定してください。
+  const { scene: plantScene1 } = modelUrl
+    ? useGLTF(modelUrl, true)
+    : { scene: new THREE.Group() };
+  const { scene: plantScene2 } = modelUrl
+    ? useGLTF(modelUrl, true)
+    : { scene: new THREE.Group() };
+  const { scene: plantScene3 } = modelUrl
+    ? useGLTF(modelUrl, true)
+    : { scene: new THREE.Group() };
+  const { scene: plantScene4 } = modelUrl
+    ? useGLTF(modelUrl, true)
+    : { scene: new THREE.Group() };
+
   return (
     <group>
       {/* 鉢植え植物1 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant1Ref}
-        object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
+        object={plantScene1}
         position={[-6, -1, -5]}
         rotation={[0, 0, 0]}
         scale={[0.3, 0.3, 0.3]}
@@ -41,7 +59,7 @@ const PottedPlant: React.FC = () => {
       {/* 鉢植え植物2 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant2Ref}
-        object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
+        object={plantScene2}
         position={[6, -1, -4]}
         rotation={[0, Math.PI / 4, 0]}
         scale={[0.25, 0.25, 0.25]}
@@ -51,7 +69,7 @@ const PottedPlant: React.FC = () => {
       {/* 鉢植え植物3 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant3Ref}
-        object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
+        object={plantScene3}
         position={[-5, -1, 5]}
         rotation={[0, Math.PI / 2, 0]}
         scale={[0.35, 0.35, 0.35]}
@@ -61,7 +79,7 @@ const PottedPlant: React.FC = () => {
       {/* 鉢植え植物4 - 地面上でさらに遠くに配置 */}
       <primitive
         ref={plant4Ref}
-        object={useGLTF("/assets/Potted Plant 1/scene.gltf").scene}
+        object={plantScene4}
         position={[7, -1, -6]}
         rotation={[0, -Math.PI / 4, 0]}
         scale={[0.2, 0.2, 0.2]}
