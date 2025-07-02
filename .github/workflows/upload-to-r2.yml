@@ -1,0 +1,43 @@
+name: Upload Assets to Cloudflare R2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  upload-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Cloudflare Wrangler
+        run: npm install -g @cloudflare/wrangler
+
+      - name: Authenticate with Cloudflare
+        run: |
+          echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" > .env
+          echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> .env
+          wrangler login --api-token ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Upload files to R2
+        run: |
+          # 必要なファイルをCloudflare R2にアップロードします
+          # 以下のコマンドは、指定したファイルを指定したバケットにアップロードします
+          # バケット名とファイルパスはプロジェクトに合わせて調整してください
+          wrangler r2 object put biotope-assets/weflciqaa_tier_0.gltf --file public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf
+          wrangler r2 object put biotope-assets/weflciqaa_tier_0.bin --file public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Notify on Failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Cloudflare R2へのアップロードに失敗しました。ログを確認してください。'
+            })

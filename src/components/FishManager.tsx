@@ -105,9 +105,12 @@ const FishManager: React.FC = () => {
   });
 
   const { scene } = useGLTF(
-    "/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf",
+    "https://<your-r2-domain>/<bucket-name>/weflciqaa_tier_0.gltf",
     true
   );
+  // 注意: Cloudflare R2にアップロードしたGLTFファイルと関連するBINファイルを参照するために、
+  // 上記のURLを実際のR2バケットのURLに置き換えてください。
+  // 例: "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/weflciqaa_tier_0.gltf"
 
   // デバッグのためにモデルの読み込み成功とシーンの詳細をログする
   useEffect(() => {
