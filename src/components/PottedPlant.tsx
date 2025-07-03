@@ -31,7 +31,7 @@ const PottedPlant: React.FC = () => {
   const baseUrl = isLocal
     ? "/assets/Potted Plant 1/"
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
-  const modelUrl = `${baseUrl}scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
+  const modelUrl = `${baseUrl}potted-plant-1-scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
   const { scene: plantScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
