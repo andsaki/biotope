@@ -25,3 +25,6 @@ dist-ssr
 
 # Cloudflare configuration
 wrangler.toml
+
+# Environment variables
+.env

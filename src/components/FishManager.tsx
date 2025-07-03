@@ -104,12 +104,12 @@ const FishManager: React.FC = () => {
     );
   });
 
-  // 注意: Cloudflare R2または他のストレージサービスにアップロードしたGLTFファイルと関連するBINファイルを参照するために、
-  // 以下のURLを実際のストレージサービスのURLに置き換えてください。
-  // 例: "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/weflciqaa_tier_0.gltf"
-  // 一時的にモデル読み込みを無効にしてエラーを防ぎます。実際のURLに置き換えてください。
-  const modelUrl =
-    "https://18d9f5bea76f6a13f7314a6c13864c4b.r2.cloudflarestorage.com/biotope-assets/weflciqaa_tier_0.gltf"; // 実際のURLを設定
+  // ローカルとCloudflare R2のどちらを参照するかを環境変数で切り替え
+  const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
+  const baseUrl = isLocal
+    ? "/assets/Smoked Fish Raw/"
+    : "https://18d9f5bea76f6a13f7314a6c13864c4b.r2.cloudflarestorage.com/biotope-assets/";
+  const modelUrl = `${baseUrl}weflciqaa_tier_0.gltf`; // 必要に応じて実際のURLパスを調整してください
   const { scene } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
