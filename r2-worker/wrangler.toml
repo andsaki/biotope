@@ -1,7 +1,7 @@
 name = "biotope-r2-worker"
-type = "javascript"
+main = "src/index.ts"
 compatibility_date = "2025-07-03"
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
-bucket_name = "${BUCKET_NAME}"
+bucket_name = "biotope-assets"

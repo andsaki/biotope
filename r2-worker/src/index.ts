@@ -3,10 +3,18 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const objectName = url.pathname.slice(1);
+
+    if (objectName === "") {
+      return new Response(
+        "Welcome to Biotope R2 Worker. Please specify an asset path to access files.",
+        { status: 200 }
+      );
+    }
+
     const object = await env.R2_BUCKET.get(objectName);
 
     if (object === null) {
-      return new Response("Object Not Found", { status: 404 });
+      return new Response(`Object Not Found: ${objectName}`, { status: 404 });
     }
 
     const headers = new Headers();
