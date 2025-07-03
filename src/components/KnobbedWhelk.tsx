@@ -3,12 +3,12 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 const KnobbedWhelk: React.FC = () => {
-  // ローカルとCloudflare R2のどちらを参照するかを環境変数で切り替え
+  // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
   const baseUrl = isLocal
     ? "/assets/Knobbed Whelk GLTF/"
-    : "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/";
-  const modelUrl = `${baseUrl}scene.gltf`; // 必要に応じて実際のURLパスを調整してください
+    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
+  const modelUrl = `${baseUrl}scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
   const { scene: whelkScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
