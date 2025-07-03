@@ -3,11 +3,12 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 const KnobbedWhelk: React.FC = () => {
-  // 注意: Cloudflare R2または他のストレージサービスにアップロードしたGLTFファイルと関連するBINファイルを参照するために、
-  // 以下のURLを実際のストレージサービスのURLに置き換えてください。
-  // 例: "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/scene.gltf"
-  // 一時的にモデル読み込みを無効にしてエラーを防ぎます。実際のURLに置き換えてください。
-  const modelUrl = ""; // 実際のURLをここに設定してください。
+  // ローカルとCloudflare R2のどちらを参照するかを環境変数で切り替え
+  const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
+  const baseUrl = isLocal
+    ? "/assets/Knobbed Whelk GLTF/"
+    : "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/";
+  const modelUrl = `${baseUrl}scene.gltf`; // 必要に応じて実際のURLパスを調整してください
   const { scene: whelkScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
