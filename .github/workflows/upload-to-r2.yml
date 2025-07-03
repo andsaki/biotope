@@ -34,16 +34,16 @@ jobs:
 
       - name: Upload files to R2
         run: |
-          wrangler r2 object put weflciqaa_tier_0.gltf -b ${BUCKET_NAME} -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf" --remote
-          wrangler r2 object put weflciqaa_tier_0.bin -b ${BUCKET_NAME} -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin" --remote
-          wrangler r2 object put potted-plant-1-scene.gltf -b ${BUCKET_NAME} -f "public/assets/Potted Plant 1/scene.gltf" --remote
-          wrangler r2 object put potted-plant-1-scene.bin -b ${BUCKET_NAME} -f "public/assets/Potted Plant 1/scene.bin" --remote
-          wrangler r2 object put knobbed-whelk-scene.gltf -b ${BUCKET_NAME} -f "public/assets/Knobbed Whelk GLTF/scene.gltf" --remote
-          wrangler r2 object put knobbed-whelk-scene.bin -b ${BUCKET_NAME} -f "public/assets/Knobbed Whelk GLTF/scene.bin" --remote
-          wrangler r2 object put knobbed-whelk-material_0_baseColor.jpeg -b ${BUCKET_NAME} -f "public/assets/Knobbed Whelk GLTF/textures/material_0_baseColor.jpeg" --remote
-          wrangler r2 object put potted-plant-1-01_-_Default_0_baseColor.png -b ${BUCKET_NAME} -f "public/assets/Potted Plant 1/textures/01_-_Default_0_baseColor.png" --remote
-          wrangler r2 object put potted-plant-1-01_-_Default_baseColor.png -b ${BUCKET_NAME} -f "public/assets/Potted Plant 1/textures/01_-_Default_baseColor.png" --remote
-          wrangler r2 object put smoked-fish-raw-T_weflciqaa_8K_B.png -b ${BUCKET_NAME} -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" --remote
-          wrangler r2 object put smoked-fish-raw-T_weflciqaa_8K_N.png -b ${BUCKET_NAME} -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png" --remote
-          wrangler r2 object put smoked-fish-raw-T_weflciqaa_8K_ORM.png -b ${BUCKET_NAME} -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png" --remote
-          wrangler r2 object put ai-dried-bay-leaves.png -b ${BUCKET_NAME} -f "public/assets/AI Dried Bay Leaves.png" --remote
+          wrangler r2 object put ${BUCKET_NAME}/weflciqaa_tier_0.gltf -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf" --remote
+          wrangler r2 object put ${BUCKET_NAME}/weflciqaa_tier_0.bin -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin" --remote
+          wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-scene.gltf -f "public/assets/Potted Plant 1/scene.gltf" --remote
+          wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-scene.bin -f "public/assets/Potted Plant 1/scene.bin" --remote
+          wrangler r2 object put ${BUCKET_NAME}/knobbed-whelk-scene.gltf -f "public/assets/Knobbed Whelk GLTF/scene.gltf" --remote
+          wrangler r2 object put ${BUCKET_NAME}/knobbed-whelk-scene.bin -f "public/assets/Knobbed Whelk GLTF/scene.bin" --remote
+          wrangler r2 object put ${BUCKET_NAME}/knobbed-whelk-material_0_baseColor.jpeg -f "public/assets/Knobbed Whelk GLTF/textures/material_0_baseColor.jpeg" --remote
+          wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-01_-_Default_0_baseColor.png -f "public/assets/Potted Plant 1/textures/01_-_Default_0_baseColor.png" --remote
+          wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-01_-_Default_baseColor.png -f "public/assets/Potted Plant 1/textures/01_-_Default_baseColor.png" --remote
+          wrangler r2 object put ${BUCKET_NAME}/smoked-fish-raw-T_weflciqaa_8K_B.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" --remote
+          wrangler r2 object put ${BUCKET_NAME}/smoked-fish-raw-T_weflciqaa_8K_N.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png" --remote
+          wrangler r2 object put ${BUCKET_NAME}/smoked-fish-raw-T_weflciqaa_8K_ORM.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png" --remote
+          wrangler r2 object put ${BUCKET_NAME}/ai-dried-bay-leaves.png -f "public/assets/AI Dried Bay Leaves.png" --remote
