@@ -30,6 +30,7 @@ jobs:
           npx wrangler r2 object put biotope-assets/smoked-fish-raw-T_weflciqaa_8K_B.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png"
           npx wrangler r2 object put biotope-assets/smoked-fish-raw-T_weflciqaa_8K_N.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png"
           npx wrangler r2 object put biotope-assets/smoked-fish-raw-T_weflciqaa_8K_ORM.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png"
+          npx wrangler r2 object put biotope-assets/ai-dried-bay-leaves.png -f "public/assets/AI Dried Bay Leaves.png"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
