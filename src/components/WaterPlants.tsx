@@ -3,12 +3,14 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 const WaterPlants: React.FC = () => {
-  // ローカルとCloudflare R2のどちらを参照するかを環境変数で切り替え
+  // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
   const baseUrl = isLocal
-    ? "/assets/Potted Plant 1/"
-    : "https://<account-id>.r2.cloudflarestorage.com/biotope-assets/";
-  const modelUrl = `${baseUrl}scene.gltf`; // 必要に応じて実際のURLパスを調整してください
+    ? "/assets/Water Plants/"
+    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
+  const modelUrl = isLocal
+    ? `${baseUrl}scene.gltf` // ローカル環境での実際のファイル名
+    : `${baseUrl}water-plants-scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
   const { scene: plantScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
