@@ -8,7 +8,9 @@ const KnobbedWhelk: React.FC = () => {
   const baseUrl = isLocal
     ? "/assets/Knobbed Whelk GLTF/"
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
-  const modelUrl = `${baseUrl}knobbed-whelk-scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
+  const modelUrl = isLocal
+    ? `${baseUrl}scene.gltf` // ローカル環境での実際のファイル名
+    : `${baseUrl}knobbed-whelk-scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
   const { scene: whelkScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
