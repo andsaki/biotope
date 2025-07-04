@@ -4,13 +4,9 @@ import * as THREE from "three";
 
 const KnobbedWhelk: React.FC = () => {
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
-  const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
-  const baseUrl = isLocal
-    ? "/assets/Knobbed Whelk GLTF/"
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
-  const modelUrl = isLocal
-    ? `${baseUrl}scene.gltf` // ローカル環境での実際のファイル名
-    : `${baseUrl}knobbed-whelk-scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
+  // Temporarily use local file path to bypass Cloudflare Worker issue
+  const baseUrl = "/assets/Knobbed Whelk GLTF/";
+  const modelUrl = `${baseUrl}scene.gltf`; // Use local file path regardless of environment
   const { scene: whelkScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
