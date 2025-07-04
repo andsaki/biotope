@@ -4,9 +4,10 @@ import * as THREE from "three";
 
 const KnobbedWhelk: React.FC = () => {
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
-  // Temporarily use local file path to bypass Cloudflare Worker issue
-  const baseUrl = "/assets/Knobbed Whelk GLTF/";
-  const modelUrl = `${baseUrl}scene.gltf`; // Use local file path regardless of environment
+  // デプロイされた環境でアセットが正しく読み込まれるように調整
+  // Cloudflare PagesでのURL構造に合わせる
+  const baseUrl = "/assets/Knobbed%20Whelk%20GLTF/";
+  const modelUrl = `${baseUrl}scene.gltf`; // デプロイ環境でのURLエンコードされたパスに合わせる
   const { scene: whelkScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
