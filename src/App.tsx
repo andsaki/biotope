@@ -67,7 +67,7 @@ function App() {
           height: "100vh",
           margin: 0,
           border: "none",
-          backgroundColor: isDay ? "#4A90E2" : "#1A1A2E", // 昼と夜の背景の切り替え
+          backgroundColor: isDay ? "#4A90E2" : "#2A2A4E", // 昼と夜の背景の切り替え、夜を明るく
           overflow: "hidden",
           transition: "background-color 2s ease", // 背景色のスムーズな切り替え
         }}
@@ -189,12 +189,12 @@ function App() {
           camera={{ position: [5, 3, 0], fov: 70 }}
           gl={{ antialias: true }} // よりスムーズなレンダリングのためにアンチエイリアシングを有効化
         >
-          <color attach="background" args={[isDay ? "#4A90E2" : "#1A1A2E"]} />{" "}
+          <color attach="background" args={[isDay ? "#4A90E2" : "#2A2A4E"]} />{" "}
           {/* 3Dシーンの背景色の切り替え */}
           {/* 昼と夜のための霧の調整 */}
           <fog
             attach="fog"
-            args={[isDay ? "#4A90E2" : "#1A1A2E", 10, isDay ? 60 : 40]}
+            args={[isDay ? "#4A90E2" : "#2A2A4E", 10, isDay ? 60 : 40]}
           />
           <ambientLight ref={ambientLightRef} intensity={0.5} color="#87CEEB" />{" "}
           {/* 昼と夜のための環境光の調整 */}
@@ -413,10 +413,10 @@ const LightingController: React.FC<{
       spotLightRef.current
     ) {
       // 照明の変更のためのスムーズな切り替え
-      const targetIntensity = isDay ? 5.0 : 0.2;
-      const targetAmbientIntensity = isDay ? 0.5 : 0.1;
-      const targetPointIntensity = isDay ? 0.5 : 0.2;
-      const targetSpotIntensity = isDay ? 1.0 : 0.3;
+      const targetIntensity = isDay ? 5.0 : 1.0;
+      const targetAmbientIntensity = isDay ? 0.5 : 0.3;
+      const targetPointIntensity = isDay ? 0.5 : 0.4;
+      const targetSpotIntensity = isDay ? 1.0 : 0.6;
       const targetColor = isDay ? "#FFD700" : "#CCCCCC";
       const targetAmbientColor = isDay ? "#87CEEB" : "#333333";
 
