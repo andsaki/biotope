@@ -8,9 +8,7 @@ const WaterPlants: React.FC = () => {
   const baseUrl = isLocal
     ? "/assets/Water Plants/"
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
-  const modelUrl = isLocal
-    ? `${baseUrl}scene.gltf` // ローカル環境での実際のファイル名
-    : `${baseUrl}water-plants-scene.gltf`; // Cloudflare Worker経由でR2資産を読み込む
+  const modelUrl = `${baseUrl}scene.gltf`;
   const { scene: plantScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
