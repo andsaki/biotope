@@ -12,7 +12,6 @@ import WaterPlants from "./components/WaterPlants";
 import WaterPlantsLarge from "./components/WaterPlantsLarge";
 import PottedPlant from "./components/PottedPlant";
 import Rocks from "./components/Rocks";
-import KnobbedWhelk from "./components/KnobbedWhelk";
 import BubbleEffect from "./components/BubbleEffect";
 import UI from "./components/UI";
 import "./App.css";
@@ -282,8 +281,7 @@ function App() {
           <PottedPlant />{" "}
           {/* 影を投げ、受けるための鉢植え植物 - コンポーネント内で処理 */}
           <Rocks /> {/* 影を投げ、受けるための岩 - コンポーネント内で処理 */}
-          <KnobbedWhelk />{" "}
-          {/* 影を投げ、受けるためのノブドウェルク - コンポーネント内で処理 */}
+          {/* ノブドウェルクは一時的に無効化されています */}
           <BubbleEffect />
           {/* 動きのあるカスタム水面 - バウンディングボックスの上面に配置 */}
           <WaterSurface />

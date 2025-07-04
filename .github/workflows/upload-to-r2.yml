@@ -38,9 +38,7 @@ jobs:
           wrangler r2 object put ${BUCKET_NAME}/weflciqaa_tier_0.bin -f "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin" --remote
           wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-scene.gltf -f "public/assets/Potted Plant 1/scene.gltf" --remote
           wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-scene.bin -f "public/assets/Potted Plant 1/scene.bin" --remote
-          wrangler r2 object put ${BUCKET_NAME}/knobbed-whelk-scene.gltf -f "public/assets/Knobbed Whelk GLTF/scene.gltf" --remote
-          wrangler r2 object put ${BUCKET_NAME}/knobbed-whelk-scene.bin -f "public/assets/Knobbed Whelk GLTF/scene.bin" --remote
-          wrangler r2 object put ${BUCKET_NAME}/knobbed-whelk-material_0_baseColor.jpeg -f "public/assets/Knobbed Whelk GLTF/textures/material_0_baseColor.jpeg" --remote
+          # Knobbed Whelk関連のアセットアップロードは削除されました
           wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-01_-_Default_0_baseColor.png -f "public/assets/Potted Plant 1/textures/01_-_Default_0_baseColor.png" --remote
           wrangler r2 object put ${BUCKET_NAME}/potted-plant-1-01_-_Default_baseColor.png -f "public/assets/Potted Plant 1/textures/01_-_Default_baseColor.png" --remote
           wrangler r2 object put ${BUCKET_NAME}/smoked-fish-raw-T_weflciqaa_8K_B.png -f "public/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" --remote
