@@ -5,10 +5,9 @@ import * as THREE from "three";
 const WaterPlants: React.FC = () => {
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
-  const baseUrl = isLocal
-    ? "/assets/Potted Plant 1/"
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
-  const modelUrl = `${baseUrl}scene.gltf` 
+  const modelUrl = isLocal
+    ? "/assets/Potted Plant 1/scene.gltf"
+    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Potted Plant 1/scene.gltf";
   const { scene: plantScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
