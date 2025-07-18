@@ -1,0 +1,71 @@
+/* Common styles */
+.ui-container {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  gap: 10px;
+}
+
+.time-of-day {
+  color: #000; /* 純粋な黒に設定 */
+  font-weight: bold;
+  font-size: 1.1em; /* フォントサイズを少し大きく */
+}
+.season-selector h3 {
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.season-selector .buttons {
+  display: flex;
+}
+
+/* PC Styles */
+@media (min-width: 769px) {
+  .ui-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    flex-direction: column;
+  }
+
+  .season-selector {
+    margin-bottom: 50px;
+  }
+
+  .season-selector .buttons {
+    gap: 24px;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .ui-container {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .season-selector {
+    margin-bottom: 30px;
+  }
+
+  .season-selector .buttons {
+    flex-direction: row; /* Keep buttons in a row on mobile */
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    justify-content: center;
+  }
+
+  .season-selector .buttons {
+    gap: 0;
+  }
+}

@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import Clock from "react-clock";
-import "react-clock/dist/Clock.css";
+
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
@@ -13,6 +12,7 @@ import WaterPlantsLarge from "./components/WaterPlantsLarge";
 import PottedPlant from "./components/PottedPlant";
 import Rocks from "./components/Rocks";
 import BubbleEffect from "./components/BubbleEffect";
+
 import UI from "./components/UI";
 import "./App.css";
 import { useSeason } from "./contexts/SeasonContext";
@@ -117,67 +117,9 @@ function App() {
           </div>
         )}
         <h1 style={{ textAlign: "center", paddingTop: "20px", color: "white" }}>
-          ビオトープ
+          Biotope
         </h1>
-        <div
-          style={{
-            position: "absolute",
-            top: "150px", // 前の位置より少し下に移動
-            right: "20px",
-            width: "220px",
-            height: "220px",
-            zIndex: 10,
-            backgroundColor: "rgba(0, 0, 0, 0.75)", // コントラストを良くするための暗い背景
-            borderRadius: "50%",
-            border: "6px solid white",
-            boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)", // 奥行きのための強い影
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Clock
-            value={
-              new Date(
-                0,
-                0,
-                0,
-                Math.floor(simulatedTime.minutes / 60) % 24,
-                simulatedTime.minutes % 60,
-                simulatedTime.seconds
-              )
-            }
-            size={200} // 視認性を向上させるためにサイズを増加
-            renderNumbers={true}
-            renderSecondHand={false} // 秒針を無効化
-            hourHandLength={60} // 長い時針
-            hourHandWidth={5} // 太い時針
-            minuteHandLength={80} // 長い分針
-            minuteHandWidth={4} // 太い分針
-            secondHandLength={90} // 秒針の長さ
-            secondHandWidth={2} // 秒針の幅
-            hourMarksLength={12} // 長い時の目盛り
-            hourMarksWidth={4} // 太い時の目盛り
-            minuteMarksLength={6} // 長い分の目盛り
-            minuteMarksWidth={2} // 太い分の目盛り
-            className="custom-clock"
-          />
-          {/* Day/Night indicator */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "-50px", // 時計の文字盤よりさらに下に配置
-              width: "100%",
-              textAlign: "center",
-              color: "white",
-              fontSize: "18px", // すっきりした見た目のために少し小さいフォント
-              fontWeight: "bold",
-              textShadow: "1px 1px 3px black", // 視認性のための微妙な影
-            }}
-          >
-            {isDay ? "Day" : "Night"}
-          </div>
-        </div>
+
         <Canvas
           style={{
             position: "absolute",
@@ -331,7 +273,7 @@ function App() {
             Z
           </Text>
         </Canvas>
-        <UI />
+        <UI simulatedTime={simulatedTime} isDay={isDay} />
       </div>
     </SeasonProvider>
   );

@@ -1,8 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useSeason } from "../contexts/SeasonContext";
+import SimulationClock from "./SimulationClock";
+import "./UI.css";
 
-const UI: React.FC = () => {
+interface UIProps {
+  simulatedTime: {
+    minutes: number;
+    seconds: number;
+  };
+  isDay: boolean;
+}
+
+const UI: React.FC<UIProps> = ({ simulatedTime, isDay }) => {
   const { season, setSeason } = useSeason();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSeasonChange = (
     newSeason: "spring" | "summer" | "autumn" | "winter"
@@ -11,73 +31,70 @@ const UI: React.FC = () => {
   };
 
   return (
-    <div
-      className="ui-container"
-      style={{
-        position: "absolute",
-        top: 20,
-        right: 20,
-        background: "rgba(255, 255, 255, 0.8)",
-        padding: 10,
-        borderRadius: 5,
-        boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-      }}
-    >
-      <h3 style={{ margin: 0, marginBottom: 10 }}>季節を選択</h3>
-      <div style={{ display: "flex", gap: 10 }}>
-        <button
-          onClick={() => handleSeasonChange("spring")}
-          style={{
-            backgroundColor: season === "spring" ? "#6CA080" : "#ccc",
-            color: "white",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: 3,
-            cursor: "pointer",
-          }}
-        >
-          春
-        </button>
-        <button
-          onClick={() => handleSeasonChange("summer")}
-          style={{
-            backgroundColor: season === "summer" ? "#4C8C6A" : "#ccc",
-            color: "white",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: 3,
-            cursor: "pointer",
-          }}
-        >
-          夏
-        </button>
-        <button
-          onClick={() => handleSeasonChange("autumn")}
-          style={{
-            backgroundColor: season === "autumn" ? "#5C7A6A" : "#ccc",
-            color: "white",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: 3,
-            cursor: "pointer",
-          }}
-        >
-          秋
-        </button>
-        <button
-          onClick={() => handleSeasonChange("winter")}
-          style={{
-            backgroundColor: season === "winter" ? "#4A6A7A" : "#ccc",
-            color: "white",
-            border: "none",
-            padding: "8px 12px",
-            borderRadius: 3,
-            cursor: "pointer",
-          }}
-        >
-          冬
-        </button>
+    <div className="ui-container">
+      {isMobile && <SimulationClock simulatedTime={simulatedTime} isDay={isDay} />}
+      <div className="season-selector">
+        <h3 style={{ margin: 0, marginBottom: 10 }}>季節を選択</h3>
+        <div className="buttons">
+          <button
+            onClick={() => handleSeasonChange("spring")}
+            style={{
+              backgroundColor: season === "spring" ? "#6CA080" : "#ccc",
+              color: "white",
+              border: "none",
+              padding: "12px 18px",
+              borderRadius: 3,
+              cursor: "pointer",
+              fontSize: "1.1em",
+            }}
+          >
+            春
+          </button>
+          <button
+            onClick={() => handleSeasonChange("summer")}
+            style={{
+              backgroundColor: season === "summer" ? "#4C8C6A" : "#ccc",
+              color: "white",
+              border: "none",
+              padding: "12px 18px",
+              borderRadius: 3,
+              cursor: "pointer",
+              fontSize: "1.1em",
+            }}
+          >
+            夏
+          </button>
+          <button
+            onClick={() => handleSeasonChange("autumn")}
+            style={{
+              backgroundColor: season === "autumn" ? "#5C7A6A" : "#ccc",
+              color: "white",
+              border: "none",
+              padding: "12px 18px",
+              borderRadius: 3,
+              cursor: "pointer",
+              fontSize: "1.1em",
+            }}
+          >
+            秋
+          </button>
+          <button
+            onClick={() => handleSeasonChange("winter")}
+            style={{
+              backgroundColor: season === "winter" ? "#4A6A7A" : "#ccc",
+              color: "white",
+              border: "none",
+              padding: "12px 18px",
+              borderRadius: 3,
+              cursor: "pointer",
+              fontSize: "1.1em",
+            }}
+          >
+            冬
+          </button>
+        </div>
       </div>
+      {!isMobile && <SimulationClock simulatedTime={simulatedTime} isDay={isDay} />}
     </div>
   );
 };

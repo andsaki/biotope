@@ -1,0 +1,63 @@
+/* Base styles for the clock container */
+.simulation-clock-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition: width 0.3s ease, height 0.3s ease; /* Removed position transitions */
+}
+
+.day-night-indicator {
+  position: absolute;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.6); /* 半透明の黒背景 */
+  padding: 5px 15px; /* テキスト周りの余白 */
+  border-radius: 20px; /* 角丸 */
+  width: fit-content; /* 内容に合わせた幅 */
+  left: 50%; /* 水平中央寄せ */
+  transform: translateX(-50%); /* 水平中央寄せ */
+}
+
+/* PC Styles */
+@media (min-width: 769px) {
+  .simulation-clock-wrapper {
+    /* Positioned by App.tsx or parent */
+    width: 220px;
+    height: 220px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 50%;
+    border: 6px solid white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+  }
+  .day-night-indicator {
+    bottom: 250px; /* 白い枠の内側、下部に配置 */
+    color: #e0f2f7; /* 薄い水色に変更 */
+    font-size: 18px;
+    text-shadow: 2px 2px 4px black; /* 影を強調 */
+  }
+}
+
+/* SP Styles */
+@media (max-width: 768px) {
+  .simulation-clock-wrapper {
+    /* Positioned by UI.css */
+    width: 120px; /* Smaller */
+    height: 120px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+  .day-night-indicator {
+    bottom: 5px; /* 白い枠の内側、下部に配置 */
+    font-size: 14px;
+    font-weight: 700;
+    color: #e0f2f7; /* 薄い水色に変更 */
+    text-shadow: 2px 2px 4px black; /* 影を強調 */
+  }
+  .react-clock__mark__number {
+    font-size: 0.7em !important; /* Adjust as needed */
+  }
+}
