@@ -106,10 +106,9 @@ const FishManager: React.FC = () => {
 
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
-  const baseUrl = isLocal
-    ? "/assets/Smoked Fish Raw/"
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/";
-  const modelUrl = `${baseUrl}weflciqaa_tier_0.gltf`; // Cloudflare Worker経由でR2資産を読み込む
+  const modelUrl = isLocal
+    ? "/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf"
+    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
   const { scene } = modelUrl
     ? useGLTF(modelUrl, true)
     : { scene: new THREE.Group() };
