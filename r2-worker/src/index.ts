@@ -2,7 +2,7 @@
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const objectName = url.pathname.slice(1);
+    const objectName = decodeURIComponent(url.pathname.slice(1));
 
     if (objectName === "") {
       return new Response(
