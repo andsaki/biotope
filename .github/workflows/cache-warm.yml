@@ -1,0 +1,14 @@
+name: Cache Warm
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 毎日15:00 JSTに実行
+  workflow_dispatch:
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit key pages
+        run: |
+          curl -s https://biotope.pages.dev/
