@@ -30,6 +30,7 @@
     border-radius: 50%;
     border: 6px solid white;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    margin: auto;
   }
   .day-night-indicator {
     bottom: 250px; /* 白い枠の内側、下部に配置 */
