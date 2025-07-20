@@ -7,7 +7,7 @@ import * as THREE from "three";
 import FishManager from "./components/FishManager";
 import ParticleLayer from "./components/ParticleLayer";
 import Ground from "./components/Ground";
-import WaterPlants from "./components/WaterPlants";
+
 import WaterPlantsLarge from "./components/WaterPlantsLarge";
 import PottedPlant from "./components/PottedPlant";
 import Rocks from "./components/Rocks";
@@ -216,7 +216,7 @@ function App() {
           {/* 影を受けるための地面コンポーネント - コンポーネント内で処理 */}
           <FishManager />{" "}
           {/* 影を投げ、受けるための魚 - コンポーネント内で処理 */}
-          <WaterPlants />{" "}
+          <WaterPlantsLarge />{" "}
           {/* 影を投げ、受けるための植物 - コンポーネント内で処理 */}
           <WaterPlantsLarge />{" "}
           {/* 影を投げ、受けるための大きな植物 - コンポーネント内で処理 */}
