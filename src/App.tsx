@@ -504,7 +504,7 @@ const FallenLeaves: React.FC = () => {
         <meshStandardMaterial
           color="#8B4513" // テクスチャの読み込みに失敗した場合のフォールバックカラー
           map={new THREE.TextureLoader().load(
-            "/assets/AI Dried Bay Leaves.png",
+            "../assets/AI Dried Bay Leaves.png",
             undefined,
             undefined,
             (err) => {
