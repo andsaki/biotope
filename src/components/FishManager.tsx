@@ -3,6 +3,7 @@ import { useSeason } from "../contexts/SeasonContext";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
+import fishModel from '../assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url';
 
 interface Fish {
   id: number;
@@ -107,7 +108,7 @@ const FishManager: React.FC = () => {
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
   const modelUrl = isLocal
-    ? "/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf"
+    ? fishModel
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
   const { scene } = modelUrl
     ? useGLTF(modelUrl, true)

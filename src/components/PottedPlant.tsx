@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import plantModel from '../assets/Potted Plant/scene.gltf?url';
 
 const PottedPlant: React.FC = () => {
   const plant1Ref = useRef<THREE.Group>(null!);
@@ -29,7 +30,7 @@ const PottedPlant: React.FC = () => {
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
   const modelUrl = isLocal
-    ? "/assets/Potted Plant/scene.gltf"
+    ? plantModel
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Potted Plant/scene.gltf";
   const { scene: plantScene1 } = modelUrl
     ? useGLTF(modelUrl, true)
