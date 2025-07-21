@@ -5,12 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   build: {
-    copyPublicDir: false,
-    rollupOptions: {
-      external: [
-        "public/assets/Smoked Fish Raw/weflciqaa_tier_0.bin",
-        "public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf",
-      ],
-    },
+    
+    
   },
 });
