@@ -6,6 +6,7 @@ import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
 import FishManager from "./components/FishManager";
 import ParticleLayer from "./components/ParticleLayer";
+import Clouds from "./components/Clouds";
 import Ground from "./components/Ground";
 
 const WaterPlantsLarge = React.lazy(
@@ -18,6 +19,8 @@ const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 import UI from "./components/UI";
 import "./App.css";
 import { useSeason } from "./contexts/SeasonContext";
+
+const SIMULATED_SECONDS_PER_REAL_SECOND = 48; // 1実秒あたりに進むシミュレーション秒数
 
 function App() {
   const [isDay, setIsDay] = useState(true);
@@ -37,7 +40,7 @@ function App() {
     // Enable time progression for a 24-hour day to pass in 30 minutes of real time
     const interval = setInterval(() => {
       setSimulatedTime((prev) => {
-        const totalSeconds = (prev.minutes * 60 + prev.seconds + 48) % 86400; // Increment by 48 seconds every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
+        const totalSeconds = (prev.minutes * 60 + prev.seconds + SIMULATED_SECONDS_PER_REAL_SECOND) % 86400; // Increment by SIMULATED_SECONDS_PER_REAL_SECOND every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
         const newMinutes = Math.floor(totalSeconds / 60);
         const newSeconds = totalSeconds % 60;
         setIsDay(newMinutes % 1440 < 360 || newMinutes % 1440 >= 1080); // Day from 6 AM (360 minutes) to 6 PM (1080 minutes)
@@ -249,6 +252,7 @@ function App() {
             <FallenLeaves />{" "}
             {/* 秋の間に水面に浮かぶ落ち葉コンポーネントを追加 */}
             <ParticleLayer />
+            <Clouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} /> {/* 雲のコンポーネントに時間のスケールを渡す */}
             {/* 魚の動きを制限するためのバウンディングボックス - 垂直方向に拡大（Y軸）、水平方向に縮小（X軸）、底面はY=0より上、上面はさらに下げた */}
             <mesh position={[0, 4, 0.5]} scale={[12, 8, 5]}>
               <boxGeometry args={[1, 1, 1]} />
