@@ -1,11 +1,24 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    visualizer({
+      open: true, // Automatically open the report in the browser
+      filename: "dist/stats.html", // Output file
+    }),
+  ],
   build: {
-    
-    
+    rollupOptions: {
+      external: ["three"],
+      output: {
+        globals: {
+          three: "THREE",
+        },
+      },
+    },
   },
 });
