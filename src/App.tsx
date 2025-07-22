@@ -39,9 +39,9 @@ function App() {
   const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
-    // Set the time to 5:00 AM, which is 5 * 60 = 300 minutes
-    setSimulatedTime({ minutes: 300, seconds: 0 });
-    setIsDay(false); // 5 AM is before 6 AM, so it's night
+    // Set the time to 5:00 PM, which is 17 * 60 = 1020 minutes
+    setSimulatedTime({ minutes: 1020, seconds: 0 });
+    setIsDay(true); // 5 PM is day
     // Enable time progression for a 24-hour day to pass in 30 minutes of real time
     const interval = setInterval(() => {
       setSimulatedTime((prev) => {
