@@ -36,18 +36,19 @@ function App() {
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
   const spotLightRef = useRef<THREE.SpotLight>(null!);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
-    // Set the time to 8:00 AM, which is 8 * 60 = 480 minutes
-    setSimulatedTime({ minutes: 480, seconds: 0 });
-    setIsDay(true); // 8 AM is day
+    // Set the time to 5:00 AM, which is 5 * 60 = 300 minutes
+    setSimulatedTime({ minutes: 300, seconds: 0 });
+    setIsDay(false); // 5 AM is before 6 AM, so it's night
     // Enable time progression for a 24-hour day to pass in 30 minutes of real time
     const interval = setInterval(() => {
       setSimulatedTime((prev) => {
         const totalSeconds = (prev.minutes * 60 + prev.seconds + SIMULATED_SECONDS_PER_REAL_SECOND) % 86400; // Increment by SIMULATED_SECONDS_PER_REAL_SECOND every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
         const newMinutes = Math.floor(totalSeconds / 60);
         const newSeconds = totalSeconds % 60;
-        setIsDay(newMinutes >= 360 && newMinutes < 1080); // Day from 6 AM (360 minutes) to 6 PM (1080 minutes)
+        setIsDay(newMinutes >= 300 && newMinutes < 1080); // Day from 5 AM (300 minutes) to 6 PM (1080 minutes)
         return { minutes: newMinutes, seconds: newSeconds };
       });
     }, 1000); // Update every second
@@ -65,17 +66,59 @@ function App() {
     return () => clearInterval(windInterval);
   }, []);
 
-  // useFrameはCanvasの外では使用できません、Canvas内のコンポーネントに移動しました
-
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    // 読み込みの遅延をシミュレートするか、アセットの読み込みを待つ
     const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // 読み込み画面のための2秒の遅延
+      setShowLoader(false);
+    }, 3000); // ローディングアニメーションの長さに合わせて3秒間表示
     return () => clearTimeout(timer);
   }, []);
+
+  const Loader = () => (
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "#1A1A2E", // 初期ローディングのための暗い背景
+        animation: "brightenBackground 9s forwards", // 背景色を明るくするアニメーション
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        color: "white",
+        fontSize: "24px",
+        fontWeight: "bold",
+        zIndex: 100,
+      }}
+    >
+      <div
+        style={{
+          width: "50px",
+          height: "50px",
+          border: "5px solid white",
+          borderTop: "5px solid transparent",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+          marginBottom: "20px",
+        }}
+      />
+      <h1>Loading Biotope...</h1>
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes brightenBackground {
+            0% { background-color: #1A1A2E; }
+            100% { background-color: #4A90E2; }
+          }
+        `}
+      </style>
+    </div>
+  );
 
   return (
     <SeasonProvider>
@@ -92,54 +135,7 @@ function App() {
           transition: "background-color 2s ease", // 背景色のスムーズな切り替え
         }}
       >
-        {isLoading && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: "#1A1A2E", // 初期読み込みのための暗い背景
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "white",
-              fontSize: "24px",
-              fontWeight: "bold",
-              zIndex: 100,
-              flexDirection: "column",
-              opacity: 1,
-              transition: "opacity 1s ease-out", // フェードアウト効果
-            }}
-            onAnimationEnd={() => setIsLoading(false)}
-          >
-            <h1>Loading Biotope...</h1>
-            <div
-              style={{
-                width: "50px",
-                height: "50px",
-                border: "5px solid white",
-                borderTop: "5px solid transparent",
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-                marginTop: "20px",
-              }}
-            />
-            <style>
-              {`
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}
-            </style>
-          </div>
-        )}
-        <h1 style={{ textAlign: "center", paddingTop: "20px", color: "white" }}>
-          Biotope
-        </h1>
-
+        {showLoader && <Loader />}
         <Canvas
           style={{
             position: "absolute",
@@ -165,14 +161,14 @@ function App() {
               ref={ambientLightRef}
               intensity={0.5}
               color="#87CEEB"
-            />{" "}
+            />
             {/* 昼と夜のための環境光の調整 */}
             <pointLight
               ref={pointLightRef}
               position={[10, 10, 10]}
               intensity={0.5}
               color="#FFFFFF"
-            />{" "}
+            />
             {/* 昼と夜のためのポイントライトの調整 */}
             <directionalLight
               ref={directionalLightRef}
@@ -197,7 +193,7 @@ function App() {
               shadow-camera-right={20}
               shadow-camera-top={20}
               shadow-camera-bottom={-20}
-            />{" "}
+            />
             {/* 太陽光または月光をシミュレートするために調整された指向性ライト */}
             {/* 小さな球体として太陽の可視表現 */}
             <mesh
@@ -228,7 +224,7 @@ function App() {
               intensity={1.0} // 太陽光とのバランスを取るために強度を減少
               color="#FFFFFF"
               castShadow={true}
-            />{" "}
+            />
             {/* 昼と夜のためのスポットライトの調整 */}
             <LightingController
               isDay={isDay}
@@ -247,15 +243,15 @@ function App() {
               enableDamping={true}
             />
             {/* <Pond /> ユーザーのリクエストによりコメントアウト */}
-            <Ground />{" "}
+            <Ground />
             {/* 影を受けるための地面コンポーネント - コンポーネント内で処理 */}
-            <FishManager />{" "}
+            <FishManager />
             {/* 影を投げ、受けるための魚 - コンポーネント内で処理 */}
-            <WaterPlantsLarge />{" "}
+            <WaterPlantsLarge />
             {/* 影を投げ、受けるための植物 - コンポーネント内で処理 */}
-            <WaterPlantsLarge />{" "}
+            <WaterPlantsLarge />
             {/* 影を投げ、受けるための大きな植物 - コンポーネント内で処理 */}
-            <PottedPlant />{" "}
+            <PottedPlant />
             {/* 影を投げ、受けるための鉢植え植物 - コンポーネント内で処理 */}
             <Rocks /> {/* 影を投げ、受けるための岩 - コンポーネント内で処理 */}
             {/* ノブドウェルクは一時的に無効化されています */}
@@ -266,7 +262,7 @@ function App() {
             <SundialGnomon />
             {/* 水面上の日時計のための時間目付き円形ベース、波と一緒に動くようにアニメーション */}
             <SundialBase />
-            <FallenLeaves />{" "}
+            <FallenLeaves />
             {/* 秋の間に水面に浮かぶ落ち葉コンポーネントを追加 */}
             <ParticleLayer />
             <Clouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} /> {/* 雲のコンポーネントに時間のスケールを渡す */}
