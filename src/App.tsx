@@ -9,6 +9,8 @@ import ParticleLayer from "./components/ParticleLayer";
 import Clouds from "./components/Clouds";
 import WindDirectionDisplay from "./components/WindDirectionDisplay";
 import Ground from "./components/Ground";
+import Stars from "./components/Stars";
+import ReflectedStars from "./components/ReflectedStars";
 
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
@@ -36,16 +38,16 @@ function App() {
   const spotLightRef = useRef<THREE.SpotLight>(null!);
 
   useEffect(() => {
-    // Set the time to morning, around 5:00 AM, which is 5 * 60 = 300 minutes
-    setSimulatedTime({ minutes: 300, seconds: 0 });
-    setIsDay(false); // 5 AM is before 6 AM, so it's night
+    // Set the time to 8:00 AM, which is 8 * 60 = 480 minutes
+    setSimulatedTime({ minutes: 480, seconds: 0 });
+    setIsDay(true); // 8 AM is day
     // Enable time progression for a 24-hour day to pass in 30 minutes of real time
     const interval = setInterval(() => {
       setSimulatedTime((prev) => {
         const totalSeconds = (prev.minutes * 60 + prev.seconds + SIMULATED_SECONDS_PER_REAL_SECOND) % 86400; // Increment by SIMULATED_SECONDS_PER_REAL_SECOND every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
         const newMinutes = Math.floor(totalSeconds / 60);
         const newSeconds = totalSeconds % 60;
-        setIsDay(newMinutes % 1440 < 360 || newMinutes % 1440 >= 1080); // Day from 6 AM (360 minutes) to 6 PM (1080 minutes)
+        setIsDay(newMinutes >= 360 && newMinutes < 1080); // Day from 6 AM (360 minutes) to 6 PM (1080 minutes)
         return { minutes: newMinutes, seconds: newSeconds };
       });
     }, 1000); // Update every second
@@ -150,7 +152,9 @@ function App() {
           gl={{ antialias: true }} // よりスムーズなレンダリングのためにアンチエイリアシングを有効化
         >
           <Suspense fallback={null}>
-            <color attach="background" args={[isDay ? "#4A90E2" : "#2A2A4E"]} />{" "}
+            <Stars isNight={!isDay} />
+            <ReflectedStars isNight={!isDay} />
+            <color attach="background" args={[isDay ? "#4A90E2" : "#2A2A4E"]} />
             {/* 3Dシーンの背景色の切り替え */}
             {/* 昼と夜のための霧の調整 */}
             <fog
