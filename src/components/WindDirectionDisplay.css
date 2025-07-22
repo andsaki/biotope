@@ -1,0 +1,56 @@
+.wind-direction-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.wind-direction-display h3 {
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.wind-direction-display p {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.wind-arrow-container {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #333;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.wind-arrow {
+  font-size: 2.5em;
+  line-height: 1;
+  color: #ADD8E6;
+  transition: transform 0.5s ease-in-out;
+}
+
+/* PC Styles */
+@media (min-width: 769px) {
+  .wind-direction-display {
+    position: absolute;
+    top: 20px;
+    right: 150px; /* UIコンテナの右に配置 */
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .wind-direction-display {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+}

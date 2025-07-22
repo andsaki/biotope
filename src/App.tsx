@@ -7,6 +7,7 @@ import * as THREE from "three";
 import FishManager from "./components/FishManager";
 import ParticleLayer from "./components/ParticleLayer";
 import Clouds from "./components/Clouds";
+import WindDirectionDisplay from "./components/WindDirectionDisplay";
 import Ground from "./components/Ground";
 
 const WaterPlantsLarge = React.lazy(
@@ -294,6 +295,7 @@ function App() {
           </Suspense>
         </Canvas>
         <UI simulatedTime={simulatedTime} isDay={isDay} />
+        <WindDirectionDisplay windDirection="East" />
       </div>
     </SeasonProvider>
   );
