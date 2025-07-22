@@ -37,7 +37,40 @@
 
 - `src/components/`：`Pond`、`FishManager`、`Ground`、`ParticleLayer`などの UI コンポーネントが含まれています。
 - `src/contexts/`：季節の変化のための`SeasonContext`など、アプリケーションの状態を管理します。
-- `src/assets/`：アプリケーションで使用される静的資産。
+- `src/assets/`：アプリケーションで使用される静的資産。**Cloudflare R2へのアップロードもこのディレクトリ内のファイルを対象とします。**
+
+## パフォーマンス最適化
+
+本プロジェクトでは、初期ロード時間の短縮とパフォーマンス向上のため、以下の最適化を適用しています。
+
+### コード分割 (Code Splitting)
+
+`React.lazy` と `Suspense` を使用して、一部の重い3Dコンポーネント（例: `WaterPlantsLarge`, `PottedPlant`, `Rocks`, `BubbleEffect`）を遅延読み込みしています。これにより、初期バンドルサイズが削減され、アプリケーションの起動が高速化されます。
+
+```tsx
+// src/App.tsx の例
+const WaterPlantsLarge = React.lazy(() => import("./components/WaterPlantsLarge"));
+// ...
+<Suspense fallback={null}>
+  <WaterPlantsLarge />
+</Suspense>
+```
+
+### バンドル分析
+
+`rollup-plugin-visualizer` を導入し、ビルド後のバンドルサイズの内訳を視覚的に確認できるようにしています。これにより、どのライブラリやモジュールがバンドルサイズを大きくしているかを特定し、最適化の指針とすることができます。
+
+ビルド後に `dist/stats.html` が生成され、ブラウザで自動的に開かれます。
+
+## Cloudflare Pages / R2 へのデプロイ
+
+本プロジェクトは Cloudflare Pages を使用してデプロイされ、静的アセットは Cloudflare R2 にアップロードされます。
+
+### アセットのアップロード
+
+アセット（3Dモデル、テクスチャなど）は `src/assets` ディレクトリに配置されており、GitHub Actions ワークフロー (`.github/workflows/upload-to-r2.yml`) を通じて Cloudflare R2 に自動的にアップロードされます。
+
+`wrangler r2 object put` コマンドは、`src/assets` 内のファイルをR2バケットに同期するように設定されています。
 
 ## ESLint 設定の拡張
 
