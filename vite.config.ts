@@ -13,10 +13,19 @@ export default defineConfig({
   ],
   build: {
     rollupOptions: {
-      external: ["three"],
       output: {
-        globals: {
-          three: "THREE",
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("@react-three/fiber") ||
+              id.includes("@react-three/drei") ||
+              id.includes("three")
+            ) {
+              return "three-vendor";
+            }
+            // All other modules from node_modules will be in a default vendor chunk
+            return "vendor";
+          }
         },
       },
     },
