@@ -29,6 +29,7 @@ function App() {
     minutes: 0,
     seconds: 0,
   });
+  const [windDirection, setWindDirection] = useState<"North" | "East" | "South" | "West">("East"); // 風向きの状態を追加
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
@@ -49,6 +50,17 @@ function App() {
       });
     }, 1000); // Update every second
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const directions: ("North" | "East" | "South" | "West")[] = ["North", "East", "South", "West"];
+    const changeWindDirection = () => {
+      const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+      setWindDirection(randomDirection);
+    };
+
+    const windInterval = setInterval(changeWindDirection, 10000); // 10秒ごとに風向きを変更
+    return () => clearInterval(windInterval);
   }, []);
 
   // useFrameはCanvasの外では使用できません、Canvas内のコンポーネントに移動しました
@@ -295,7 +307,7 @@ function App() {
           </Suspense>
         </Canvas>
         <UI simulatedTime={simulatedTime} isDay={isDay} />
-        <WindDirectionDisplay windDirection="East" />
+        <WindDirectionDisplay windDirection={windDirection} />
       </div>
     </SeasonProvider>
   );
