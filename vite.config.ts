@@ -17,11 +17,13 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             if (
-              id.includes("@react-three/fiber") ||
+              id.includes("three") ||
               id.includes("@react-three/drei") ||
-              id.includes("three")
+              id.includes("@react-three/fiber") ||
+              id.includes("react-dom") ||
+              id.includes("react")
             ) {
-              return "three-vendor";
+              return "react-three-vendor";
             }
             // All other modules from node_modules will be in a default vendor chunk
             return "vendor";
