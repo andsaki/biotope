@@ -65,6 +65,7 @@ const ReflectedStars: React.FC<ReflectedStarsProps> = ({ isNight }) => {
           count={particles.length / 3}
           array={particles}
           itemSize={3}
+          args={[particles, 3]}
         />
       </bufferGeometry>
       <PointMaterial
