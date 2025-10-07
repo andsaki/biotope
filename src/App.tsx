@@ -1,7 +1,7 @@
-import React, { Suspense, useRef, useState, useEffect } from "react";
+import React, { Suspense, useRef } from "react";
 
 import { SeasonProvider } from "./contexts/SeasonContext";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import * as THREE from "three";
 import FishManager from "./components/FishManager";
@@ -11,6 +11,12 @@ import WindDirectionDisplay from "./components/WindDirectionDisplay";
 import Ground from "./components/Ground";
 import Stars from "./components/Stars";
 import ReflectedStars from "./components/ReflectedStars";
+import WaterSurface from "./components/WaterSurface";
+import LightingController from "./components/LightingController";
+import SundialGnomon from "./components/SundialGnomon";
+import SundialBase from "./components/SundialBase";
+import FallenLeaves from "./components/FallenLeaves";
+import Loader from "./components/Loader";
 
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
@@ -21,104 +27,19 @@ const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 
 import UI from "./components/UI";
 import "./App.css";
-import { useSeason } from "./contexts/SeasonContext";
-
-const SIMULATED_SECONDS_PER_REAL_SECOND = 48; // 1実秒あたりに進むシミュレーション秒数
+import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants";
+import { useSimulatedTime } from "./hooks/useSimulatedTime";
+import { useWindDirection } from "./hooks/useWindDirection";
+import { useLoader } from "./hooks/useLoader";
 
 function App() {
-  const [isDay, setIsDay] = useState(true);
-  const [simulatedTime, setSimulatedTime] = useState({
-    minutes: 0,
-    seconds: 0,
-  });
-  const [windDirection, setWindDirection] = useState<"North" | "East" | "South" | "West">("East"); // 風向きの状態を追加
+  const { isDay, simulatedTime } = useSimulatedTime();
+  const windDirection = useWindDirection();
+  const showLoader = useLoader();
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
   const spotLightRef = useRef<THREE.SpotLight>(null!);
-  const [showLoader, setShowLoader] = useState(true);
-
-  useEffect(() => {
-    // Set the time to 5:00 PM, which is 17 * 60 = 1020 minutes
-    setSimulatedTime({ minutes: 1020, seconds: 0 });
-    setIsDay(true); // 5 PM is day
-    // Enable time progression for a 24-hour day to pass in 30 minutes of real time
-    const interval = setInterval(() => {
-      setSimulatedTime((prev) => {
-        const totalSeconds = (prev.minutes * 60 + prev.seconds + SIMULATED_SECONDS_PER_REAL_SECOND) % 86400; // Increment by SIMULATED_SECONDS_PER_REAL_SECOND every real second (1440 minutes / 1800 seconds = 0.8 minutes per second)
-        const newMinutes = Math.floor(totalSeconds / 60);
-        const newSeconds = totalSeconds % 60;
-        setIsDay(newMinutes >= 300 && newMinutes < 1080); // Day from 5 AM (300 minutes) to 6 PM (1080 minutes)
-        return { minutes: newMinutes, seconds: newSeconds };
-      });
-    }, 1000); // Update every second
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const directions: ("North" | "East" | "South" | "West")[] = ["North", "East", "South", "West"];
-    const changeWindDirection = () => {
-      const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-      setWindDirection(randomDirection);
-    };
-
-    const windInterval = setInterval(changeWindDirection, 10000); // 10秒ごとに風向きを変更
-    return () => clearInterval(windInterval);
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoader(false);
-    }, 3000); // ローディングアニメーションの長さに合わせて3秒間表示
-    return () => clearTimeout(timer);
-  }, []);
-
-  const Loader = () => (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "#1A1A2E", // 初期ローディングのための暗い背景
-        animation: "brightenBackground 9s forwards", // 背景色を明るくするアニメーション
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        color: "white",
-        fontSize: "24px",
-        fontWeight: "bold",
-        zIndex: 100,
-      }}
-    >
-      <div
-        style={{
-          width: "50px",
-          height: "50px",
-          border: "5px solid white",
-          borderTop: "5px solid transparent",
-          borderRadius: "50%",
-          animation: "spin 1s linear infinite",
-          marginBottom: "20px",
-        }}
-      />
-      <h1>Loading Biotope...</h1>
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes brightenBackground {
-            0% { background-color: #1A1A2E; }
-            100% { background-color: #4A90E2; }
-          }
-        `}
-      </style>
-    </div>
-  );
 
   return (
     <SeasonProvider>
@@ -249,8 +170,6 @@ function App() {
             {/* 影を投げ、受けるための魚 - コンポーネント内で処理 */}
             <WaterPlantsLarge />
             {/* 影を投げ、受けるための植物 - コンポーネント内で処理 */}
-            <WaterPlantsLarge />
-            {/* 影を投げ、受けるための大きな植物 - コンポーネント内で処理 */}
             <PottedPlant />
             {/* 影を投げ、受けるための鉢植え植物 - コンポーネント内で処理 */}
             <Rocks /> {/* 影を投げ、受けるための岩 - コンポーネント内で処理 */}
@@ -313,246 +232,5 @@ function App() {
   );
 }
 
-const WaterSurface: React.FC = () => {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const geometryRef = useRef<THREE.PlaneGeometry>(null!);
-
-  useFrame((state) => {
-    if (meshRef.current && geometryRef.current) {
-      const time = state.clock.getElapsedTime();
-      // サイン波でy位置を調整して、より顕著な波をシミュレート
-      meshRef.current.position.y = 8 + Math.sin(time * 1.5) * 0.5;
-
-      // 光の反射に影響を与えるためにジオメトリの頂点を変更して、より顕著な波紋効果を作成
-      const positions = geometryRef.current.attributes.position
-        .array as Float32Array;
-      const width = 80; // スケールに一致
-      const height = 80; // スケールに一致
-      const segments = 32; // より滑らかな波紋のための解像度を増加
-      for (let i = 0; i <= segments; i++) {
-        for (let j = 0; j <= segments; j++) {
-          const index = (i * (segments + 1) + j) * 3 + 2; // z座標インデックス
-          const x = (i / segments - 0.5) * width;
-          const y = (j / segments - 0.5) * height;
-          // よりダイナミックな光の反射のために振幅を増加し、波のパターンを変化
-          positions[index] =
-            Math.sin(x * 0.3 + time * 2.5) *
-            Math.cos(y * 0.3 + time * 2.5) *
-            1.2;
-        }
-      }
-      geometryRef.current.attributes.position.needsUpdate = true;
-    }
-  });
-
-  return (
-    <mesh
-      ref={meshRef}
-      position={[0, 8, 0]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      scale={[80, 80, 1]} // さらに広い範囲をカバーするために大幅に拡張
-      receiveShadow={true} // 水面が影を受け取れるようにする
-    >
-      <planeGeometry ref={geometryRef} args={[1, 1, 32, 32]} />{" "}
-      {/* 波紋のための解像度を増加 */}
-      <meshStandardMaterial
-        color="#4A90E2"
-        transparent={true}
-        opacity={0.3} // より明確な反射のために不透明度をさらに減少
-        side={THREE.DoubleSide} // 下から見えるように両面レンダリング
-        metalness={0.9} // より強い鏡のような効果のために金属性を増加
-        roughness={0.1} // よりシャープで明確な反射のために粗さをさらに減少
-        envMapIntensity={1.5} // より良い反射の視認性のために環境マップの強度を増加
-      />
-    </mesh>
-  );
-};
-
-const LightingController: React.FC<{
-  isDay: boolean;
-  directionalLightRef: React.RefObject<THREE.DirectionalLight>;
-  ambientLightRef: React.RefObject<THREE.AmbientLight>;
-  pointLightRef: React.RefObject<THREE.PointLight>;
-  spotLightRef: React.RefObject<THREE.SpotLight>;
-}> = ({
-  isDay,
-  directionalLightRef,
-  ambientLightRef,
-  pointLightRef,
-  spotLightRef,
-}) => {
-  useFrame((_, delta) => {
-    if (
-      directionalLightRef.current &&
-      ambientLightRef.current &&
-      pointLightRef.current &&
-      spotLightRef.current
-    ) {
-      // 照明の変更のためのスムーズな切り替え
-      const targetIntensity = isDay ? 5.0 : 1.0;
-      const targetAmbientIntensity = isDay ? 0.5 : 0.3;
-      const targetPointIntensity = isDay ? 0.5 : 0.4;
-      const targetSpotIntensity = isDay ? 1.0 : 0.6;
-      const targetColor = isDay ? "#FFD700" : "#CCCCCC";
-      const targetAmbientColor = isDay ? "#87CEEB" : "#333333";
-
-      directionalLightRef.current.intensity +=
-        (targetIntensity - directionalLightRef.current.intensity) * delta * 2;
-      directionalLightRef.current.color.set(targetColor);
-      ambientLightRef.current.intensity +=
-        (targetAmbientIntensity - ambientLightRef.current.intensity) *
-        delta *
-        2;
-      ambientLightRef.current.color.set(targetAmbientColor);
-      pointLightRef.current.intensity +=
-        (targetPointIntensity - pointLightRef.current.intensity) * delta * 2;
-      spotLightRef.current.intensity +=
-        (targetSpotIntensity - spotLightRef.current.intensity) * delta * 2;
-    }
-  });
-
-  return null; // このコンポーネントは目に見えるものをレンダリングしません
-};
-
-// 水波と一緒に動く日時計ノモンコンポーネント
-const SundialGnomon: React.FC = () => {
-  const meshRef = useRef<THREE.Mesh>(null!);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const time = state.clock.getElapsedTime();
-      // 水面と同じ波パターンで移動
-      meshRef.current.position.y = 8.2 + Math.sin(time * 1.5) * 0.5;
-    }
-  });
-
-  return (
-    <mesh
-      ref={meshRef}
-      position={[0, 8.2, 0]}
-      rotation={[0, 0, 0]}
-      scale={[0.5, 2, 0.5]}
-      castShadow={true}
-    >
-      <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
-      <meshStandardMaterial color="#8B4513" />{" "}
-      {/* 木のような外観のための茶色がかった色 */}
-    </mesh>
-  );
-};
-
-// 水波と一緒に動く時間目と数字付き日時計ベースコンポーネント
-const SundialBase: React.FC = () => {
-  const groupRef = useRef<THREE.Group>(null!);
-  const hourTextRefs = useRef<THREE.Mesh[]>([]);
-
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    if (groupRef.current) {
-      // 水面と同じ波パターンでベースを移動
-      groupRef.current.position.y = 8.1 + Math.sin(time * 1.5) * 0.5;
-    }
-    // 水波と同期する時間数字のための強化された波紋効果
-    hourTextRefs.current.forEach((ref, i) => {
-      if (ref) {
-        const angle = i * (Math.PI / 6); // 1時間ごとに30度
-        const x = 5 * Math.cos(angle);
-        const z = 5 * Math.sin(angle);
-        const rippleHeight =
-          Math.sin(x * 0.2 + time * 1.5) * Math.cos(z * 0.2 + time * 1.5) * 0.4; // 振幅を増加し、水波の速度と同期
-        ref.position.y = 0.1 + rippleHeight;
-      }
-    });
-  });
-
-  return (
-    <group ref={groupRef} position={[0, 8.1, 0]}>
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={[10, 10, 0.1]}
-        receiveShadow={true}
-      >
-        <circleGeometry args={[1, 32]} />
-        <meshStandardMaterial
-          color="#4682B4"
-          opacity={0.4} // ベース上で影をより見えるようにするために不透明度を減少
-          transparent={true}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {[...Array(12)].map((_, i) => {
-        const hour = i === 0 ? 12 : i;
-        const angle = i * (Math.PI / 6); // 1時間ごとに30度
-        return (
-          <Text
-            key={i}
-            ref={(el) => (hourTextRefs.current[i] = el!)}
-            position={[4.5 * Math.cos(angle), 0.1, 4.5 * Math.sin(angle)]}
-            rotation={[-Math.PI / 2, 0, angle + Math.PI / 2]} // 太陽の位置に向かって数字が向き合うようにする
-            fontSize={0.3}
-            color="white"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {hour}
-          </Text>
-        );
-      })}
-    </group>
-  );
-};
-
-const FallenLeaves: React.FC = () => {
-  const { season } = useSeason();
-  const leavesRefs = useRef<THREE.Mesh[]>([]);
-
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    leavesRefs.current.forEach((ref, i) => {
-      if (ref) {
-        // 計算負荷を減らすための簡略化された動き
-        ref.position.y = 8.05 + Math.sin(time * 0.5 + i) * 0.05;
-        // 計算を減らすための最小限の回転
-        ref.rotation.y += 0.01;
-      }
-    });
-  });
-
-  if (season !== "autumn") {
-    return null; // 秋の間だけ葉をレンダリング
-  }
-
-  // パフォーマンスへの影響を排除するためにテクスチャなしで最小限の葉を作成
-  const leaves = Array.from({ length: 2 }, (_, i) => {
-    const x = (Math.random() - 0.5) * 10; // 位置のための最小限の範囲
-    const z = (Math.random() - 0.5) * 10;
-    return (
-      <mesh
-        key={i}
-        ref={(el) => (leavesRefs.current[i] = el!)}
-        position={[x, 8.05, z]} // 水面の少し上
-        rotation={[-Math.PI / 2, 0, Math.random() * Math.PI * 2]} // ランダムな初期回転
-        scale={[0.2, 0.2, 0.2]} // 葉のための小さなスケール
-      >
-        <planeGeometry args={[1, 1]} />
-        <meshStandardMaterial
-          color="#8B4513" // テクスチャの読み込みに失敗した場合のフォールバックカラー
-          map={new THREE.TextureLoader().load(
-            "../assets/AI Dried Bay Leaves.png",
-            undefined,
-            undefined,
-            (err) => {
-              console.error("Failed to load leaf texture", err);
-            }
-          )}
-          transparent={true}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-    );
-  });
-
-  return <group>{leaves}</group>;
-};
 
 export default App;
