@@ -1,6 +1,25 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useSeason } from "../contexts/SeasonContext";
 
 const WaterPlantsLarge: React.FC = () => {
+  const { season } = useSeason();
+
+  // 季節ごとの水草の色
+  const plantColor = useMemo(() => {
+    switch (season) {
+      case "spring":
+        return "#4CAF50"; // 明るい新緑
+      case "summer":
+        return "#2E7D32"; // 濃い緑
+      case "autumn":
+        return "#558B2F"; // 黄緑がかった緑
+      case "winter":
+        return "#1B5E20"; // 暗い緑
+      default:
+        return "#1B5E20";
+    }
+  }, [season]);
+
   return (
     <group>
       {/* 水草1 - 地面に配置する */}
@@ -10,10 +29,7 @@ const WaterPlantsLarge: React.FC = () => {
         scale={[0.3, 2.0, 0.3]}
       >
         <cylinderGeometry args={[0.1, 0.3, 1, 8]} />
-        <meshStandardMaterial
-          color="#1B5E20" // 区別のために濃い緑
-        />{" "}
-        {/* シンプルなジオメトリへのフォールバックにする */}
+        <meshStandardMaterial color={plantColor} />
       </mesh>
       {/* 水草2 - 地面に配置する */}
       <mesh
@@ -22,9 +38,7 @@ const WaterPlantsLarge: React.FC = () => {
         scale={[0.25, 1.8, 0.25]}
       >
         <cylinderGeometry args={[0.1, 0.3, 1, 8]} />
-        <meshStandardMaterial
-          color="#1B5E20" // 区別のために濃い緑
-        />
+        <meshStandardMaterial color={plantColor} />
       </mesh>
       {/* 水草3 - 地面に配置する */}
       <mesh
@@ -33,9 +47,7 @@ const WaterPlantsLarge: React.FC = () => {
         scale={[0.35, 2.2, 0.35]}
       >
         <cylinderGeometry args={[0.1, 0.3, 1, 8]} />
-        <meshStandardMaterial
-          color="#1B5E20" // 区別のために濃い緑
-        />
+        <meshStandardMaterial color={plantColor} />
       </mesh>
       {/* 水草4 - 地面に配置する */}
       <mesh
@@ -44,9 +56,7 @@ const WaterPlantsLarge: React.FC = () => {
         scale={[0.2, 1.5, 0.2]}
       >
         <cylinderGeometry args={[0.1, 0.3, 1, 8]} />
-        <meshStandardMaterial
-          color="#1B5E20" // 区別のために濃い緑色にする
-        />
+        <meshStandardMaterial color={plantColor} />
       </mesh>
     </group>
   );

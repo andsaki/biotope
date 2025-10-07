@@ -18,6 +18,9 @@ import SundialBase from "./components/SundialBase";
 import FallenLeaves from "./components/FallenLeaves";
 import Loader from "./components/Loader";
 import { DriftingBottle } from "./components/DriftingBottle";
+import CherryBlossoms from "./components/CherryBlossoms";
+import SummerEffects from "./components/SummerEffects";
+import SnowEffect from "./components/SnowEffect";
 
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
@@ -184,6 +187,12 @@ function App() {
             <SundialBase />
             <FallenLeaves />
             {/* 秋の間に水面に浮かぶ落ち葉コンポーネントを追加 */}
+            <CherryBlossoms />
+            {/* 春の桜の花びらエフェクト */}
+            <SummerEffects />
+            {/* 夏の陽炎エフェクト */}
+            <SnowEffect />
+            {/* 冬の雪エフェクト */}
             <DriftingBottle position={[-3, 8.2, 2]} />
             {/* 水面に漂流する瓶 */}
             <ParticleLayer />

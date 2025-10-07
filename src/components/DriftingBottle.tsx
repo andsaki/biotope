@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
+import { useSeason } from "../contexts/SeasonContext";
 
 interface DriftingBottleProps {
   position: [number, number, number];
@@ -12,6 +13,7 @@ export const DriftingBottle = ({
   position,
   onMessageRead,
 }: DriftingBottleProps) => {
+  const { season } = useSeason();
   const bottleRef = useRef<THREE.Group>(null);
   const [showMessage, setShowMessage] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -185,7 +187,7 @@ export const DriftingBottle = ({
                   whiteSpace: "pre-wrap",
                 }}
               >
-                {getRandomMessage()}
+                {getRandomMessage(season)}
               </p>
               <div
                 style={{
@@ -205,50 +207,128 @@ export const DriftingBottle = ({
   );
 };
 
-// ランダムなメッセージを返す関数
-const getRandomMessage = () => {
-  const messages = [
-    `親愛なる発見者へ、
+// 季節ごとのランダムなメッセージを返す関数
+const getRandomMessage = (season: "spring" | "summer" | "autumn" | "winter") => {
+  const seasonMessages = {
+    spring: [
+      `春の便りをお届けします。
 
-この瓶を見つけてくれてありがとう。
-私は遠い海を旅する船乗りです。
-波の音を聞きながら、
-あなたの幸せを祈っています。
+桜の花びらが風に舞う季節、
+新しい始まりを感じます。
+この瓶が流れ着いた場所にも、
+きっと春が訪れていることでしょう。
 
-穏やかな日々が続きますように。`,
+変化を恐れず、
+新しい一歩を踏み出してください。`,
 
-    `こんにちは、
+      `芽吹きの季節。
 
-今日は美しい夕日を見ました。
-オレンジ色に染まる空と海が
-とても綺麗でした。
+冬の眠りから目覚めた大地は、
+生命力に満ち溢れています。
+君の心にも新しい芽が
+育ち始めているはず。
 
-この瓶があなたのもとへ
-辿り着けたことを嬉しく思います。`,
+その小さな芽を
+大切に育ててください。`,
 
-    `拝啓
+      `春の風に乗せて。
 
-季節は巡り、また春が来ました。
-新しい出会いと発見が
-あなたを待っていますように。
+暖かな日差しと共に、
+希望の種を届けます。
+どんな困難も、
+やがて花開く時が来ます。
 
-遥か彼方より`,
+今日という日を
+精一杯生きてください。`,
+    ],
+    summer: [
+      `夏の輝きを込めて。
 
-    `Dear Friend,
+太陽が最も高く昇るこの季節、
+エネルギーに満ちています。
+君も思い切り羽ばたいて、
+夢に向かって突き進んでください。
 
-時には立ち止まって
-水面を眺めるのもいいものです。
-ゆっくりと流れる時間の中で
-大切なものが見えてくるはずです。`,
+情熱を失わないで。`,
 
-    `いつか、どこかで、
+      `真夏の海より。
 
-私たちは同じ空を見上げ、
-同じ風を感じているのかもしれません。
-この小さな瓶が
-世界の広さと繋がりを
-教えてくれますように。`,
-  ];
+青い空、青い海、
+そして眩しい太陽。
+この季節の美しさは格別です。
+暑さの中にも、
+爽やかな瞬間を見つけてください。
 
+夏の思い出を作りましょう。`,
+
+      `夕涼みの時間に。
+
+暑い一日を終えて、
+水辺で涼む時間が
+何より心地よい。
+君もゆっくりと
+休息を取ってください。
+
+頑張りすぎないことも大切です。`,
+    ],
+    autumn: [
+      `秋の夕暮れに想う。
+
+紅葉が美しく色づく季節。
+変化は美しい。
+終わりは新しい始まりでもあります。
+
+過ぎ去る季節を惜しみながらも、
+前を向いて歩いてください。`,
+
+      `実りの秋。
+
+君が蒔いた種が、
+今、実を結ぼうとしています。
+努力は決して裏切りません。
+
+収穫の喜びを感じてください。`,
+
+      `秋風に乗せて。
+
+落ち葉が水面に浮かぶこの季節、
+物思いにふけることが
+多くなります。
+振り返ることも時には必要。
+
+過去から学び、未来へ進みましょう。`,
+    ],
+    winter: [
+      `冬の静けさの中で。
+
+雪が全てを白く覆う季節。
+静寂の中にこそ、
+本当の声が聞こえます。
+
+自分自身と向き合う時間を
+大切にしてください。`,
+
+      `寒い冬の日に。
+
+厳しい季節ですが、
+この寒さを乗り越えれば、
+必ず春が来ます。
+今は耐える時。
+
+暖かい場所で、
+暖かい人たちと過ごしてください。`,
+
+      `冬の星空より。
+
+澄んだ空気の中、
+星がひときわ美しく輝いています。
+困難な時こそ、
+希望の光を見失わないで。
+
+君は一人じゃない。`,
+    ],
+  };
+
+  const messages = seasonMessages[season];
   return messages[Math.floor(Math.random() * messages.length)];
 };
