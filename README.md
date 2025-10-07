@@ -2,6 +2,19 @@
 
 このプロジェクトは、React、TypeScript、Vite を使用してビオトープ環境をシミュレートするウェブアプリケーションです。池、魚の管理、地面、季節のコンテキストなどのインタラクティブなコンポーネントを備えており、動的な生態系ビジュアライゼーションを作成します。
 
+## 主な機能
+
+- **3Dビオトープ環境**: Three.js を使用した没入型の3D環境
+- **リアルタイム時間シミュレーション**: 24時間の1日が実時間の30分で経過
+- **動的照明システム**: 時間帯に応じた照明の変化
+- **インタラクティブな要素**:
+  - 水面のアニメーション
+  - 落ち葉の物理シミュレーション
+  - 日時計（影の動き）
+  - 泡のエフェクト
+- **季節の変化**: 季節に応じた環境の変化
+- **レスポンシブデザイン**: 様々な画面サイズに対応
+
 ## セットアップ
 
 このテンプレートは、Vite で React を動作させるための最小限のセットアップを提供し、HMR といくつかの ESLint ルールが含まれています。
@@ -35,9 +48,23 @@
 
 ## プロジェクト構造
 
-- `src/components/`：`Pond`、`FishManager`、`Ground`、`ParticleLayer`などの UI コンポーネントが含まれています。
-- `src/contexts/`：季節の変化のための`SeasonContext`など、アプリケーションの状態を管理します。
-- `src/assets/`：アプリケーションで使用される静的資産。**Cloudflare R2へのアップロードもこのディレクトリ内のファイルを対象とします。**
+- `src/components/`：UI コンポーネント
+  - `Pond.tsx`: 池のメインコンポーネント
+  - `FishManager.tsx`: 魚の管理
+  - `Ground.tsx`: 地面の描画
+  - `WaterSurface.tsx`: 水面のアニメーション
+  - `FallenLeaves.tsx`: 落ち葉のシミュレーション
+  - `SundialBase.tsx`, `SundialGnomon.tsx`: 日時計コンポーネント
+  - `LightingController.tsx`: 照明システム
+  - `Loader.tsx`: ローディング画面
+- `src/hooks/`: カスタムフック
+  - `useSimulatedTime.ts`: 時間シミュレーション
+  - `useWindDirection.ts`: 風向きの管理
+  - `useLoader.ts`: ローディング状態の管理
+- `src/contexts/`: アプリケーションの状態管理
+  - `SeasonContext`: 季節の変化管理
+- `src/constants.ts`: アプリケーション定数
+- `src/assets/`: 静的資産（**Cloudflare R2へのアップロード対象**）
 
 ## パフォーマンス最適化
 
@@ -71,6 +98,15 @@ const WaterPlantsLarge = React.lazy(() => import("./components/WaterPlantsLarge"
 アセット（3Dモデル、テクスチャなど）は `src/assets` ディレクトリに配置されており、GitHub Actions ワークフロー (`.github/workflows/upload-to-r2.yml`) を通じて Cloudflare R2 に自動的にアップロードされます。
 
 `wrangler r2 object put` コマンドは、`src/assets` 内のファイルをR2バケットに同期するように設定されています。
+
+## 技術スタック
+
+- **フレームワーク**: React 18 + TypeScript
+- **ビルドツール**: Vite
+- **3D描画**: Three.js + @react-three/fiber + @react-three/drei
+- **物理エンジン**: @react-three/rapier
+- **デプロイ**: Cloudflare Pages
+- **ストレージ**: Cloudflare R2
 
 ## ESLint 設定の拡張
 
