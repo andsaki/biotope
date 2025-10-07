@@ -7,13 +7,19 @@
 - **3Dビオトープ環境**: Three.js を使用した没入型の3D環境
 - **リアルタイム時計**: 日本時間（UTC+9）と連動した時計と昼夜の切り替え
 - **動的照明システム**: 実時間に応じた太陽の位置と照明の変化
+- **リッチな季節エフェクト**:
+  - **春**: 桜の花びらが舞う、明るい新緑
+  - **夏**: 陽炎エフェクト、強い日差し、きらめく水面
+  - **秋**: 紅葉の落ち葉（7色のバリエーション）
+  - **冬**: 雪が降る、冷たい照明
+  - 季節ごとの照明・色調変化
+  - 魚の動きと色の季節変化
+  - 水草の色の季節変化
 - **インタラクティブな要素**:
   - 水面のアニメーション
-  - 落ち葉の物理シミュレーション
   - 日時計（影の動き）
   - 泡のエフェクト
-  - **漂流する瓶**: 遠くから漂流してくる瓶をクリックすると便箋が読める
-- **季節の変化**: 季節に応じた環境の変化
+  - **漂流する瓶**: 遠くから漂流してくる瓶をクリックすると季節ごとの便箋が読める
 - **レスポンシブデザイン**: 様々な画面サイズに対応
 
 ## セットアップ
@@ -51,14 +57,18 @@
 
 - `src/components/`：UI コンポーネント
   - `Pond.tsx`: 池のメインコンポーネント
-  - `FishManager.tsx`: 魚の管理
+  - `FishManager.tsx`: 魚の管理（季節ごとの速度・色変化）
   - `Ground.tsx`: 地面の描画
   - `WaterSurface.tsx`: 水面のアニメーション
-  - `FallenLeaves.tsx`: 落ち葉のシミュレーション
+  - `WaterPlantsLarge.tsx`: 水草（季節ごとの色変化）
+  - `FallenLeaves.tsx`: 秋の紅葉の落ち葉（7色、15枚）
+  - `CherryBlossoms.tsx`: 春の桜の花びらエフェクト
+  - `SummerEffects.tsx`: 夏の陽炎エフェクト
+  - `SnowEffect.tsx`: 冬の雪エフェクト
   - `SundialBase.tsx`, `SundialGnomon.tsx`: 日時計コンポーネント
-  - `LightingController.tsx`: 照明システム
+  - `LightingController.tsx`: 季節ごとの照明システム
   - `Loader.tsx`: ローディング画面
-  - `DriftingBottle.tsx`: 漂流する瓶と便箋
+  - `DriftingBottle.tsx`: 漂流する瓶と季節ごとの便箋
 - `src/hooks/`: カスタムフック
   - `useRealTime.ts`: 日本時間の取得と昼夜判定
   - `useSimulatedTime.ts`: 時間シミュレーション（旧版）
@@ -68,6 +78,11 @@
   - `SeasonContext`: 季節の変化管理
 - `src/constants.ts`: アプリケーション定数
 - `src/assets/`: 静的資産（**Cloudflare R2へのアップロード対象**）
+- `docs/`: ドキュメント
+  - `drifting-bottle-feature.md`: 漂流する瓶の機能説明
+  - `realtime-clock-feature.md`: リアルタイム時計の機能説明
+  - `seasonal-effects-feature.md`: 季節エフェクトの機能説明
+  - `sequence-diagrams.md`: シーケンス図
 
 ## パフォーマンス最適化
 
