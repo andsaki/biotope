@@ -21,9 +21,9 @@ const CherryBlossoms: React.FC = () => {
       positions[i * 3 + 2] = (Math.random() - 0.5) * 15;
 
       // 落下速度（ゆっくり）
-      velocities[i * 3] = (Math.random() - 0.5) * 0.5; // X方向のドリフト
-      velocities[i * 3 + 1] = -0.3 - Math.random() * 0.2; // Y方向（下向き）
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.5; // Z方向のドリフト
+      velocities[i * 3] = (Math.random() - 0.5) * 0.2; // X方向のドリフト
+      velocities[i * 3 + 1] = -0.05 - Math.random() * 0.05; // Y方向（下向き）
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.2; // Z方向のドリフト
 
       // 回転
       rotations[i] = Math.random() * Math.PI * 2;

@@ -17,6 +17,7 @@ export const DriftingBottle = ({
   const bottleRef = useRef<THREE.Group>(null);
   const [showMessage, setShowMessage] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState<string>("");
   const startTimeRef = useRef<number | null>(null);
 
   // 瓶の漂流アニメーション
@@ -57,6 +58,9 @@ export const DriftingBottle = ({
   });
 
   const handleClick = () => {
+    if (!showMessage) {
+      setCurrentMessage(getRandomMessage(season));
+    }
     setShowMessage(true);
     if (onMessageRead) {
       onMessageRead();
@@ -145,10 +149,14 @@ export const DriftingBottle = ({
                 borderRadius: "8px",
                 minWidth: "300px",
                 maxWidth: "400px",
+                maxHeight: "500px",
                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
                 fontFamily: "'Noto Serif JP', serif",
                 position: "relative",
                 border: "2px solid #d4a574",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -174,31 +182,41 @@ export const DriftingBottle = ({
                   fontSize: "18px",
                   borderBottom: "1px solid #d4a574",
                   paddingBottom: "10px",
+                  flexShrink: 0,
                 }}
               >
                 海からの便り
               </h3>
-              <p
-                style={{
-                  margin: "0",
-                  lineHeight: "1.8",
-                  color: "#4a4a4a",
-                  fontSize: "14px",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {getRandomMessage(season)}
-              </p>
               <div
                 style={{
-                  marginTop: "15px",
-                  textAlign: "right",
-                  fontSize: "12px",
-                  color: "#8b7355",
-                  fontStyle: "italic",
+                  flex: 1,
+                  overflowY: "scroll",
+                  paddingRight: "10px",
+                  minHeight: 0,
                 }}
               >
-                — 漂流者より
+                <p
+                  style={{
+                    margin: "0",
+                    lineHeight: "1.8",
+                    color: "#4a4a4a",
+                    fontSize: "14px",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {currentMessage}
+                </p>
+                <div
+                  style={{
+                    marginTop: "15px",
+                    textAlign: "right",
+                    fontSize: "12px",
+                    color: "#8b7355",
+                    fontStyle: "italic",
+                  }}
+                >
+                  — 漂流者より
+                </div>
               </div>
             </div>
           </Html>
@@ -211,117 +229,103 @@ export const DriftingBottle = ({
 const getRandomMessage = (season: "spring" | "summer" | "autumn" | "winter") => {
   const seasonMessages = {
     spring: [
-      `春の便りをお届けします。
+      `春の便り。
 
-桜の花びらが風に舞う季節、
+桜の花びらが舞う季節。
 新しい始まりを感じます。
-この瓶が流れ着いた場所にも、
-きっと春が訪れていることでしょう。
 
 変化を恐れず、
-新しい一歩を踏み出してください。`,
+一歩を踏み出してください。`,
 
       `芽吹きの季節。
 
-冬の眠りから目覚めた大地は、
-生命力に満ち溢れています。
+冬の眠りから目覚めた大地。
 君の心にも新しい芽が
 育ち始めているはず。
 
-その小さな芽を
-大切に育ててください。`,
+その小さな芽を大切に。`,
 
       `春の風に乗せて。
 
 暖かな日差しと共に、
-希望の種を届けます。
-どんな困難も、
-やがて花開く時が来ます。
+希望を届けます。
 
 今日という日を
 精一杯生きてください。`,
     ],
     summer: [
-      `夏の輝きを込めて。
+      `夏の輝き。
 
-太陽が最も高く昇るこの季節、
-エネルギーに満ちています。
-君も思い切り羽ばたいて、
-夢に向かって突き進んでください。
+太陽が高く昇る季節。
+君も思い切り羽ばたいて。
 
 情熱を失わないで。`,
 
       `真夏の海より。
 
 青い空、青い海、
-そして眩しい太陽。
-この季節の美しさは格別です。
-暑さの中にも、
-爽やかな瞬間を見つけてください。
+眩しい太陽。
 
-夏の思い出を作りましょう。`,
+夏の思い出を
+作りましょう。`,
 
-      `夕涼みの時間に。
+      `夕涼みの時間。
 
 暑い一日を終えて、
-水辺で涼む時間が
-何より心地よい。
-君もゆっくりと
-休息を取ってください。
+水辺で涼む時間。
 
-頑張りすぎないことも大切です。`,
+頑張りすぎないことも
+大切です。`,
     ],
     autumn: [
-      `秋の夕暮れに想う。
+      `秋の夕暮れ。
 
 紅葉が美しく色づく季節。
 変化は美しい。
-終わりは新しい始まりでもあります。
 
-過ぎ去る季節を惜しみながらも、
-前を向いて歩いてください。`,
+前を向いて
+歩いてください。`,
 
       `実りの秋。
 
 君が蒔いた種が、
 今、実を結ぼうとしています。
-努力は決して裏切りません。
 
-収穫の喜びを感じてください。`,
+収穫の喜びを
+感じてください。`,
 
       `秋風に乗せて。
 
-落ち葉が水面に浮かぶこの季節、
-物思いにふけることが
-多くなります。
+落ち葉が水面に浮かぶ季節。
 振り返ることも時には必要。
 
-過去から学び、未来へ進みましょう。`,
+過去から学び、
+未来へ進みましょう。`,
     ],
     winter: [
-      `冬の静けさの中で。
+      `冬の静けさ。
 
 雪が全てを白く覆う季節。
 静寂の中にこそ、
 本当の声が聞こえます。
 
-自分自身と向き合う時間を
-大切にしてください。`,
+自分自身と向き合う
+時間を大切に。`,
 
       `寒い冬の日に。
 
-厳しい季節ですが、
 この寒さを乗り越えれば、
 必ず春が来ます。
-今は耐える時。
 
 暖かい場所で、
-暖かい人たちと過ごしてください。`,
+暖かい人たちと
+過ごしてください。`,
 
       `冬の星空より。
 
 澄んだ空気の中、
-星がひときわ美しく輝いています。
+星が美しく輝いています。
+
 困難な時こそ、
 希望の光を見失わないで。
 
