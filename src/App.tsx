@@ -184,7 +184,7 @@ function App() {
             <SundialBase />
             <FallenLeaves />
             {/* 秋の間に水面に浮かぶ落ち葉コンポーネントを追加 */}
-            <DriftingBottle position={[-3, 0.5, 2]} />
+            <DriftingBottle position={[-3, 8.2, 2]} />
             {/* 水面に漂流する瓶 */}
             <ParticleLayer />
             <Clouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} /> {/* 雲のコンポーネントに時間のスケールを渡す */}

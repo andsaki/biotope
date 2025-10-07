@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { Html } from "@react-three/drei";
 
 interface DriftingBottleProps {
@@ -13,39 +12,45 @@ export const DriftingBottle = ({
   position,
   onMessageRead,
 }: DriftingBottleProps) => {
-  const bottleRef = useRef<RapierRigidBody>(null);
+  const bottleRef = useRef<THREE.Group>(null);
   const [showMessage, setShowMessage] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const startTimeRef = useRef<number | null>(null);
 
   // 瓶の漂流アニメーション
   useFrame((state) => {
     if (bottleRef.current) {
       const time = state.clock.elapsedTime;
-      // 波の動きをシミュレート
-      const waveX = Math.sin(time * 0.5) * 0.02;
-      const waveZ = Math.cos(time * 0.3) * 0.02;
-      const bobbing = Math.sin(time * 2) * 0.01; // 上下の揺れ
 
-      const currentVel = bottleRef.current.linvel();
-      bottleRef.current.setLinvel(
-        {
-          x: waveX,
-          y: currentVel.y + bobbing,
-          z: waveZ,
-        },
-        true
-      );
+      // 開始時刻を記録
+      if (startTimeRef.current === null) {
+        startTimeRef.current = time;
+      }
 
-      // 回転も追加
-      const currentAngVel = bottleRef.current.angvel();
-      bottleRef.current.setAngvel(
-        {
-          x: Math.sin(time * 0.2) * 0.1,
-          y: currentAngVel.y,
-          z: Math.cos(time * 0.2) * 0.1,
-        },
-        true
-      );
+      const elapsedTime = time - startTimeRef.current;
+
+      // 遠くから漂流してくるアニメーション（30秒かけて）
+      const driftProgress = Math.min(elapsedTime / 30, 1);
+      const easeProgress = 1 - Math.pow(1 - driftProgress, 3); // イージング
+
+      // 開始位置（遠く）から目的地へ
+      const startX = -15; // 遠くの左側から
+      const startZ = 10;  // 遠くの奥から
+      const targetX = position[0];
+      const targetZ = position[2];
+
+      const currentX = startX + (targetX - startX) * easeProgress;
+      const currentZ = startZ + (targetZ - startZ) * easeProgress;
+
+      // 水面を漂流する動き（到着後はゆらゆら）
+      bottleRef.current.position.x = currentX + Math.sin(time * 0.5) * 0.5 * driftProgress;
+      bottleRef.current.position.y = position[1] + Math.sin(time * 2) * 0.1; // もっと大きな上下の揺れ
+      bottleRef.current.position.z = currentZ + Math.cos(time * 0.3) * 0.5 * driftProgress;
+
+      // もっとダイナミックな回転と傾き
+      bottleRef.current.rotation.x = Math.sin(time * 0.5) * 0.4; // X軸の傾きを大きく
+      bottleRef.current.rotation.z = Math.cos(time * 0.4) * 0.5; // Z軸の傾きも大きく
+      bottleRef.current.rotation.y = Math.sin(time * 0.3) * 0.3 + time * 0.05; // Y軸周りにゆっくり回転しながら揺れる
     }
   });
 
@@ -62,19 +67,13 @@ export const DriftingBottle = ({
   };
 
   return (
-    <RigidBody
+    <group
       ref={bottleRef}
       position={position}
-      colliders="hull"
-      mass={0.5}
-      linearDamping={2}
-      angularDamping={1}
+      onClick={handleClick}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
     >
-      <group
-        onClick={handleClick}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
         {/* 瓶の本体 */}
         <mesh castShadow receiveShadow>
           <cylinderGeometry args={[0.15, 0.12, 0.8, 16]} />
@@ -202,8 +201,7 @@ export const DriftingBottle = ({
             </div>
           </Html>
         )}
-      </group>
-    </RigidBody>
+    </group>
   );
 };
 

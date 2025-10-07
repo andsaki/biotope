@@ -12,6 +12,7 @@
   - 落ち葉の物理シミュレーション
   - 日時計（影の動き）
   - 泡のエフェクト
+  - **漂流する瓶**: 遠くから漂流してくる瓶をクリックすると便箋が読める
 - **季節の変化**: 季節に応じた環境の変化
 - **レスポンシブデザイン**: 様々な画面サイズに対応
 
@@ -57,6 +58,7 @@
   - `SundialBase.tsx`, `SundialGnomon.tsx`: 日時計コンポーネント
   - `LightingController.tsx`: 照明システム
   - `Loader.tsx`: ローディング画面
+  - `DriftingBottle.tsx`: 漂流する瓶と便箋
 - `src/hooks/`: カスタムフック
   - `useSimulatedTime.ts`: 時間シミュレーション
   - `useWindDirection.ts`: 風向きの管理
