@@ -2,36 +2,128 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
-.wind-direction-display h3 {
-  margin: 0 0 10px 0;
-  text-align: center;
-}
-
-.wind-direction-display p {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-.wind-arrow-container {
-  width: 50px;
-  height: 50px;
+/* コンパス本体 */
+.compass-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid #FFFFFF;
-  border-radius: 50%;
-  margin-bottom: 10px;
 }
 
-.wind-arrow {
-  font-size: 2.5em;
-  line-height: 1;
-  color: #ADD8E6;
-  transition: transform 0.5s ease-in-out;
+/* 外側のリング */
+.compass-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #4A90E2;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(240, 248, 255, 0.8) 100%);
+  box-shadow:
+    inset 0 2px 8px rgba(74, 144, 226, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 方位マーク */
+.compass-mark {
+  position: absolute;
+  font-size: 14px;
+  font-weight: bold;
+  color: #4A90E2;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.compass-mark.north {
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #FF6B6B;
+  font-size: 16px;
+}
+
+.compass-mark.east {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-mark.south {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-mark.west {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 風向き矢印のラッパー */
+.wind-arrow-wrapper {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* 風向き矢印SVG */
+.wind-arrow-svg {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+/* 中央の点 */
+.compass-center {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+/* 風向きラベル */
+.wind-label {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.wind-kanji {
+  font-size: 24px;
+  font-weight: bold;
+  color: #FF6B6B;
+  text-shadow: 0 2px 4px rgba(255, 107, 107, 0.2);
+}
+
+.wind-text {
+  font-size: 14px;
+  color: #4A90E2;
+  font-weight: 500;
 }
 
 /* PC Styles */
