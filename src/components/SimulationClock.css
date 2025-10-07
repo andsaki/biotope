@@ -1,10 +1,27 @@
 /* Base styles for the clock container */
+.clock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
 .simulation-clock-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+  position: relative;
   transition: width 0.3s ease, height 0.3s ease; /* Removed position transitions */
+}
+
+.time-display {
+  text-align: center;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 8px 16px;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
 .day-night-indicator {
@@ -38,6 +55,11 @@
     font-size: 18px;
     text-shadow: 2px 2px 4px black; /* 影を強調 */
   }
+  .time-display {
+    font-size: 16px;
+    color: #e0f2f7;
+    text-shadow: 1px 1px 3px black;
+  }
 }
 
 /* SP Styles */
@@ -57,6 +79,12 @@
     font-weight: 700;
     color: #e0f2f7; /* 薄い水色に変更 */
     text-shadow: 2px 2px 4px black; /* 影を強調 */
+  }
+  .time-display {
+    font-size: 12px;
+    color: #e0f2f7;
+    text-shadow: 1px 1px 2px black;
+    padding: 5px 10px;
   }
   .react-clock__mark__number {
     font-size: 0.7em !important; /* Adjust as needed */

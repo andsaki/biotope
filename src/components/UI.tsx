@@ -4,14 +4,19 @@ import SimulationClock from "./SimulationClock";
 import "./UI.css";
 
 interface UIProps {
-  simulatedTime: {
+  realTime?: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
+  simulatedTime?: {
     minutes: number;
     seconds: number;
   };
   isDay: boolean;
 }
 
-const UI: React.FC<UIProps> = ({ simulatedTime, isDay }) => {
+const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
   const { season, setSeason } = useSeason();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -32,7 +37,7 @@ const UI: React.FC<UIProps> = ({ simulatedTime, isDay }) => {
 
   return (
     <div className="ui-container">
-      {isMobile && <SimulationClock simulatedTime={simulatedTime} isDay={isDay} />}
+      {isMobile && <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />}
       <div className="season-selector">
         <h3 style={{ margin: 0, marginBottom: 10 }}>季節を選択</h3>
         <div className="buttons">
@@ -94,7 +99,7 @@ const UI: React.FC<UIProps> = ({ simulatedTime, isDay }) => {
           </button>
         </div>
       </div>
-      {!isMobile && <SimulationClock simulatedTime={simulatedTime} isDay={isDay} />}
+      {!isMobile && <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />}
     </div>
   );
 };

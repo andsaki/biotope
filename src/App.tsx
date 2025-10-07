@@ -29,12 +29,12 @@ const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 import UI from "./components/UI";
 import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants";
-import { useSimulatedTime } from "./hooks/useSimulatedTime";
+import { useRealTime } from "./hooks/useRealTime";
 import { useWindDirection } from "./hooks/useWindDirection";
 import { useLoader } from "./hooks/useLoader";
 
 function App() {
-  const { isDay, simulatedTime } = useSimulatedTime();
+  const { isDay, realTime } = useRealTime();
   const windDirection = useWindDirection();
   const showLoader = useLoader();
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
@@ -97,13 +97,13 @@ function App() {
               position={[
                 15 *
                   Math.cos(
-                    ((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)
-                  ), // X位置は時間とともに移動（12時間サイクル）、時計時間に合わせるためのオフセットなし
+                    ((realTime.hours + realTime.minutes / 60) % 12) * (Math.PI / 6)
+                  ), // X位置は時間とともに移動（12時間サイクル）
                 15, // 一定の高さ
                 15 *
                   Math.sin(
-                    ((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)
-                  ), // Z位置は時間とともに移動、時計時間に合わせるためのオフセットなし
+                    ((realTime.hours + realTime.minutes / 60) % 12) * (Math.PI / 6)
+                  ), // Z位置は時間とともに移動
               ]} // 太陽は時間に基づいて円形のパスで移動し、時計と同期
               intensity={8.0} // 影の視認性を高めるために強度をさらに増加
               color="#FFD700" // 太陽光を模倣するための暖かい黄色
@@ -122,12 +122,12 @@ function App() {
               position={[
                 15 *
                   Math.cos(
-                    ((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)
+                    ((realTime.hours + realTime.minutes / 60) % 12) * (Math.PI / 6)
                   ),
                 15,
                 15 *
                   Math.sin(
-                    ((simulatedTime.minutes / 60) % 12) * (Math.PI / 6)
+                    ((realTime.hours + realTime.minutes / 60) % 12) * (Math.PI / 6)
                   ),
               ]}
             >
@@ -228,7 +228,7 @@ function App() {
             </Text>
           </Suspense>
         </Canvas>
-        <UI simulatedTime={simulatedTime} isDay={isDay} />
+        <UI realTime={realTime} isDay={isDay} />
         <WindDirectionDisplay windDirection={windDirection} />
       </div>
     </SeasonProvider>
