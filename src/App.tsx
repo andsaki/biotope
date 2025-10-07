@@ -17,6 +17,7 @@ import SundialGnomon from "./components/SundialGnomon";
 import SundialBase from "./components/SundialBase";
 import FallenLeaves from "./components/FallenLeaves";
 import Loader from "./components/Loader";
+import { DriftingBottle } from "./components/DriftingBottle";
 
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
@@ -183,6 +184,8 @@ function App() {
             <SundialBase />
             <FallenLeaves />
             {/* 秋の間に水面に浮かぶ落ち葉コンポーネントを追加 */}
+            <DriftingBottle position={[-3, 0.5, 2]} />
+            {/* 水面に漂流する瓶 */}
             <ParticleLayer />
             <Clouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} /> {/* 雲のコンポーネントに時間のスケールを渡す */}
             {/* 魚の動きを制限するためのバウンディングボックス - 垂直方向に拡大（Y軸）、水平方向に縮小（X軸）、底面はY=0より上、上面はさらに下げた */}
