@@ -35,67 +35,42 @@ const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
     setSeason(newSeason);
   };
 
+  const seasonIcons = {
+    spring: "春",
+    summer: "夏",
+    autumn: "秋",
+    winter: "冬",
+  };
+
   return (
     <div className="ui-container">
       {isMobile && <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />}
       <div className="season-selector">
-        <h3 style={{ margin: 0, marginBottom: 10 }}>季節を選択</h3>
+        <h3 className="season-title">四季</h3>
         <div className="buttons">
           <button
             onClick={() => handleSeasonChange("spring")}
-            style={{
-              backgroundColor: season === "spring" ? "#6CA080" : "#ccc",
-              color: "white",
-              border: "none",
-              padding: "12px 18px",
-              borderRadius: 3,
-              cursor: "pointer",
-              fontSize: "1.1em",
-            }}
+            className={`season-button ${season === "spring" ? "active" : ""}`}
           >
-            春
+            {seasonIcons.spring}
           </button>
           <button
             onClick={() => handleSeasonChange("summer")}
-            style={{
-              backgroundColor: season === "summer" ? "#4C8C6A" : "#ccc",
-              color: "white",
-              border: "none",
-              padding: "12px 18px",
-              borderRadius: 3,
-              cursor: "pointer",
-              fontSize: "1.1em",
-            }}
+            className={`season-button ${season === "summer" ? "active" : ""}`}
           >
-            夏
+            {seasonIcons.summer}
           </button>
           <button
             onClick={() => handleSeasonChange("autumn")}
-            style={{
-              backgroundColor: season === "autumn" ? "#5C7A6A" : "#ccc",
-              color: "white",
-              border: "none",
-              padding: "12px 18px",
-              borderRadius: 3,
-              cursor: "pointer",
-              fontSize: "1.1em",
-            }}
+            className={`season-button ${season === "autumn" ? "active" : ""}`}
           >
-            秋
+            {seasonIcons.autumn}
           </button>
           <button
             onClick={() => handleSeasonChange("winter")}
-            style={{
-              backgroundColor: season === "winter" ? "#4A6A7A" : "#ccc",
-              color: "white",
-              border: "none",
-              padding: "12px 18px",
-              borderRadius: 3,
-              cursor: "pointer",
-              fontSize: "1.1em",
-            }}
+            className={`season-button ${season === "winter" ? "active" : ""}`}
           >
-            冬
+            {seasonIcons.winter}
           </button>
         </div>
       </div>

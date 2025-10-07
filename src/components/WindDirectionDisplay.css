@@ -3,12 +3,25 @@
   flex-direction: column;
   align-items: center;
   gap: 15px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(245, 230, 211, 0.95);
   padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 2px solid #d4a574;
+  position: relative;
+}
+
+/* 装飾的なボーダー */
+.wind-direction-display::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid #d4a574;
+  border-radius: 4px;
+  pointer-events: none;
 }
 
 /* コンパス本体 */
@@ -26,11 +39,11 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  border: 3px solid #4A90E2;
+  border: 3px solid #8b7355;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(240, 248, 255, 0.8) 100%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(245, 230, 211, 0.8) 100%);
   box-shadow:
-    inset 0 2px 8px rgba(74, 144, 226, 0.3),
+    inset 0 2px 8px rgba(139, 115, 85, 0.2),
     0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -39,15 +52,16 @@
   position: absolute;
   font-size: 14px;
   font-weight: bold;
-  color: #4A90E2;
+  color: #8b7355;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  font-family: 'Noto Serif JP', serif;
 }
 
 .compass-mark.north {
   top: 5px;
   left: 50%;
   transform: translateX(-50%);
-  color: #FF6B6B;
+  color: #8b7355;
   font-size: 16px;
 }
 
@@ -99,7 +113,7 @@
   position: absolute;
   width: 8px;
   height: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #8b7355;
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 10;
@@ -110,19 +124,18 @@
   display: flex;
   align-items: baseline;
   gap: 4px;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Noto Serif JP', serif;
 }
 
 .wind-kanji {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
-  color: #FF6B6B;
-  text-shadow: 0 2px 4px rgba(255, 107, 107, 0.2);
+  color: #5d4e37;
 }
 
 .wind-text {
   font-size: 14px;
-  color: #4A90E2;
+  color: #8b7355;
   font-weight: 500;
 }
 
