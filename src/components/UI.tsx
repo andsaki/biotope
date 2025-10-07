@@ -19,6 +19,7 @@ interface UIProps {
 const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
   const { season, setSeason } = useSeason();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isSeasonPanelOpen, setIsSeasonPanelOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -33,6 +34,10 @@ const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
     newSeason: "spring" | "summer" | "autumn" | "winter"
   ) => {
     setSeason(newSeason);
+    // モバイルでは選択後にパネルを閉じる
+    if (isMobile) {
+      setIsSeasonPanelOpen(false);
+    }
   };
 
   const seasonIcons = {
@@ -43,39 +48,66 @@ const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
   };
 
   return (
-    <div className="ui-container">
-      {isMobile && <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />}
-      <div className="season-selector">
-        <h3 className="season-title">四季</h3>
-        <div className="buttons">
-          <button
-            onClick={() => handleSeasonChange("spring")}
-            className={`season-button ${season === "spring" ? "active" : ""}`}
-          >
-            {seasonIcons.spring}
-          </button>
-          <button
-            onClick={() => handleSeasonChange("summer")}
-            className={`season-button ${season === "summer" ? "active" : ""}`}
-          >
-            {seasonIcons.summer}
-          </button>
-          <button
-            onClick={() => handleSeasonChange("autumn")}
-            className={`season-button ${season === "autumn" ? "active" : ""}`}
-          >
-            {seasonIcons.autumn}
-          </button>
-          <button
-            onClick={() => handleSeasonChange("winter")}
-            className={`season-button ${season === "winter" ? "active" : ""}`}
-          >
-            {seasonIcons.winter}
-          </button>
+    <>
+      {/* UIパネル全体 */}
+      <div className={`ui-panel-wrapper ${isSeasonPanelOpen ? "open" : ""}`}>
+        {/* 閉じるボタン */}
+        <button
+          className="ui-close-button"
+          onClick={() => setIsSeasonPanelOpen(false)}
+          aria-label="UIパネルを閉じる"
+        >
+          ✕
+        </button>
+
+        {/* 時計 */}
+        <div className={`clock-wrapper ${isMobile ? "mobile" : "desktop"}`}>
+          <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />
+        </div>
+
+        {/* 四季セレクタ */}
+        <div className="season-selector">
+          <h3 className="season-title">四季</h3>
+          <div className="buttons">
+            <button
+              onClick={() => handleSeasonChange("spring")}
+              className={`season-button ${season === "spring" ? "active" : ""}`}
+            >
+              {seasonIcons.spring}
+            </button>
+            <button
+              onClick={() => handleSeasonChange("summer")}
+              className={`season-button ${season === "summer" ? "active" : ""}`}
+            >
+              {seasonIcons.summer}
+            </button>
+            <button
+              onClick={() => handleSeasonChange("autumn")}
+              className={`season-button ${season === "autumn" ? "active" : ""}`}
+            >
+              {seasonIcons.autumn}
+            </button>
+            <button
+              onClick={() => handleSeasonChange("winter")}
+              className={`season-button ${season === "winter" ? "active" : ""}`}
+            >
+              {seasonIcons.winter}
+            </button>
+          </div>
         </div>
       </div>
-      {!isMobile && <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />}
-    </div>
+
+      {/* 開くボタン */}
+      {!isSeasonPanelOpen && (
+        <button
+          className="ui-open-button"
+          onClick={() => setIsSeasonPanelOpen(true)}
+          aria-label="UIパネルを開く"
+        >
+          {seasonIcons[season]}
+        </button>
+      )}
+    </>
   );
 };
 
