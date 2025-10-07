@@ -65,31 +65,45 @@ sequenceDiagram
     Note over Hook,Components: 24時間が実時間の30分で経過<br/>(1秒 = 48シミュレーション秒)
 ```
 
-## 3. 照明システム制御フロー
+## 3. 照明システム制御フロー (リファクタリング後)
 
 ```mermaid
 sequenceDiagram
-    participant Time as useSimulatedTime
+    participant Time as useRealTime
+    participant App as App.tsx
+    participant SunUtil as sunPosition.ts
+    participant SceneLights as SceneLights Component
     participant Controller as LightingController
     participant Lights as Three.js Lights
+    participant Sun as Sun Component
     participant Scene as 3D Scene
 
-    Time->>Controller: { isDay, simulatedTime } 更新
+    Time->>App: { isDay, realTime } 更新
+    App->>SunUtil: calculateSunPosition(hours, minutes)
+    SunUtil->>SunUtil: 太陽の位置を計算
+    Note over SunUtil: x = radius * cos(angle)<br/>y = heightY<br/>z = radius * sin(angle)
+    SunUtil-->>App: { x, y, z } 座標
+
+    App->>SceneLights: sunPosition を渡す
+    SceneLights->>Lights: ambientLight 設定
+    SceneLights->>Lights: pointLight 設定
+    SceneLights->>Lights: directionalLight 設定
+    Note over SceneLights,Lights: position = sunPosition<br/>intensity = 8.0<br/>castShadow = true
+    SceneLights->>Lights: spotLight 設定
+
+    App->>Sun: sunPosition を渡す
+    Sun->>Scene: 太陽メッシュをレンダリング
+    Note over Sun: 球体ジオメトリ<br/>emissive material
+
+    App->>Controller: { isDay, lightRefs } を渡す
 
     alt 昼間 (6:00 - 18:00)
         Controller->>Controller: 昼間の照明設定を計算
-        Controller->>Lights: ambientLight.intensity = 0.8
-        Controller->>Lights: directionalLight.intensity = 1.5
-        Controller->>Lights: directionalLight.position 更新
-        Note over Controller,Lights: 太陽の位置を時刻に応じて計算
-        Controller->>Lights: directionalLight.color = 昼間の色
+        Controller->>Lights: 季節に応じた色・強度を適用
         Lights-->>Scene: 昼間の明るい環境
     else 夜間 (18:00 - 6:00)
         Controller->>Controller: 夜間の照明設定を計算
-        Controller->>Lights: ambientLight.intensity = 0.2
-        Controller->>Lights: directionalLight.intensity = 0.3
-        Controller->>Lights: directionalLight.color = 夜間の色
-        Controller->>Lights: pointLight (月光) を追加
+        Controller->>Lights: 夜間の色・強度を適用
         Lights-->>Scene: 夜間の暗い環境
     end
 
@@ -204,13 +218,15 @@ sequenceDiagram
     Base-->>Time: 影の位置で時刻を視覚的に表現
 ```
 
-## 7. 季節の変化フロー
+## 7. 季節の変化フロー (リファクタリング後)
 
 ```mermaid
 sequenceDiagram
     actor User as ユーザー
     participant Context as SeasonContext
     participant Provider as SeasonProvider
+    participant UI as UI Component
+    participant SeasonalEffects as SeasonalEffects Component
     participant Components as 各コンポーネント
     participant Scene as 3D Scene
 
@@ -223,18 +239,31 @@ sequenceDiagram
     Context->>Provider: 季節状態を更新
     Provider->>Components: 新しい season を通知
 
+    Provider->>SeasonalEffects: season 状態更新
+
+    alt season === 'spring'
+        SeasonalEffects->>Scene: CherryBlossoms をレンダリング
+        Note over SeasonalEffects: 桜の花びら 50枚
+    else season === 'summer'
+        SeasonalEffects->>Scene: SummerEffects をレンダリング
+        Note over SeasonalEffects: 夏のエフェクト
+    else season === 'autumn'
+        SeasonalEffects->>Scene: FallenLeaves をレンダリング
+        Note over SeasonalEffects: 紅葉 15枚 (7色)
+    else season === 'winter'
+        SeasonalEffects->>Scene: SnowEffect をレンダリング
+        Note over SeasonalEffects: 雪 200粒
+    end
+
     par 各コンポーネントが反応
         Components->>Ground: 地面の色を変更
         Note over Ground: 春: 明るい緑<br/>夏: 濃い緑<br/>秋: 茶色<br/>冬: 白
 
-        Components->>FallenLeaves: 落ち葉の色を変更
-        Note over FallenLeaves: 春: 緑<br/>秋: 赤・黄・茶色<br/>冬: 少ない
-
-        Components->>WaterPlants: 植物の成長状態を変更
-        Note over WaterPlants: 春・夏: 成長<br/>秋・冬: 枯れる
+        Components->>WaterPlants: 植物の色を変更
+        Note over WaterPlants: 春: #4CAF50<br/>夏: #2E7D32<br/>秋: #558B2F<br/>冬: #1B5E20
 
         Components->>Lighting: 照明の色温度を調整
-        Note over Lighting: 夏: 暖色<br/>冬: 寒色
+        Note over Lighting: 春: #FFFACD<br/>夏: #FFE55C<br/>秋: #FFA500<br/>冬: #E0F7FA
     end
 
     Scene->>Scene: 全体を再レンダリング
@@ -274,3 +303,69 @@ sequenceDiagram
 
     Note over App,Component: 必要に応じて段階的に読み込み<br/>初期ロード時間を短縮
 ```
+
+## 9. リファクタリング後のコンポーネント構造
+
+```mermaid
+graph TB
+    App[App.tsx]
+
+    subgraph Utilities["ユーティリティ"]
+        SunUtil[sunPosition.ts<br/>太陽位置計算]
+    end
+
+    subgraph Lighting["ライティング"]
+        Sun[Sun.tsx<br/>太陽メッシュ]
+        SceneLights[SceneLights.tsx<br/>ライト統合管理]
+        LightController[LightingController.tsx<br/>昼夜・季節制御]
+    end
+
+    subgraph Seasonal["季節エフェクト"]
+        SeasonalEffects[SeasonalEffects.tsx<br/>季節統合管理]
+        Cherry[CherryBlossoms.tsx]
+        Summer[SummerEffects.tsx]
+        Autumn[FallenLeaves.tsx]
+        Winter[SnowEffect.tsx]
+    end
+
+    subgraph Environment["環境オブジェクト"]
+        Ground[Ground.tsx]
+        Fish[FishManager.tsx]
+        Water[WaterSurface.tsx]
+        Plants[WaterPlantsLarge.tsx]
+    end
+
+    subgraph UI["UI要素"]
+        MainUI[UI.tsx]
+        Clock[SimulationClock.tsx]
+        Wind[WindDirectionDisplay.tsx]
+    end
+
+    subgraph Debug["デバッグ"]
+        DebugHelpers[DebugHelpers.tsx<br/>条件付きレンダリング]
+    end
+
+    App -->|calculateSunPosition| SunUtil
+    App -->|sunPosition| Sun
+    App -->|sunPosition + refs| SceneLights
+    App -->|isDay + refs| LightController
+    App --> SeasonalEffects
+    App --> Environment
+    App --> UI
+    App -->|DEBUG_MODE| DebugHelpers
+
+    SeasonalEffects -->|season=spring| Cherry
+    SeasonalEffects -->|season=summer| Summer
+    SeasonalEffects -->|season=autumn| Autumn
+    SeasonalEffects -->|season=winter| Winter
+
+    style App fill:#4A90E2,color:#fff
+    style Utilities fill:#87CEEB,color:#000
+    style Lighting fill:#FFD700,color:#000
+    style Seasonal fill:#90EE90,color:#000
+    style Environment fill:#8FBC8F,color:#000
+    style UI fill:#DDA0DD,color:#000
+    style Debug fill:#FFA07A,color:#000
+```
+
+

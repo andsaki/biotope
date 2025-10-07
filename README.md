@@ -56,19 +56,33 @@
 ## プロジェクト構造
 
 - `src/components/`：UI コンポーネント
-  - `Pond.tsx`: 池のメインコンポーネント
-  - `FishManager.tsx`: 魚の管理（季節ごとの速度・色変化）
-  - `Ground.tsx`: 地面の描画
-  - `WaterSurface.tsx`: 水面のアニメーション
-  - `WaterPlantsLarge.tsx`: 水草（季節ごとの色変化）
-  - `FallenLeaves.tsx`: 秋の紅葉の落ち葉（7色、15枚）
-  - `CherryBlossoms.tsx`: 春の桜の花びらエフェクト
-  - `SummerEffects.tsx`: 夏の陽炎エフェクト
-  - `SnowEffect.tsx`: 冬の雪エフェクト
-  - `SundialBase.tsx`, `SundialGnomon.tsx`: 日時計コンポーネント
-  - `LightingController.tsx`: 季節ごとの照明システム
-  - `Loader.tsx`: ローディング画面
-  - `DriftingBottle.tsx`: 漂流する瓶と季節ごとの便箋
+  - **環境オブジェクト**
+    - `Pond.tsx`: 池のメインコンポーネント
+    - `FishManager.tsx`: 魚の管理（季節ごとの速度・色変化）
+    - `Ground.tsx`: 地面の描画
+    - `WaterSurface.tsx`: 水面のアニメーション
+    - `WaterPlantsLarge.tsx`: 水草（季節ごとの色変化）
+    - `SundialBase.tsx`, `SundialGnomon.tsx`: 日時計コンポーネント
+    - `DriftingBottle.tsx`: 漂流する瓶と季節ごとの便箋
+  - **季節エフェクト**
+    - `SeasonalEffects.tsx`: 季節エフェクトの統合管理
+    - `CherryBlossoms.tsx`: 春の桜の花びらエフェクト
+    - `SummerEffects.tsx`: 夏のエフェクト
+    - `FallenLeaves.tsx`: 秋の紅葉の落ち葉（7色、15枚）
+    - `SnowEffect.tsx`: 冬の雪エフェクト
+  - **ライティング**
+    - `Sun.tsx`: 太陽の視覚表現
+    - `SceneLights.tsx`: シーン全体のライト設定
+    - `LightingController.tsx`: 季節ごとの照明制御
+  - **UI要素**
+    - `UI.tsx`: メインUI（季節セレクタ、時計）
+    - `SimulationClock.tsx`: 時計コンポーネント
+    - `WindDirectionDisplay.tsx`: 風向きコンパス
+    - `Loader.tsx`: ローディング画面
+  - **デバッグ**
+    - `DebugHelpers.tsx`: デバッグ用ヘルパー（軸、バウンディングボックス）
+- `src/utils/`: ユーティリティ関数
+  - `sunPosition.ts`: 太陽の位置計算
 - `src/hooks/`: カスタムフック
   - `useRealTime.ts`: 日本時間の取得と昼夜判定
   - `useSimulatedTime.ts`: 時間シミュレーション（旧版）
@@ -83,6 +97,7 @@
   - `realtime-clock-feature.md`: リアルタイム時計の機能説明
   - `seasonal-effects-feature.md`: 季節エフェクトの機能説明
   - `sequence-diagrams.md`: シーケンス図
+  - `refactoring-summary.md`: リファクタリング概要
 
 ## パフォーマンス最適化
 
@@ -100,6 +115,17 @@ const WaterPlantsLarge = React.lazy(() => import("./components/WaterPlantsLarge"
   <WaterPlantsLarge />
 </Suspense>
 ```
+
+### リファクタリングによる改善
+
+2025年10月8日に実施したリファクタリングにより、以下の改善を達成：
+
+- **App.tsx の行数削減**: 249行 → 約150行（約40%削減）
+- **コンポーネントの責務分離**: ライティング、季節エフェクト、デバッグヘルパーを分離
+- **計算ロジックの外部化**: `useMemo`を使用した太陽位置計算のキャッシュ
+- **保守性の向上**: 単一責任の原則に基づいた設計
+
+詳細は [`docs/refactoring-summary.md`](docs/refactoring-summary.md) を参照。
 
 ### バンドル分析
 

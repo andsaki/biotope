@@ -1,0 +1,27 @@
+/**
+ * 太陽の位置を計算するユーティリティ関数
+ */
+
+export interface SunPosition {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/**
+ * 時間に基づいて太陽の位置を計算
+ * @param hours 時間（0-23）
+ * @param minutes 分（0-59）
+ * @returns 太陽の3D座標
+ */
+export function calculateSunPosition(hours: number, minutes: number): SunPosition {
+  const radius = 15; // 太陽の軌道半径
+  const heightY = 15; // 太陽の高さ
+  const angle = ((hours + minutes / 60) % 12) * (Math.PI / 6); // 12時間サイクルで角度を計算
+
+  return {
+    x: radius * Math.cos(angle),
+    y: heightY,
+    z: radius * Math.sin(angle),
+  };
+}
