@@ -66,6 +66,7 @@ const SnowEffect: React.FC = () => {
           count={snowParticles.positions.length / 3}
           array={snowParticles.positions}
           itemSize={3}
+          args={[snowParticles.positions, 3]}
         />
       </bufferGeometry>
       <pointsMaterial

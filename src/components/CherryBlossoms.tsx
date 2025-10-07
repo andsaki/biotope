@@ -73,6 +73,7 @@ const CherryBlossoms: React.FC = () => {
           count={particles.positions.length / 3}
           array={particles.positions}
           itemSize={3}
+          args={[particles.positions, 3]}
         />
       </bufferGeometry>
       <pointsMaterial
