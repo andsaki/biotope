@@ -60,11 +60,6 @@ const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
           ✕
         </button>
 
-        {/* 時計 */}
-        <div className={`clock-wrapper ${isMobile ? "mobile" : "desktop"}`}>
-          <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />
-        </div>
-
         {/* 四季セレクタ */}
         <div className="season-selector">
           <h3 className="season-title">四季</h3>
@@ -94,6 +89,11 @@ const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
               {seasonIcons.winter}
             </button>
           </div>
+        </div>
+
+        {/* 時計 */}
+        <div className={`clock-wrapper ${isMobile ? "mobile" : "desktop"}`}>
+          <SimulationClock realTime={realTime} simulatedTime={simulatedTime} isDay={isDay} />
         </div>
       </div>
 

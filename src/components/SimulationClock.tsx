@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 import './SimulationClock.css';
@@ -22,33 +22,45 @@ const SimulationClock: React.FC<SimulationClockProps> = ({ realTime, simulatedTi
   const minutes = realTime ? realTime.minutes : (simulatedTime?.minutes || 0) % 60;
   const seconds = realTime ? realTime.seconds : (simulatedTime?.seconds || 0);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="clock-container">
-      <div className="simulation-clock-wrapper">
-        <Clock
-          value={new Date(0, 0, 0, hours, minutes, seconds)}
-          size={window.innerWidth > 768 ? 200 : 100} // Adjust size based on screen width
-          renderNumbers={true}
-          renderSecondHand={false}
-          hourHandLength={60}
-          hourHandWidth={5}
-          minuteHandLength={80}
-          minuteHandWidth={4}
-          secondHandLength={90}
-          secondHandWidth={2}
-          hourMarksLength={12}
-          hourMarksWidth={4}
-          minuteMarksLength={6}
-          minuteMarksWidth={2}
-          className="custom-clock"
-        />
-        <div className="day-night-indicator">
-          {isDay ? '昼' : '夜'}
+      {isMobile ? (
+        // SP: デジタル表示のみ
+        <div className="digital-clock-wrapper">
+          <div className="digital-time">
+            {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}
+          </div>
         </div>
-      </div>
-      {realTime && (
-        <div className="time-display">
-          日本時間: {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+      ) : (
+        // PC: アナログ時計
+        <div className="simulation-clock-wrapper">
+          <Clock
+            value={new Date(0, 0, 0, hours, minutes, seconds)}
+            size={200}
+            renderNumbers={true}
+            renderSecondHand={false}
+            hourHandLength={60}
+            hourHandWidth={5}
+            minuteHandLength={80}
+            minuteHandWidth={4}
+            secondHandLength={90}
+            secondHandWidth={2}
+            hourMarksLength={12}
+            hourMarksWidth={4}
+            minuteMarksLength={6}
+            minuteMarksWidth={2}
+            className="custom-clock"
+          />
         </div>
       )}
     </div>
