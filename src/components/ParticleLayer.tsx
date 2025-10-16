@@ -78,14 +78,20 @@ const ParticleLayer: React.FC = () => {
     setParticles(newParticles);
   }, [season]);
 
+  const frameCount = React.useRef(0);
+
   useFrame(() => {
+    frameCount.current++;
+    // 2フレームに1回更新してパフォーマンスを向上
+    if (frameCount.current % 2 !== 0) return;
+
     setParticles((prevParticles) =>
       prevParticles
         .map((particle) => {
-          const newY = particle.y - particle.speedY;
-          const newX = particle.x + particle.speedX;
-          const newZ = particle.z + particle.speedZ;
-          const newLife = particle.life - 1;
+          const newY = particle.y - particle.speedY * 2; // フレームスキップ分を調整
+          const newX = particle.x + particle.speedX * 2;
+          const newZ = particle.z + particle.speedZ * 2;
+          const newLife = particle.life - 2;
 
           if (newY < -2 || newLife <= 0) {
             return {

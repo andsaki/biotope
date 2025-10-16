@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useMemo } from "react";
+import React, { Suspense, useRef, useMemo, memo } from "react";
 
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { Canvas } from "@react-three/fiber";
@@ -38,6 +38,20 @@ import { useLoader } from "./hooks/useLoader";
 import { calculateSunPosition } from "./utils/sunPosition";
 
 const DEBUG_MODE = false; // デバッグヘルパーの表示切替
+
+// メモ化されたコンポーネント
+const MemoizedGround = memo(Ground);
+const MemoizedFishManager = memo(FishManager);
+const MemoizedParticleLayer = memo(ParticleLayer);
+const MemoizedClouds = memo(Clouds);
+const MemoizedStars = memo(Stars);
+const MemoizedReflectedStars = memo(ReflectedStars);
+const MemoizedWaterSurface = memo(WaterSurface);
+const MemoizedSundialGnomon = memo(SundialGnomon);
+const MemoizedSundialBase = memo(SundialBase);
+const MemoizedDriftingBottle = memo(DriftingBottle);
+const MemoizedSeasonalEffects = memo(SeasonalEffects);
+const MemoizedWindDirectionDisplay = memo(WindDirectionDisplay);
 
 function App() {
   const { isDay, realTime } = useRealTime();
@@ -82,8 +96,8 @@ function App() {
           gl={{ antialias: true }} // よりスムーズなレンダリングのためにアンチエイリアシングを有効化
         >
           <Suspense fallback={null}>
-            <Stars isNight={!isDay} />
-            <ReflectedStars isNight={!isDay} />
+            <MemoizedStars isNight={!isDay} />
+            <MemoizedReflectedStars isNight={!isDay} />
 
             {/* シーンの背景と霧 */}
             <color attach="background" args={[isDay ? "#4A90E2" : "#2A2A4E"]} />
@@ -119,28 +133,28 @@ function App() {
             />
 
             {/* 環境オブジェクト */}
-            <Ground />
-            <FishManager />
+            <MemoizedGround />
+            <MemoizedFishManager />
             <WaterPlantsLarge />
             <PottedPlant />
             <Rocks />
             <BubbleEffect />
-            <WaterSurface />
-            <SundialGnomon />
-            <SundialBase />
-            <DriftingBottle position={[-3, 8.2, 2]} />
-            <ParticleLayer />
-            <Clouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} />
+            <MemoizedWaterSurface />
+            <MemoizedSundialGnomon />
+            <MemoizedSundialBase />
+            <MemoizedDriftingBottle position={[-3, 8.2, 2]} />
+            <MemoizedParticleLayer />
+            <MemoizedClouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} />
 
             {/* 季節エフェクト */}
-            <SeasonalEffects />
+            <MemoizedSeasonalEffects />
 
             {/* デバッグヘルパー */}
             <DebugHelpers enabled={DEBUG_MODE} />
           </Suspense>
         </Canvas>
         <UI realTime={realTime} isDay={isDay} />
-        <WindDirectionDisplay windDirection={windDirection} />
+        <MemoizedWindDirectionDisplay windDirection={windDirection} />
       </div>
     </SeasonProvider>
   );

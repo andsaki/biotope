@@ -66,7 +66,11 @@ const FishManager: React.FC = () => {
     setFishList(newFishList);
   }, [season]);
 
+  const timeRef = React.useRef(0);
+
   useFrame((_, delta) => {
+    timeRef.current += delta;
+
     setFishList((prevFishList) =>
       prevFishList.map((fish) => {
         let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * 60;
@@ -77,7 +81,7 @@ const FishManager: React.FC = () => {
         newZ = Math.max(-1.5, Math.min(3.0, newZ));
 
         // 泳ぐ動きを模倣するためにわずかな垂直振動を追加する
-        newY += Math.sin(Date.now() * 0.002 + fish.id) * 0.01;
+        newY += Math.sin(timeRef.current * 2 + fish.id) * 0.01;
 
         // 境界チェック - 垂直に拡大し、水平に縮小したボックスの境界を厳密に適用する
         if (newX < -6.0 || newX > 6.0) {
