@@ -16,7 +16,7 @@ interface SimulationClockProps {
   isDay: boolean;
 }
 
-const SimulationClock: React.FC<SimulationClockProps> = ({ realTime, simulatedTime, isDay }) => {
+const SimulationClock: React.FC<SimulationClockProps> = ({ realTime, simulatedTime }) => {
   // リアルタイムがある場合はそれを使用、なければシミュレーション時間を使用
   const hours = realTime ? realTime.hours : Math.floor((simulatedTime?.minutes || 0) / 60) % 24;
   const minutes = realTime ? realTime.minutes : (simulatedTime?.minutes || 0) % 60;
