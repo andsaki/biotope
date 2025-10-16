@@ -3,6 +3,10 @@ name: Upload Assets to Cloudflare R2
 on:
   push:
     branches: [main]
+    # アセットファイルが変更された時のみ実行（不要なCI実行を削減）
+    paths:
+      - 'src/assets/**'
+      - '.github/workflows/upload-to-r2.yml'
 
 jobs:
   upload-assets:
@@ -12,7 +16,24 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
     steps:
-      - uses: actions/checkout@v3
+      # v4にアップグレードして高速化
+      - uses: actions/checkout@v4
+
+      # Node.jsのセットアップとnpmキャッシュを有効化
+      - name: Setup Node.js with cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Wranglerインストールをキャッシュ
+      - name: Cache Wrangler
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-wrangler-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-wrangler-
 
       - name: Create wrangler.toml dynamically
         run: |
@@ -32,15 +53,27 @@ jobs:
       - name: Check Wrangler Authentication
         run: wrangler whoami
 
-      - name: Upload files to R2
+      # 並列アップロードで高速化（10ファイルを同時アップロード）
+      - name: Upload files to R2 in parallel
         run: |
-          wrangler r2 object put "${BUCKET_NAME}/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf" -f "src/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Smoked Fish Raw/weflciqaa_tier_0.bin" -f "src/assets/Smoked Fish Raw/weflciqaa_tier_0.bin" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Potted Plant/scene.gltf" -f "src/assets/Potted Plant/scene.gltf" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Potted Plant/scene.bin" -f "src/assets/Potted Plant/scene.bin" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Potted Plant/textures/01_-_Default_0_baseColor.png" -f "src/assets/Potted Plant/textures/01_-_Default_0_baseColor.png" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Potted Plant/textures/01_-_Default_baseColor.png" -f "src/assets/Potted Plant/textures/01_-_Default_baseColor.png" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" -f "src/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png" -f "src/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png" -f "src/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png" --remote
-          wrangler r2 object put "${BUCKET_NAME}/assets/AI Dried Bay Leaves.png" -f "src/assets/AI Dried Bay Leaves.png" --remote
+          # アップロード関数を定義
+          upload_file() {
+            wrangler r2 object put "${BUCKET_NAME}/$1" -f "$2" --remote
+          }
+          export -f upload_file
+          export BUCKET_NAME
+
+          # 全ファイルをバックグラウンドで並列アップロード
+          upload_file "assets/Smoked Fish Raw/weflciqaa_tier_0.gltf" "src/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf" &
+          upload_file "assets/Smoked Fish Raw/weflciqaa_tier_0.bin" "src/assets/Smoked Fish Raw/weflciqaa_tier_0.bin" &
+          upload_file "assets/Potted Plant/scene.gltf" "src/assets/Potted Plant/scene.gltf" &
+          upload_file "assets/Potted Plant/scene.bin" "src/assets/Potted Plant/scene.bin" &
+          upload_file "assets/Potted Plant/textures/01_-_Default_0_baseColor.png" "src/assets/Potted Plant/textures/01_-_Default_0_baseColor.png" &
+          upload_file "assets/Potted Plant/textures/01_-_Default_baseColor.png" "src/assets/Potted Plant/textures/01_-_Default_baseColor.png" &
+          upload_file "assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" "src/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_B.png" &
+          upload_file "assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png" "src/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_N.png" &
+          upload_file "assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png" "src/assets/Smoked Fish Raw/Textures/T_weflciqaa_8K_ORM.png" &
+          upload_file "assets/AI Dried Bay Leaves.png" "src/assets/AI Dried Bay Leaves.png" &
+
+          # 全てのバックグラウンドジョブの完了を待機
+          wait
