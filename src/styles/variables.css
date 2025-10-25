@@ -1,0 +1,67 @@
+/**
+ * CSS Variables
+ * プロジェクト全体で使用する変数を定義
+ */
+
+:root {
+  /* Colors - 便箋風デザインのカラーパレット */
+  --color-paper-bg: rgba(245, 230, 211, 0.95);
+  --color-paper-border: #d4a574;
+  --color-text-primary: #5d4e37;
+  --color-text-secondary: #8b7355;
+  --color-accent: #8b7355;
+  --color-white: #ffffff;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px rgba(139, 115, 85, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-inset: inset 0 2px 8px rgba(139, 115, 85, 0.2);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 20px;
+  --radius-full: 50%;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 20px;
+  --spacing-xl: 32px;
+
+  /* Positioning - PC */
+  --ui-position-top-pc: 20px;
+  --ui-position-right-pc: 20px;
+  --ui-position-left-pc: 20px;
+
+  /* Positioning - Mobile */
+  --ui-position-top-mobile: 10px;
+  --ui-position-right-mobile: 15px;
+  --ui-position-left-mobile: 10px;
+
+  /* Component Sizes - PC */
+  --clock-size-pc: 260px;
+  --compass-size: 100px;
+  --ui-button-size-pc: 50px;
+
+  /* Component Sizes - Mobile */
+  --clock-size-mobile: 140px;
+  --ui-button-size-mobile: 48px;
+
+  /* Typography */
+  --font-family-serif: 'Noto Serif JP', serif;
+  --font-family-mono: 'Courier New', monospace;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index layers */
+  --z-base: 1;
+  --z-dropdown: 10;
+  --z-ui: 100;
+  --z-modal: 200;
+}

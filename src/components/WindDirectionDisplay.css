@@ -1,73 +1,110 @@
+/**
+ * Wind Direction Display Component Styles
+ * 風向きコンパスの表示スタイル
+ */
+
+/* ==========================================================================
+   Container - コンテナ
+   ========================================================================== */
+
 .wind-direction-display {
+  /* Position */
+  position: relative;
+
+  /* Display & Box Model */
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 15px;
-  background: rgba(245, 230, 211, 0.95);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border: 2px solid #d4a574;
-  position: relative;
+  padding: var(--spacing-lg);
+  border: 2px solid var(--color-paper-border);
+  border-radius: var(--radius-md);
+
+  /* Visual */
+  background: var(--color-paper-bg);
+  box-shadow: var(--shadow-lg);
 }
 
 /* 装飾的なボーダー */
 .wind-direction-display::before {
-  content: '';
+  /* Position */
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  border: 1px solid #d4a574;
-  border-radius: 4px;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  left: var(--spacing-sm);
+
+  /* Display & Box Model */
+  border: 1px solid var(--color-paper-border);
+  border-radius: var(--radius-sm);
+
+  /* Visual */
+  content: '';
   pointer-events: none;
 }
 
-/* コンパス本体 */
+/* ==========================================================================
+   Compass - コンパス
+   ========================================================================== */
+
 .compass-container {
+  /* Position */
   position: relative;
-  width: 100px;
-  height: 100px;
+
+  /* Display & Box Model */
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: var(--compass-size);
+  height: var(--compass-size);
 }
 
-/* 外側のリング */
 .compass-ring {
+  /* Position */
   position: absolute;
+
+  /* Display & Box Model */
   width: 100%;
   height: 100%;
-  border: 3px solid #8b7355;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(245, 230, 211, 0.8) 100%);
-  box-shadow:
-    inset 0 2px 8px rgba(139, 115, 85, 0.2),
-    0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid var(--color-text-secondary);
+  border-radius: var(--radius-full);
+
+  /* Visual */
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(245, 230, 211, 0.8) 100%
+  );
+  box-shadow: var(--shadow-inset), var(--shadow-sm);
 }
 
-/* 方位マーク */
+/* ==========================================================================
+   Compass Marks - 方位マーク
+   ========================================================================== */
+
 .compass-mark {
+  /* Position */
   position: absolute;
+
+  /* Typography */
+  font-family: var(--font-family-serif);
   font-size: 14px;
   font-weight: bold;
-  color: #8b7355;
+  color: var(--color-text-secondary);
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-  font-family: 'Noto Serif JP', serif;
 }
 
 .compass-mark.north {
   top: 5px;
   left: 50%;
-  transform: translateX(-50%);
-  color: #8b7355;
   font-size: 16px;
+  color: var(--color-text-secondary);
+  transform: translateX(-50%);
 }
 
 .compass-mark.east {
-  right: 8px;
   top: 50%;
+  right: 8px;
   transform: translateY(-50%);
 }
 
@@ -78,73 +115,103 @@
 }
 
 .compass-mark.west {
-  left: 8px;
   top: 50%;
+  left: 8px;
   transform: translateY(-50%);
 }
 
-/* 風向き矢印のラッパー */
+/* ==========================================================================
+   Wind Arrow - 風向き矢印
+   ========================================================================== */
+
 .wind-arrow-wrapper {
+  /* Position */
   position: absolute;
+
+  /* Display & Box Model */
   width: 40px;
   height: 40px;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Visual */
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+
+  /* Animation */
+  transition: transform var(--transition-slow);
 }
 
-/* 風向き矢印SVG */
 .wind-arrow-svg {
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
+  0%,
+  100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    transform: scale(1.1);
     opacity: 0.9;
+    transform: scale(1.1);
   }
 }
 
-/* 中央の点 */
+/* ==========================================================================
+   Compass Center - 中央の点
+   ========================================================================== */
+
 .compass-center {
+  /* Position */
   position: absolute;
+  z-index: var(--z-dropdown);
+
+  /* Display & Box Model */
   width: 8px;
   height: 8px;
-  background: #8b7355;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 10;
+  border-radius: var(--radius-full);
+
+  /* Visual */
+  background: var(--color-text-secondary);
+  box-shadow: var(--shadow-sm);
 }
 
-/* 風向きラベル */
+/* ==========================================================================
+   Wind Label - 風向きラベル
+   ========================================================================== */
+
 .wind-label {
+  /* Display & Box Model */
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  font-family: 'Noto Serif JP', serif;
+  gap: var(--spacing-xs);
+
+  /* Typography */
+  font-family: var(--font-family-serif);
 }
 
 .wind-kanji {
+  /* Typography */
   font-size: 22px;
   font-weight: bold;
-  color: #5d4e37;
+  color: var(--color-text-primary);
 }
 
 .wind-text {
+  /* Typography */
   font-size: 14px;
-  color: #8b7355;
   font-weight: 500;
+  color: var(--color-text-secondary);
 }
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
 
 /* PC Styles */
 @media (min-width: 769px) {
   .wind-direction-display {
     position: absolute;
-    top: 20px;
-    left: 20px; /* 画面左上に配置 */
+    top: var(--ui-position-top-pc);
+    left: var(--ui-position-left-pc);
   }
 }
 
@@ -152,10 +219,10 @@
 @media (max-width: 768px) {
   .wind-direction-display {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: var(--ui-position-top-mobile);
+    left: var(--ui-position-left-mobile);
+    opacity: 0.95;
     transform: scale(0.75);
     transform-origin: top left;
-    opacity: 0.95;
   }
 }

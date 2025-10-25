@@ -1,22 +1,40 @@
-/* 開くボタン */
+/**
+ * UI Panel Component Styles
+ * メインUIパネルと季節セレクターのスタイル
+ */
+
+/* ==========================================================================
+   Open Button - 開くボタン
+   ========================================================================== */
+
 .ui-open-button {
+  /* Position */
   position: fixed;
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  background: rgba(245, 230, 211, 0.95);
-  border: 2px solid #d4a574;
-  color: #5d4e37;
-  font-size: 20px;
-  font-weight: 600;
-  font-family: 'Noto Serif JP', serif;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(139, 115, 85, 0.3);
-  transition: all 0.3s ease;
-  z-index: 100;
+  z-index: var(--z-ui);
+
+  /* Display & Box Model */
   display: flex;
   align-items: center;
   justify-content: center;
+  width: var(--ui-button-size-pc);
+  height: var(--ui-button-size-pc);
+  padding: 0;
+  border: 2px solid var(--color-paper-border);
+  border-radius: var(--radius-md);
+
+  /* Typography */
+  font-family: var(--font-family-serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+
+  /* Visual */
+  background: var(--color-paper-bg);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+
+  /* Animation */
+  transition: all var(--transition-base);
 }
 
 .ui-open-button:hover {
@@ -28,16 +46,26 @@
   transform: translateY(0);
 }
 
-/* UIパネル全体のラッパー */
+/* ==========================================================================
+   Panel Wrapper - パネルラッパー
+   ========================================================================== */
+
 .ui-panel-wrapper {
+  /* Position */
   position: fixed;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  z-index: 200;
+  z-index: var(--z-modal);
+
+  /* Display & Box Model */
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--spacing-lg);
+
+  /* Visual */
+  opacity: 0;
+  pointer-events: none;
+
+  /* Animation */
+  transition: all var(--transition-base);
 }
 
 .ui-panel-wrapper.open {
@@ -45,112 +73,157 @@
   pointer-events: all;
 }
 
-/* 閉じるボタン */
+/* ==========================================================================
+   Close Button - 閉じるボタン
+   ========================================================================== */
+
 .ui-close-button {
+  /* Position */
   position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #d4a574;
-  color: #5d4e37;
-  font-size: 18px;
-  cursor: pointer;
+  z-index: var(--z-dropdown);
+
+  /* Display & Box Model */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-paper-border);
+  border-radius: var(--radius-full);
+
+  /* Typography */
+  font-size: 18px;
+  color: var(--color-text-primary);
+
+  /* Visual */
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+
+  /* Animation */
+  transition: all var(--transition-fast);
 }
 
 .ui-close-button:hover {
-  background: #d4a574;
-  color: white;
+  background: var(--color-paper-border);
+  color: var(--color-white);
   transform: rotate(90deg);
 }
 
-/* 時計ラッパー */
+/* ==========================================================================
+   Clock Wrapper
+   ========================================================================== */
+
 .ui-panel-wrapper .clock-wrapper {
   position: relative;
 }
 
-/* セレクター本体 */
+/* ==========================================================================
+   Season Selector - 季節セレクター
+   ========================================================================== */
+
 .season-selector {
-  background: rgba(245, 230, 211, 0.95);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border: 2px solid #d4a574;
+  /* Position */
   position: relative;
+
+  /* Display & Box Model */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: var(--spacing-lg);
+  border: 2px solid var(--color-paper-border);
+  border-radius: var(--radius-md);
+
+  /* Visual */
+  background: var(--color-paper-bg);
+  box-shadow: var(--shadow-lg);
 }
 
 /* 装飾的なボーダー */
 .season-selector::before {
-  content: '';
+  /* Position */
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  border: 1px solid #d4a574;
-  border-radius: 4px;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  left: var(--spacing-sm);
+
+  /* Display & Box Model */
+  border: 1px solid var(--color-paper-border);
+  border-radius: var(--radius-sm);
+
+  /* Visual */
+  content: '';
   pointer-events: none;
 }
 
-.season-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  position: relative;
-}
-
 .season-title {
+  /* Display & Box Model */
   margin: 0;
-  text-align: center;
+
+  /* Typography */
+  font-family: var(--font-family-serif);
   font-size: 18px;
   font-weight: 500;
-  color: #5d4e37;
+  color: var(--color-text-primary);
+  text-align: center;
   letter-spacing: 4px;
-  font-family: 'Noto Serif JP', serif;
 }
 
 .season-selector .buttons {
+  /* Display & Box Model */
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
+/* ==========================================================================
+   Season Button - 季節ボタン
+   ========================================================================== */
+
 .season-button {
+  /* Position */
   position: relative;
+
+  /* Display & Box Model */
   padding: 10px 18px;
-  border: 2px solid #d4a574;
+  border: 2px solid var(--color-paper-border);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.8);
-  color: #8b7355;
+
+  /* Typography */
+  font-family: var(--font-family-serif);
   font-size: 16px;
   font-weight: 500;
+  color: var(--color-text-secondary);
+
+  /* Visual */
+  background: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Noto Serif JP', serif;
+
+  /* Animation */
+  transition: all var(--transition-base);
 }
 
 .season-button:hover {
   background: rgba(255, 255, 255, 0.95);
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+  transform: translateY(-2px);
 }
 
 .season-button.active {
-  background: #8b7355;
-  border-color: #8b7355;
-  color: rgba(245, 230, 211, 1);
+  border-color: var(--color-accent);
+  color: var(--color-paper-bg);
+  background: var(--color-accent);
   box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
 }
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
 
 /* PC Styles */
 @media (min-width: 769px) {
   .ui-open-button {
-    top: 20px;
-    right: 20px;
+    top: var(--ui-position-top-pc);
+    right: var(--ui-position-right-pc);
   }
 
   .ui-close-button {
@@ -159,8 +232,8 @@
   }
 
   .ui-panel-wrapper {
-    top: 20px;
-    right: 20px;
+    top: var(--ui-position-top-pc);
+    right: var(--ui-position-right-pc);
     transform: translateX(20px);
   }
 
@@ -169,7 +242,7 @@
   }
 
   .season-selector .buttons {
-    gap: 12px;
+    gap: var(--spacing-md);
   }
 }
 
@@ -177,9 +250,9 @@
 @media (max-width: 768px) {
   .ui-open-button {
     top: 30px;
-    right: 15px;
-    width: 48px;
-    height: 48px;
+    right: var(--ui-position-right-mobile);
+    width: var(--ui-button-size-mobile);
+    height: var(--ui-button-size-mobile);
     font-size: 20px;
     box-shadow: 0 6px 20px rgba(139, 115, 85, 0.4);
   }
@@ -195,11 +268,11 @@
 
   .ui-panel-wrapper {
     top: 60px;
-    right: 15px;
+    right: var(--ui-position-right-mobile);
+    max-width: 200px;
+    gap: 10px;
     transform: translateX(100%) scale(0.9);
     transform-origin: top right;
-    gap: 10px;
-    max-width: 200px;
   }
 
   .ui-panel-wrapper.open {
@@ -216,10 +289,10 @@
   }
 
   .digital-clock-wrapper {
-    padding: 8px;
-    background: rgba(245, 230, 211, 0.95);
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-paper-border);
     border-radius: 6px;
-    border: 1px solid #d4a574;
+    background: var(--color-paper-bg);
   }
 
   .season-selector {
@@ -227,8 +300,8 @@
   }
 
   .season-title {
-    font-size: 13px;
     margin-bottom: 6px;
+    font-size: 13px;
     letter-spacing: 2px;
   }
 
@@ -239,13 +312,13 @@
   }
 
   .season-button {
-    padding: 8px;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
     font-size: 15px;
-    border-radius: 4px;
   }
 
   .day-night-indicator {
+    padding: var(--spacing-xs) 10px;
     font-size: 12px;
-    padding: 4px 10px;
   }
 }
