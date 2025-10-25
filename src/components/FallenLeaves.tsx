@@ -3,6 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
 
+/**
+ * 秋の落ち葉エフェクト
+ * 7色の紅葉が舞い落ちるパーティクルシステム
+ */
 const FallenLeaves: React.FC = () => {
   const { season } = useSeason();
   const leavesRefs = useRef<THREE.Mesh[]>([]);

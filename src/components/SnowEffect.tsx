@@ -3,6 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
 
+/**
+ * 冬の雪エフェクト
+ * 降り積もる雪をパーティクルシステムで表現
+ */
 const SnowEffect: React.FC = () => {
   const { season } = useSeason();
   const snowRef = useRef<THREE.Points>(null);

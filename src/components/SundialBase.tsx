@@ -3,7 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
 
-// 水波と一緒に動く時間目と数字付き日時計ベースコンポーネント
+/**
+ * 日時計のベース（文字盤）コンポーネント
+ * 時刻表示と水面の波に同期する円盤
+ */
 const SundialBase: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null!);
   const hourTextRefs = useRef<THREE.Mesh[]>([]);

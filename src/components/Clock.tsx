@@ -3,6 +3,10 @@ import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 import './UI.css'; // Import styles
 
+/**
+ * カスタム時計コンポーネント
+ * リアルタイムのアナログ時計を表示
+ */
 const CustomClock: React.FC = () => {
   const [time, setTime] = useState(new Date());
 

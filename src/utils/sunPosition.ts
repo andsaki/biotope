@@ -2,9 +2,13 @@
  * 太陽の位置を計算するユーティリティ関数
  */
 
+/** 太陽の3D空間上の位置 */
 export interface SunPosition {
+  /** X座標 */
   x: number;
+  /** Y座標（高さ） */
   y: number;
+  /** Z座標 */
   z: number;
 }
 

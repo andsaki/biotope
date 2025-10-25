@@ -5,18 +5,32 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import fishModel from '../assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url';
 
+/** 魚の状態データ */
 interface Fish {
+  /** 魚のID */
   id: number;
+  /** X座標 */
   x: number;
+  /** Y座標 */
   y: number;
+  /** Z座標 */
   z: number;
+  /** 移動速度 */
   speed: number;
+  /** X方向の移動方向 */
   directionX: number;
+  /** Y方向の移動方向 */
   directionY: number;
+  /** 魚の色 */
   color: string;
+  /** 魚のサイズ */
   size: number;
 }
 
+/**
+ * 魚群の管理コンポーネント
+ * 季節に応じた色と速度で複数の魚をアニメーション
+ */
 const FishManager: React.FC = () => {
   const { season } = useSeason();
   const [fishList, setFishList] = useState<Fish[]>([]);

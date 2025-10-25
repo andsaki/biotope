@@ -1,6 +1,10 @@
 import React, { useRef } from "react";
 import { useSeason } from "../contexts/SeasonContext";
 
+/**
+ * 池コンポーネント
+ * 季節に応じて色と霧のレベルが変化する池の表現
+ */
 const Pond: React.FC = () => {
   const { season } = useSeason();
   const meshRef = useRef<any>(null!);

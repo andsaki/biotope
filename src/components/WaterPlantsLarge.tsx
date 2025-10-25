@@ -1,6 +1,10 @@
 import React, { useMemo } from "react";
 import { useSeason } from "../contexts/SeasonContext";
 
+/**
+ * 大型水草コンポーネント
+ * 季節に応じて色が変化する水中の水草
+ */
 const WaterPlantsLarge: React.FC = () => {
   const { season } = useSeason();
 

@@ -3,19 +3,34 @@ import { useSeason } from "../contexts/SeasonContext";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+/** パーティクルの状態データ */
 interface Particle {
+  /** パーティクルID */
   id: number;
+  /** X座標 */
   x: number;
+  /** Y座標 */
   y: number;
+  /** Z座標 */
   z: number;
+  /** X方向の速度 */
   speedX: number;
+  /** Y方向の速度 */
   speedY: number;
+  /** Z方向の速度 */
   speedZ: number;
+  /** パーティクルの色 */
   color: string;
+  /** パーティクルのサイズ */
   size: number;
+  /** パーティクルの寿命 */
   life: number;
 }
 
+/**
+ * パーティクルレイヤーコンポーネント
+ * 季節に応じたパーティクルエフェクトを表示
+ */
 const ParticleLayer: React.FC = () => {
   const { season } = useSeason();
   const [particles, setParticles] = useState<Particle[]>([]);

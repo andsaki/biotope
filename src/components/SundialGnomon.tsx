@@ -2,7 +2,10 @@ import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-// 水波と一緒に動く日時計ノモンコンポーネント
+/**
+ * 日時計のノモン（影を作る棒）コンポーネント
+ * 水面の波と同期して上下に動く
+ */
 const SundialGnomon: React.FC = () => {
   const meshRef = useRef<THREE.Mesh>(null!);
 

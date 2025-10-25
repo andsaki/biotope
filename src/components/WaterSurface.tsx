@@ -2,6 +2,10 @@ import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+/**
+ * 水面コンポーネント
+ * 波紋アニメーションと光の反射を持つ透明な水面を表示
+ */
 const WaterSurface: React.FC = () => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);

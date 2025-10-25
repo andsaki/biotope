@@ -1,5 +1,9 @@
 import React from "react";
 
+/**
+ * ビオトープの地面コンポーネント
+ * 池の底をシミュレートする茶色の平面を表示
+ */
 const Ground: React.FC = () => {
   return (
     <group>

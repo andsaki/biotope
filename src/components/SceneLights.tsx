@@ -2,16 +2,24 @@ import React from 'react';
 import * as THREE from 'three';
 import type { SunPosition } from '../utils/sunPosition';
 
+/** ライティングコンポーネントのプロパティ */
 interface SceneLightsProps {
+  /** 太陽の位置 */
   sunPosition: SunPosition;
+  /** 指向性ライトへの参照 */
   directionalLightRef: React.RefObject<THREE.DirectionalLight>;
+  /** 環境光への参照 */
   ambientLightRef: React.RefObject<THREE.AmbientLight>;
+  /** ポイントライトへの参照 */
   pointLightRef: React.RefObject<THREE.PointLight>;
+  /** スポットライトへの参照 */
   spotLightRef: React.RefObject<THREE.SpotLight>;
 }
 
 /**
  * シーン全体のライティング設定を管理するコンポーネント
+ * 環境光、ポイントライト、太陽光（指向性ライト）、スポットライトを管理
+ * @param props - コンポーネントのプロパティ
  */
 export const SceneLights: React.FC<SceneLightsProps> = ({
   sunPosition,

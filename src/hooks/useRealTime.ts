@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { DAY_START_MINUTES, DAY_END_MINUTES } from "../constants";
 
+/**
+ * リアルタイムの日本時間を管理するカスタムフック
+ * 1秒ごとに更新し、昼夜の判定も行う
+ * @returns 昼夜の判定とリアルタイムの時刻情報
+ */
 export const useRealTime = () => {
   const [isDay, setIsDay] = useState(true);
   const [realTime, setRealTime] = useState({

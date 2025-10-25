@@ -3,6 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
 
+/**
+ * 春の桜の花びらエフェクト
+ * 舞い落ちる桜の花びらをパーティクルシステムで表現
+ */
 const CherryBlossoms: React.FC = () => {
   const { season } = useSeason();
   const particlesRef = useRef<THREE.Points>(null);

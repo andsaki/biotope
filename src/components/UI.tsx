@@ -3,19 +3,28 @@ import { useSeason } from "../contexts/SeasonContext";
 import SimulationClock from "./SimulationClock";
 import "./UI.css";
 
+/** UIコンポーネントのプロパティ */
 interface UIProps {
+  /** リアルタイムの時刻情報 */
   realTime?: {
     hours: number;
     minutes: number;
     seconds: number;
   };
+  /** シミュレーション時刻情報 */
   simulatedTime?: {
     minutes: number;
     seconds: number;
   };
+  /** 昼夜の判定 */
   isDay: boolean;
 }
 
+/**
+ * メインUIコンポーネント
+ * 時計表示と季節選択パネルを提供
+ * @param props - コンポーネントのプロパティ
+ */
 const UI: React.FC<UIProps> = ({ realTime, simulatedTime, isDay }) => {
   const { season, setSeason } = useSeason();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);

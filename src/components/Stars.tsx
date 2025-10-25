@@ -4,10 +4,17 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 
+/** 星空コンポーネントのプロパティ */
 interface StarsProps {
+  /** 夜間かどうか */
   isNight: boolean;
 }
 
+/**
+ * 星空コンポーネント
+ * 夜間に表示される星のパーティクルシステム
+ * @param props - コンポーネントのプロパティ
+ */
 const Stars: React.FC<StarsProps> = ({ isNight }) => {
   const meshRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<THREE.PointsMaterial>(null!);

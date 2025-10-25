@@ -1,6 +1,10 @@
 import React from "react";
 import { useSeason } from "../contexts/SeasonContext";
 
+/**
+ * 夏の追加エフェクト
+ * 夏の強い日差しを表現する追加照明
+ */
 const SummerEffects: React.FC = () => {
   const { season } = useSeason();
 

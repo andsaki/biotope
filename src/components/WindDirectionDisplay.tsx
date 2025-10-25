@@ -1,10 +1,13 @@
 import React from 'react';
 import './WindDirectionDisplay.css';
 
+/** 風向き表示コンポーネントのプロパティ */
 interface WindDirectionDisplayProps {
+  /** 風向き（北/東/南/西） */
   windDirection: "North" | "East" | "South" | "West";
 }
 
+/** 風向きと表示情報のマッピング */
 const windDirectionMap = {
   North: { rotation: 0, label: '北', kanji: '北' },
   East: { rotation: 90, label: '東', kanji: '東' },
@@ -12,6 +15,11 @@ const windDirectionMap = {
   West: { rotation: 270, label: '西', kanji: '西' },
 };
 
+/**
+ * 風向きコンパス表示コンポーネント
+ * 現在の風向きを視覚的に表示
+ * @param props - コンポーネントのプロパティ
+ */
 const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirection }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
 

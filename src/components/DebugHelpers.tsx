@@ -1,13 +1,16 @@
 import React from 'react';
 import { Text } from '@react-three/drei';
 
+/** デバッグヘルパーのプロパティ */
 interface DebugHelpersProps {
+  /** 表示の有効/無効 */
   enabled?: boolean;
 }
 
 /**
  * デバッグ用のヘルパー表示コンポーネント
- * （バウンディングボックス、軸、座標ラベル）
+ * 座標軸とラベルを表示して3D空間のデバッグをサポート
+ * @param props - コンポーネントのプロパティ
  */
 export const DebugHelpers: React.FC<DebugHelpersProps> = ({ enabled = true }) => {
   if (!enabled) return null;

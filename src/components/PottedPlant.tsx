@@ -4,6 +4,10 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import plantModel from '../assets/Potted Plant/scene.gltf?url';
 
+/**
+ * 鉢植え植物コンポーネント
+ * 風に揺れる複数の鉢植え植物を配置
+ */
 const PottedPlant: React.FC = () => {
   const plant1Ref = useRef<THREE.Group>(null!);
   const plant2Ref = useRef<THREE.Group>(null!);

@@ -2,6 +2,10 @@ import React, { useRef, useState, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+/**
+ * 泡エフェクトコンポーネント
+ * 水中から浮かび上がる泡をアニメーション
+ */
 const BubbleEffect: React.FC = () => {
   const [bubbleData, setBubbleData] = useState<
     {

@@ -2,13 +2,23 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+/** 雲コンポーネントのプロパティ */
 interface CloudProps {
+  /** 雲の位置 */
   position: [number, number, number];
+  /** 雲のスケール */
   scale: number;
+  /** 移動速度 */
   speed: number;
-  timeScale: number; // timeScaleを追加
+  /** 時間スケール */
+  timeScale: number;
 }
 
+/**
+ * 個別の雲コンポーネント
+ * 風に流れる雲をシミュレート
+ * @param props - コンポーネントのプロパティ
+ */
 const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
   const groupRef = useRef<THREE.Group>(null!);
 

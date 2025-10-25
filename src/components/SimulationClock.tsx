@@ -3,19 +3,28 @@ import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 import './SimulationClock.css';
 
+/** シミュレーション時計のプロパティ */
 interface SimulationClockProps {
+  /** リアルタイムの時刻情報 */
   realTime?: {
     hours: number;
     minutes: number;
     seconds: number;
   };
+  /** シミュレーション時刻情報 */
   simulatedTime?: {
     minutes: number;
     seconds: number;
   };
+  /** 昼夜の判定 */
   isDay: boolean;
 }
 
+/**
+ * シミュレーション時計コンポーネント
+ * リアルタイムまたはシミュレーション時刻を表示するアナログ時計
+ * @param props - コンポーネントのプロパティ
+ */
 const SimulationClock: React.FC<SimulationClockProps> = ({ realTime, simulatedTime }) => {
   // リアルタイムがある場合はそれを使用、なければシミュレーション時間を使用
   const hours = realTime ? realTime.hours : Math.floor((simulatedTime?.minutes || 0) / 60) % 24;

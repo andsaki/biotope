@@ -1,5 +1,9 @@
 import React from "react";
 
+/**
+ * 岩石コンポーネント
+ * ビオトープ内に配置される複数の岩を表示
+ */
 const Rocks: React.FC = () => {
   return (
     <group>
