@@ -17,7 +17,7 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 - **インタラクティブ要素**:
   - 水面アニメーション
   - 日時計（影の動き）
-  - 漂流する瓶（クリックで季節の便箋表示）
+  - 漂流する瓶（クリックで季節×時間帯の便箋表示）
   - 風向きコンパス
 - **レスポンシブデザイン**: PC/モバイル対応
 
@@ -57,25 +57,34 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 
 ```
 src/
-├── components/          # UIコンポーネント
-│   ├── FishManager.tsx      # 魚の管理
-│   ├── Ground.tsx           # 地面
-│   ├── WaterSurface.tsx     # 水面
-│   ├── DriftingBottle.tsx   # 漂流する瓶
-│   ├── SeasonalEffects.tsx  # 季節エフェクト統合
-│   ├── Sun.tsx              # 太陽
-│   ├── SceneLights.tsx      # ライティング
-│   └── UI.tsx               # メインUI
-├── hooks/               # カスタムフック
-│   ├── useRealTime.ts       # 日本時間管理
-│   ├── useWindDirection.ts  # 風向き管理
-│   └── useLoader.ts         # ローディング管理
-├── contexts/            # 状態管理
-│   └── SeasonContext.tsx    # 季節管理
-├── utils/               # ユーティリティ
-│   └── sunPosition.ts       # 太陽位置計算
-├── constants.ts         # アプリケーション定数
-└── assets/              # 静的資産（R2アップロード対象）
+├── components/              # UIコンポーネント
+│   ├── DriftingBottle/
+│   │   ├── index.tsx            # 漂流瓶メインコンポーネント
+│   │   ├── BottleModel.tsx      # 瓶の3Dモデル
+│   │   └── MessageCard.tsx      # メッセージカード表示
+│   ├── FishManager.tsx          # 魚の管理
+│   ├── Ground.tsx               # 地面
+│   ├── WaterSurface.tsx         # 水面
+│   ├── SeasonalEffects.tsx      # 季節エフェクト統合
+│   ├── Sun.tsx                  # 太陽
+│   ├── SceneLights.tsx          # ライティング
+│   └── UI.tsx                   # メインUI
+├── hooks/                   # カスタムフック
+│   ├── useRealTime.ts           # 日本時間管理
+│   ├── useWindDirection.ts      # 風向き管理
+│   ├── useLoader.ts             # ローディング管理
+│   └── useBottleAnimation.ts    # 瓶の漂流アニメーション
+├── contexts/                # 状態管理
+│   └── SeasonContext.tsx        # 季節管理（リアルタイム判定対応）
+├── utils/                   # ユーティリティ関数
+│   ├── sunPosition.ts           # 太陽位置計算
+│   ├── time.ts                  # 時間帯判定
+│   ├── random.ts                # ランダム選択
+│   └── messageUtils.ts          # メッセージ取得ロジック
+├── constants/               # 定数データ
+│   └── bottleMessages.ts        # 季節×時間帯メッセージ集
+├── constants.ts             # アプリケーション定数
+└── assets/                  # 静的資産（R2アップロード対象）
 ```
 
 ## パフォーマンス最適化
