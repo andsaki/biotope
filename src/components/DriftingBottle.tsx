@@ -191,14 +191,7 @@ export const DriftingBottle = ({
               >
                 海からの便り
               </h3>
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "scroll",
-                  paddingRight: "10px",
-                  minHeight: 0,
-                }}
-              >
+              <div>
                 <p
                   style={{
                     margin: "0",
