@@ -2,19 +2,15 @@ import React, { useRef, useMemo, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
-
-/** 反射星空コンポーネントのプロパティ */
-interface ReflectedStarsProps {
-  /** 夜間かどうか */
-  isNight: boolean;
-}
+import { useTime } from "../contexts/TimeContext";
 
 /**
  * 水面に反射する星空コンポーネント
  * 夜間に水面下に表示される星の反射
- * @param props - コンポーネントのプロパティ
  */
-const ReflectedStars: React.FC<ReflectedStarsProps> = ({ isNight }) => {
+const ReflectedStars: React.FC = () => {
+  const { isDay } = useTime();
+  const isNight = !isDay;
   const pointsRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<any>(null!);
   const [visible, setVisible] = useState(false);

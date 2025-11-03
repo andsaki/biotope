@@ -2,22 +2,15 @@ import React, { useState, useEffect } from 'react';
 import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 import './SimulationClock.css';
+import { useTime } from '../contexts/TimeContext';
 
 /** シミュレーション時計のプロパティ */
 interface SimulationClockProps {
-  /** リアルタイムの時刻情報 */
-  realTime?: {
-    hours: number;
-    minutes: number;
-    seconds: number;
-  };
   /** シミュレーション時刻情報 */
   simulatedTime?: {
     minutes: number;
     seconds: number;
   };
-  /** 昼夜の判定 */
-  isDay: boolean;
 }
 
 /**
@@ -25,11 +18,13 @@ interface SimulationClockProps {
  * リアルタイムまたはシミュレーション時刻を表示するアナログ時計
  * @param props - コンポーネントのプロパティ
  */
-const SimulationClock: React.FC<SimulationClockProps> = ({ realTime, simulatedTime }) => {
+const SimulationClock: React.FC<SimulationClockProps> = ({ simulatedTime }) => {
+  const { realTime } = useTime();
+
   // リアルタイムがある場合はそれを使用、なければシミュレーション時間を使用
-  const hours = realTime ? realTime.hours : Math.floor((simulatedTime?.minutes || 0) / 60) % 24;
-  const minutes = realTime ? realTime.minutes : (simulatedTime?.minutes || 0) % 60;
-  const seconds = realTime ? realTime.seconds : (simulatedTime?.seconds || 0);
+  const hours = realTime.hours;
+  const minutes = realTime.minutes;
+  const seconds = realTime.seconds;
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 

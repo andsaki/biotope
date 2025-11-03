@@ -1,6 +1,7 @@
 import React, { Suspense, useRef, useMemo, memo } from "react";
 
 import { SeasonProvider } from "./contexts/SeasonContext";
+import { TimeProvider, useTime } from "./contexts/TimeContext";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -32,7 +33,6 @@ const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 import UI from "./components/UI";
 import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants";
-import { useRealTime } from "./hooks/useRealTime";
 import { useWindDirection } from "./hooks/useWindDirection";
 import { useLoader } from "./hooks/useLoader";
 import { calculateSunPosition } from "./utils/sunPosition";
@@ -53,8 +53,12 @@ const MemoizedDriftingBottle = memo(DriftingBottle);
 const MemoizedSeasonalEffects = memo(SeasonalEffects);
 const MemoizedWindDirectionDisplay = memo(WindDirectionDisplay);
 
-function App() {
-  const { isDay, realTime } = useRealTime();
+/**
+ * アプリケーション内部コンポーネント
+ * TimeProviderの中で時間情報を使用
+ */
+const AppContent = () => {
+  const { isDay, realTime } = useTime();
   const windDirection = useWindDirection();
   const showLoader = useLoader();
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
@@ -69,7 +73,6 @@ function App() {
   );
 
   return (
-    <SeasonProvider>
       <div
         className="App"
         style={{
@@ -96,8 +99,8 @@ function App() {
           gl={{ antialias: true }} // よりスムーズなレンダリングのためにアンチエイリアシングを有効化
         >
           <Suspense fallback={null}>
-            <MemoizedStars isNight={!isDay} />
-            <MemoizedReflectedStars isNight={!isDay} />
+            <MemoizedStars />
+            <MemoizedReflectedStars />
 
             {/* シーンの背景と霧 */}
             <color attach="background" args={[isDay ? "#4A90E2" : "#2A2A4E"]} />
@@ -112,7 +115,6 @@ function App() {
               spotLightRef={spotLightRef}
             />
             <LightingController
-              isDay={isDay}
               directionalLightRef={directionalLightRef}
               ambientLightRef={ambientLightRef}
               pointLightRef={pointLightRef}
@@ -153,12 +155,24 @@ function App() {
             <DebugHelpers enabled={DEBUG_MODE} />
           </Suspense>
         </Canvas>
-        <UI realTime={realTime} isDay={isDay} />
+        <UI />
         <MemoizedWindDirectionDisplay windDirection={windDirection} />
       </div>
-    </SeasonProvider>
+  );
+};
+
+/**
+ * アプリケーションのルートコンポーネント
+ * 各種Providerでラップ
+ */
+function App() {
+  return (
+    <TimeProvider>
+      <SeasonProvider>
+        <AppContent />
+      </SeasonProvider>
+    </TimeProvider>
   );
 }
-
 
 export default App;

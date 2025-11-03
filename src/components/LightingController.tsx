@@ -2,11 +2,10 @@ import React from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
+import { useTime } from "../contexts/TimeContext";
 
 /** ライティング制御のプロパティ */
 interface LightingControllerProps {
-  /** 昼夜の判定 */
-  isDay: boolean;
   /** 指向性ライトへの参照 */
   directionalLightRef: React.RefObject<THREE.DirectionalLight>;
   /** 環境光への参照 */
@@ -23,12 +22,12 @@ interface LightingControllerProps {
  * @param props - コンポーネントのプロパティ
  */
 const LightingController: React.FC<LightingControllerProps> = ({
-  isDay,
   directionalLightRef,
   ambientLightRef,
   pointLightRef,
   spotLightRef,
 }) => {
+  const { isDay } = useTime();
   const { season } = useSeason();
 
   useFrame((_, delta) => {
