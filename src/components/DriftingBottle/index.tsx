@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSeason } from "../../contexts/SeasonContext";
 import { getRandomMessage } from "../../utils/messageUtils";
+import { fetchDailyMessage } from "../../utils/dailyMessage";
 import { useBottleAnimation } from "../../hooks/useBottleAnimation";
 import { BottleModel } from "./BottleModel";
 import { MessageCard } from "./MessageCard";
@@ -27,8 +28,25 @@ export const DriftingBottle = ({
   const [hovered, setHovered] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
   const [currentSender, setCurrentSender] = useState("");
+  const [dailyMessageFetched, setDailyMessageFetched] = useState(false);
 
   const bottleRef = useBottleAnimation(position);
+
+  // 1日1回、Gemini経由でメッセージを取得
+  useEffect(() => {
+    const loadDailyMessage = async () => {
+      const message = await fetchDailyMessage();
+      if (message && !dailyMessageFetched) {
+        setCurrentMessage(message);
+        setCurrentSender("今日の言葉");
+        setShowMessage(true);
+        setDailyMessageFetched(true);
+        onMessageRead?.();
+      }
+    };
+
+    loadDailyMessage();
+  }, [dailyMessageFetched, onMessageRead]);
 
   const handleClick = () => {
     const hour = new Date().getHours();
