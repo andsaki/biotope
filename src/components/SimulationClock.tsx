@@ -4,24 +4,13 @@ import 'react-clock/dist/Clock.css';
 import './SimulationClock.css';
 import { useTime } from '../contexts/TimeContext';
 
-/** シミュレーション時計のプロパティ */
-interface SimulationClockProps {
-  /** シミュレーション時刻情報 */
-  simulatedTime?: {
-    minutes: number;
-    seconds: number;
-  };
-}
-
 /**
  * シミュレーション時計コンポーネント
- * リアルタイムまたはシミュレーション時刻を表示するアナログ時計
- * @param props - コンポーネントのプロパティ
+ * リアルタイムを表示するアナログ時計
  */
-const SimulationClock: React.FC<SimulationClockProps> = ({ simulatedTime }) => {
+const SimulationClock: React.FC = () => {
   const { realTime } = useTime();
 
-  // リアルタイムがある場合はそれを使用、なければシミュレーション時間を使用
   const hours = realTime.hours;
   const minutes = realTime.minutes;
   const seconds = realTime.seconds;

@@ -1,24 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useSeason } from "../contexts/SeasonContext";
-import { useTime } from "../contexts/TimeContext";
 import SimulationClock from "./SimulationClock";
 import "./UI.css";
-
-/** UIコンポーネントのプロパティ */
-interface UIProps {
-  /** シミュレーション時刻情報 */
-  simulatedTime?: {
-    minutes: number;
-    seconds: number;
-  };
-}
 
 /**
  * メインUIコンポーネント
  * 時計表示と季節選択パネルを提供
  */
-const UI: React.FC<UIProps> = ({ simulatedTime }) => {
-  const { isDay } = useTime();
+const UI: React.FC = () => {
   const { season, setSeason } = useSeason();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isSeasonPanelOpen, setIsSeasonPanelOpen] = useState(false);
@@ -95,7 +84,7 @@ const UI: React.FC<UIProps> = ({ simulatedTime }) => {
 
         {/* 時計 */}
         <div className={`clock-wrapper ${isMobile ? "mobile" : "desktop"}`}>
-          <SimulationClock simulatedTime={simulatedTime} />
+          <SimulationClock />
         </div>
       </div>
 
