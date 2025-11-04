@@ -35,9 +35,9 @@ function getDateDescription(date: Date): string {
  */
 async function generateDailyMessage(apiKey: string, dateStr: string): Promise<string> {
   const prompt = `あなたは詩人です。今日は${dateStr}です。
-この日付に関連した、心温まる短いメッセージを日本語で1つ書いてください。
+この日付に関連した、心温まるメッセージを日本語で1つ書いてください。
 以下の条件を守ってください：
-- 50文字以内
+- 200文字以内
 - 季節感を含める
 - 優しく前向きな内容
 - です・ます調
@@ -62,7 +62,7 @@ async function generateDailyMessage(apiKey: string, dateStr: string): Promise<st
         ],
         generationConfig: {
           temperature: 0.9,
-          maxOutputTokens: 100,
+          maxOutputTokens: 300,
         },
       }),
     }
