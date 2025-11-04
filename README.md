@@ -19,6 +19,7 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
   - 日時計（影の動き）
   - 漂流する瓶（クリックで季節×時間帯の便箋表示）
   - 風向きコンパス
+- **AI生成メッセージ**: Google Gemini APIによる1日1回の日付関連メッセージ生成
 - **レスポンシブデザイン**: PC/モバイル対応
 
 ## 技術スタック
@@ -27,7 +28,9 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 - **ビルドツール**: Vite 7
 - **3D描画**: Three.js + @react-three/fiber + @react-three/drei
 - **物理エンジン**: @react-three/rapier
+- **AI**: Google Gemini 2.0 Flash (メッセージ生成)
 - **デプロイ**: Cloudflare Pages
+- **サーバーレス**: Cloudflare Functions
 - **ストレージ**: Cloudflare R2
 
 ## セットアップ
@@ -61,13 +64,14 @@ src/
 │   ├── DriftingBottle/
 │   │   ├── index.tsx            # 漂流瓶メインコンポーネント
 │   │   ├── BottleModel.tsx      # 瓶の3Dモデル
-│   │   └── MessageCard.tsx      # メッセージカード表示
+│   │   └── MessageCard.tsx      # メッセージカード表示（AI生成対応）
 │   ├── FishManager.tsx          # 魚の管理
 │   ├── Ground.tsx               # 地面
 │   ├── WaterSurface.tsx         # 水面
 │   ├── SeasonalEffects.tsx      # 季節エフェクト統合
 │   ├── Sun.tsx                  # 太陽
 │   ├── SceneLights.tsx          # ライティング
+│   ├── Clock.tsx                # リアルタイム時計表示
 │   └── UI.tsx                   # メインUI
 ├── hooks/                   # カスタムフック
 │   ├── useRealTime.ts           # 日本時間管理
@@ -75,7 +79,8 @@ src/
 │   ├── useLoader.ts             # ローディング管理
 │   └── useBottleAnimation.ts    # 瓶の漂流アニメーション
 ├── contexts/                # 状態管理
-│   └── SeasonContext.tsx        # 季節管理（リアルタイム判定対応）
+│   ├── SeasonContext.tsx        # 季節管理（リアルタイム判定対応）
+│   └── TimeContext.tsx          # 時間情報共有
 ├── utils/                   # ユーティリティ関数
 │   ├── sunPosition.ts           # 太陽位置計算
 │   ├── time.ts                  # 時間帯判定
@@ -85,6 +90,10 @@ src/
 │   └── bottleMessages.ts        # 季節×時間帯メッセージ集
 ├── constants.ts             # アプリケーション定数
 └── assets/                  # 静的資産（R2アップロード対象）
+
+functions/
+└── api/
+    └── daily-message.ts     # Cloudflare Functions - AI日次メッセージ生成API
 ```
 
 ## パフォーマンス最適化
@@ -131,6 +140,128 @@ export default defineConfig({
 
 ### デプロイ
 Cloudflare Pagesに自動デプロイ。アセットはR2から配信。
+
+## アーキテクチャ
+
+### システム構成図
+
+```mermaid
+graph TB
+    User[ユーザー]
+    Browser[ブラウザ]
+    CFPages[Cloudflare Pages]
+    CFFunctions[Cloudflare Functions]
+    R2[Cloudflare R2]
+    Gemini[Google Gemini API]
+
+    User -->|アクセス| Browser
+    Browser -->|HTMLリクエスト| CFPages
+    CFPages -->|HTMLレスポンス| Browser
+    Browser -->|静的アセット| R2
+    R2 -->|画像/音声| Browser
+    Browser -->|メッセージAPI| CFFunctions
+    CFFunctions -->|日付情報| Gemini
+    Gemini -->|生成メッセージ| CFFunctions
+    CFFunctions -->|JSONレスポンス| Browser
+
+    style CFPages fill:#f96,stroke:#333
+    style CFFunctions fill:#69f,stroke:#333
+    style R2 fill:#9f6,stroke:#333
+    style Gemini fill:#ff9,stroke:#333
+```
+
+### メッセージ生成フロー
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant B as ブラウザ
+    participant CF as Cloudflare Functions
+    participant G as Gemini API
+    participant C as CDN Cache
+
+    U->>B: 瓶をクリック
+    B->>CF: GET /api/daily-message
+
+    alt キャッシュヒット
+        CF->>C: キャッシュ確認
+        C-->>CF: キャッシュされたメッセージ
+        CF-->>B: メッセージ返却
+    else キャッシュミス
+        CF->>CF: 日本時間の日付取得
+        CF->>G: メッセージ生成リクエスト
+        Note over G: "11月4日の心温まるメッセージを生成"
+        G-->>CF: 生成されたメッセージ
+        CF->>C: キャッシュに保存 (24h)
+        CF-->>B: メッセージ返却
+    end
+
+    B->>B: MessageCardコンポーネントに表示
+    B-->>U: メッセージ表示
+```
+
+### レンダリングフロー
+
+```mermaid
+graph LR
+    A[App.tsx] --> B[TimeContext]
+    A --> C[SeasonContext]
+    B --> D[時間情報]
+    C --> E[季節情報]
+
+    D --> F[Sun]
+    D --> G[SceneLights]
+    D --> H[SundialGnomon]
+    D --> I[Clock]
+
+    E --> J[SeasonalEffects]
+    E --> K[DriftingBottle]
+
+    J --> L[CherryBlossoms]
+    J --> M[SnowEffect]
+    J --> N[FallenLeaves]
+    J --> O[SummerEffects]
+
+    K --> P[BottleModel]
+    K --> Q[MessageCard]
+    Q --> R[Gemini API]
+
+    style B fill:#e1f5ff
+    style C fill:#fff5e1
+    style R fill:#ff9
+```
+
+## AI機能の詳細
+
+### Gemini API統合
+
+`functions/api/daily-message.ts` でCloudflare Functionsを使用し、毎日日本時間の日付に応じた心温まるメッセージを生成。
+
+**特徴**:
+- **モデル**: Gemini 2.0 Flash (高速・低コスト)
+- **プロンプト**: 50文字以内、季節感のある前向きなメッセージ
+- **キャッシュ**: 1日キャッシュで無駄なAPI呼び出しを削減
+- **フォールバック**: 生成失敗時は既存の季節×時間帯メッセージにフォールバック
+
+**API仕様**:
+```
+GET /api/daily-message
+
+Response:
+{
+  "date": "2025-11-04",
+  "dateDescription": "11月4日（火曜日）",
+  "message": "霜月の風に、心も新しく...",
+  "generatedAt": "2025-11-04T15:00:00.000Z"
+}
+```
+
+### 環境変数設定
+
+Cloudflare Pagesの環境変数で設定:
+```
+GEMINI_API_KEY=your_api_key_here
+```
 
 ## ドキュメント
 
