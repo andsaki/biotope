@@ -36,17 +36,19 @@ export const DriftingBottle = ({
   useEffect(() => {
     const loadDailyMessage = async () => {
       const message = await fetchDailyMessage();
-      if (message && !dailyMessageFetched) {
+      if (message) {
         setCurrentMessage(message);
         setCurrentSender("今日の言葉");
         setShowMessage(true);
-        setDailyMessageFetched(true);
         onMessageRead?.();
       }
     };
 
-    loadDailyMessage();
-  }, [dailyMessageFetched, onMessageRead]);
+    if (!dailyMessageFetched) {
+      loadDailyMessage();
+      setDailyMessageFetched(true);
+    }
+  }, []);
 
   const handleClick = () => {
     const hour = new Date().getHours();
