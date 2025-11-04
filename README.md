@@ -176,24 +176,23 @@ graph TB
 sequenceDiagram
     participant U as ユーザー
     participant B as ブラウザ
+    participant Edge as Cloudflare Edge
     participant CF as Cloudflare Functions
     participant G as Gemini API
-    participant C as CDN Cache
 
     U->>B: 瓶をクリック
-    B->>CF: GET /api/daily-message
+    B->>Edge: GET /api/daily-message
 
-    alt キャッシュヒット
-        CF->>C: キャッシュ確認
-        C-->>CF: キャッシュされたメッセージ
-        CF-->>B: メッセージ返却
+    alt エッジキャッシュヒット
+        Edge-->>B: キャッシュされたメッセージ (Cache-Control: max-age=86400)
     else キャッシュミス
+        Edge->>CF: リクエスト転送
         CF->>CF: 日本時間の日付取得
         CF->>G: メッセージ生成リクエスト
         Note over G: "11月4日の心温まるメッセージを生成"
         G-->>CF: 生成されたメッセージ
-        CF->>C: キャッシュに保存 (24h)
-        CF-->>B: メッセージ返却
+        CF-->>Edge: メッセージ返却 (Cache-Control: 24h)
+        Edge-->>B: メッセージ返却 + キャッシュ保存
     end
 
     B->>B: MessageCardコンポーネントに表示
