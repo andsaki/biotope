@@ -3,9 +3,6 @@
  * グローバルスタイルとベーススタイル
  */
 
-/* Import CSS Variables */
-@import './styles/variables.css';
-
 /* ==========================================================================
    Root Styles
    ========================================================================== */
@@ -70,7 +67,7 @@ button {
   /* Display & Box Model */
   padding: 0.6em 1.2em;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
 
   /* Typography */
   font-family: inherit;

@@ -1,5 +1,5 @@
 import React from 'react';
-import './WindDirectionDisplay.css';
+import { tokens } from '@/styles/tokens';
 
 /** 風向き表示コンポーネントのプロパティ */
 interface WindDirectionDisplayProps {
@@ -22,23 +22,148 @@ const windDirectionMap = {
  */
 const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirection }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
-    <div className="wind-direction-display">
+    <div
+      style={{
+        position: isMobile ? 'fixed' : 'absolute',
+        top: isMobile ? tokens.positioning.mobile.top : tokens.positioning.pc.top,
+        left: isMobile ? tokens.positioning.mobile.left : tokens.positioning.pc.left,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: tokens.spacing.md,
+        padding: tokens.spacing.lg,
+        border: `2px solid ${tokens.colors.paperBorder}`,
+        borderRadius: tokens.radius.md,
+        background: tokens.colors.paperBg,
+        boxShadow: tokens.shadows.lg,
+        opacity: isMobile ? 0.95 : 1,
+        transform: isMobile ? 'scale(0.75)' : 'none',
+        transformOrigin: 'top left',
+      }}
+    >
+      {/* 装飾的なボーダー */}
+      <div
+        style={{
+          position: 'absolute',
+          top: tokens.spacing.sm,
+          right: tokens.spacing.sm,
+          bottom: tokens.spacing.sm,
+          left: tokens.spacing.sm,
+          border: `1px solid ${tokens.colors.paperBorder}`,
+          borderRadius: tokens.radius.sm,
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* コンパス本体 */}
-      <div className="compass-container">
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: tokens.componentSizes.pc.compass,
+          height: tokens.componentSizes.pc.compass,
+        }}
+      >
         {/* 外側のリング */}
-        <div className="compass-ring">
+        <div
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            border: `3px solid ${tokens.colors.textSecondary}`,
+            borderRadius: tokens.radius.full,
+            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(245, 230, 211, 0.8) 100%)',
+            boxShadow: `${tokens.shadows.inset}, ${tokens.shadows.sm}`,
+          }}
+        >
           {/* 方位マーク */}
-          <div className="compass-mark north">N</div>
-          <div className="compass-mark east">E</div>
-          <div className="compass-mark south">S</div>
-          <div className="compass-mark west">W</div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '5px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontFamily: tokens.typography.fontFamily.serif,
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: tokens.colors.textSecondary,
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            }}
+          >
+            N
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: '8px',
+              transform: 'translateY(-50%)',
+              fontFamily: tokens.typography.fontFamily.serif,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: tokens.colors.textSecondary,
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            }}
+          >
+            E
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '5px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontFamily: tokens.typography.fontFamily.serif,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: tokens.colors.textSecondary,
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            }}
+          >
+            S
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '8px',
+              transform: 'translateY(-50%)',
+              fontFamily: tokens.typography.fontFamily.serif,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: tokens.colors.textSecondary,
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            }}
+          >
+            W
+          </div>
         </div>
 
         {/* 中央の風向き矢印 */}
-        <div className="wind-arrow-wrapper" style={{ transform: `rotate(${rotation}deg)` }}>
-          <svg width="40" height="40" viewBox="0 0 40 40" className="wind-arrow-svg">
+        <div
+          style={{
+            position: 'absolute',
+            width: '40px',
+            height: '40px',
+            filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+            transform: `rotate(${rotation}deg)`,
+            transition: tokens.transitions.slow,
+          }}
+        >
+          <svg width="40" height="40" viewBox="0 0 40 40">
             <defs>
               <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" style={{ stopColor: '#FF6B6B', stopOpacity: 1 }} />
@@ -55,13 +180,46 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
         </div>
 
         {/* 中央の点 */}
-        <div className="compass-center"></div>
+        <div
+          style={{
+            position: 'absolute',
+            zIndex: tokens.zIndex.dropdown,
+            width: '8px',
+            height: '8px',
+            borderRadius: tokens.radius.full,
+            background: tokens.colors.textSecondary,
+            boxShadow: tokens.shadows.sm,
+          }}
+        />
       </div>
 
       {/* 風向き表示 */}
-      <div className="wind-label">
-        <span className="wind-kanji">{kanji}</span>
-        <span className="wind-text">の風</span>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: tokens.spacing.xs,
+          fontFamily: tokens.typography.fontFamily.serif,
+        }}
+      >
+        <span
+          style={{
+            fontSize: '22px',
+            fontWeight: 'bold',
+            color: tokens.colors.textPrimary,
+          }}
+        >
+          {kanji}
+        </span>
+        <span
+          style={{
+            fontSize: '14px',
+            fontWeight: 500,
+            color: tokens.colors.textSecondary,
+          }}
+        >
+          の風
+        </span>
       </div>
     </div>
   );

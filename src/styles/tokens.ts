@@ -21,42 +21,42 @@ export const shadows = {
 } as const;
 
 export const radius = {
-  sm: '4px',
-  md: '8px',
-  lg: '20px',
+  sm: '0.25rem',   // 4px
+  md: '0.5rem',    // 8px
+  lg: '1.25rem',   // 20px
   full: '50%',
 } as const;
 
 export const spacing = {
-  xs: '4px',
-  sm: '12px',
-  md: '16px',
-  lg: '20px',
-  xl: '32px',
+  xs: '0.25rem',   // 4px
+  sm: '0.75rem',   // 12px
+  md: '1rem',      // 16px
+  lg: '1.25rem',   // 20px
+  xl: '2rem',      // 32px
 } as const;
 
 export const positioning = {
   pc: {
-    top: '20px',
-    right: '20px',
-    left: '20px',
+    top: '1.25rem',    // 20px
+    right: '1.25rem',  // 20px
+    left: '1.25rem',   // 20px
   },
   mobile: {
-    top: '10px',
-    right: '15px',
-    left: '10px',
+    top: '0.625rem',   // 10px
+    right: '0.9375rem', // 15px
+    left: '0.625rem',  // 10px
   },
 } as const;
 
 export const componentSizes = {
   pc: {
-    clock: '260px',
-    compass: '100px',
-    button: '50px',
+    clock: '16.25rem',   // 260px
+    compass: '6.25rem',  // 100px
+    button: '3.125rem',  // 50px
   },
   mobile: {
-    clock: '140px',
-    button: '48px',
+    clock: '8.75rem',    // 140px
+    button: '3rem',      // 48px
   },
 } as const;
 
