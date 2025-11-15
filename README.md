@@ -28,6 +28,7 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 - **ビルドツール**: Vite 7
 - **3D描画**: Three.js + @react-three/fiber + @react-three/drei
 - **物理エンジン**: @react-three/rapier
+- **デザインシステム**: トークンベースのスタイリング (tokens.ts)
 - **AI**: Google Gemini 2.0 Flash (メッセージ生成)
 - **デプロイ**: Cloudflare Pages
 - **サーバーレス**: Cloudflare Functions
@@ -72,6 +73,7 @@ src/
 │   ├── Sun.tsx                  # 太陽
 │   ├── SceneLights.tsx          # ライティング
 │   ├── Clock.tsx                # リアルタイム時計表示
+│   ├── WindDirectionDisplay.tsx # 風向きコンパス表示
 │   └── UI.tsx                   # メインUI
 ├── hooks/                   # カスタムフック
 │   ├── useRealTime.ts           # 日本時間管理
@@ -81,11 +83,14 @@ src/
 ├── contexts/                # 状態管理
 │   ├── SeasonContext.tsx        # 季節管理（リアルタイム判定対応）
 │   └── TimeContext.tsx          # 時間情報共有
+├── styles/                  # デザインシステム
+│   └── tokens.ts                # デザイントークン（色、影、サイズなど）
 ├── utils/                   # ユーティリティ関数
 │   ├── sunPosition.ts           # 太陽位置計算
 │   ├── time.ts                  # 時間帯判定
 │   ├── random.ts                # ランダム選択
-│   └── messageUtils.ts          # メッセージ取得ロジック
+│   ├── messageUtils.ts          # メッセージ取得ロジック
+│   └── dailyMessage.ts          # AI日次メッセージAPI呼び出し
 ├── constants/               # 定数データ
 │   └── bottleMessages.ts        # 季節×時間帯メッセージ集
 ├── constants.ts             # アプリケーション定数
@@ -95,6 +100,22 @@ functions/
 └── api/
     └── daily-message.ts     # Cloudflare Functions - AI日次メッセージ生成API
 ```
+
+## デザインシステム
+
+### トークンベース設計
+
+プロジェクト全体で一貫したデザインを実現するため、`src/styles/tokens.ts` でデザイントークンを一元管理:
+
+- **colors**: カラーパレット（paperBg、textPrimary、accentなど）
+- **shadows**: 影スタイル（sm、md、lg、inset）
+- **radius**: 角丸サイズ
+- **spacing**: 余白サイズ
+- **positioning**: PC/モバイル別の配置
+- **componentSizes**: コンポーネントサイズ
+- **typography**: フォント設定
+- **transitions**: アニメーション速度
+- **zIndex**: 重なり順
 
 ## パフォーマンス最適化
 
@@ -267,7 +288,6 @@ GEMINI_API_KEY=your_api_key_here
 - [`docs/drifting-bottle-feature.md`](docs/drifting-bottle-feature.md): 漂流する瓶の機能説明
 - [`docs/realtime-clock-feature.md`](docs/realtime-clock-feature.md): リアルタイム時計の機能説明
 - [`docs/seasonal-effects-feature.md`](docs/seasonal-effects-feature.md): 季節エフェクトの機能説明
-- [`docs/refactoring-summary.md`](docs/refactoring-summary.md): リファクタリング概要
 
 ## ライセンス
 
