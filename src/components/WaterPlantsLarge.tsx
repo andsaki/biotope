@@ -13,7 +13,7 @@ const WaterPlantsLarge: React.FC = () => {
   const lilyRefs = useRef<THREE.Group[]>([]);
 
   // R2から直接読み込み（ファイルサイズが大きいため）
-  const lilyUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__water_lily_nymphaea_cv..glb";
+  const lilyUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__water_lily_nymphaea_cv.glb";
 
   const { scene: lilyScene } = lilyUrl
     ? useGLTF(lilyUrl, true)
