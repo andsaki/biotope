@@ -128,19 +128,22 @@ const ParticleLayer: React.FC = () => {
       {particles.map((particle) => (
         <mesh key={particle.id} position={[particle.x, particle.y, particle.z]}>
           {season === "winter" ? (
+            // 雪は球体
             <sphereGeometry args={[particle.size, 8, 8]} />
+          ) : season === "spring" ? (
+            // 桜の花びらは平たい形
+            <planeGeometry args={[particle.size * 1.5, particle.size, 1]} />
+          ) : season === "autumn" ? (
+            // 落ち葉は平たい長方形
+            <planeGeometry args={[particle.size * 1.2, particle.size * 1.8, 1]} />
           ) : (
-            <boxGeometry
-              args={[
-                particle.size,
-                particle.size,
-                particle.size * (season === "autumn" ? 1.5 : 1),
-              ]}
-            />
+            // 夏は小さな球体（種や小さな葉）
+            <sphereGeometry args={[particle.size, 6, 6]} />
           )}
           <meshStandardMaterial
             color={particle.color}
             transparent={true}
+            opacity={0.8}
             side={THREE.DoubleSide}
           />
         </mesh>

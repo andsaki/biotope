@@ -10,15 +10,19 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 - **リアルタイム時計**: 日本時間（UTC+9）と連動した昼夜サイクル
 - **動的照明**: 実時間に応じた太陽の位置と照明変化
 - **季節エフェクト**:
-  - **春**: 桜の花びら
-  - **夏**: 陽炎エフェクト、強い日差し
-  - **秋**: 紅葉の落ち葉（7色）
+  - **春**: 桜の花びら（平面パーティクル）
+  - **夏**: 陽炎エフェクト、強い日差し、**蓮の葉3Dモデル（波連動）**
+  - **秋**: **3D落ち葉モデル（水面浮遊・リアルな動き）**
   - **冬**: 雪、冷たい照明
 - **インタラクティブ要素**:
-  - 水面アニメーション
+  - 水面アニメーション（波紋エフェクト）
   - 日時計（影の動き）
   - 漂流する瓶（クリックで季節×時間帯の便箋表示）
   - 風向きコンパス
+- **3Dモデル統合**:
+  - **魚**: カレイ（底生魚の動き：待機→瞬間移動）
+  - **植物**: 蓮の葉（夏・波に連動）、水草
+  - **自然要素**: 落ち葉（秋・水面浮遊）
 - **AI生成メッセージ**: Google Gemini APIによる1日1回の日付関連メッセージ生成
 - **レスポンシブデザイン**: PC/モバイル対応
 
@@ -66,9 +70,12 @@ src/
 │   │   ├── index.tsx            # 漂流瓶メインコンポーネント
 │   │   ├── BottleModel.tsx      # 瓶の3Dモデル
 │   │   └── MessageCard.tsx      # メッセージカード表示（AI生成対応）
-│   ├── FishManager.tsx          # 魚の管理
+│   ├── FishManager.tsx          # 魚の管理（カレイ3Dモデル含む）
 │   ├── Ground.tsx               # 地面
-│   ├── WaterSurface.tsx         # 水面
+│   ├── WaterSurface.tsx         # 水面（波紋アニメーション）
+│   ├── WaterPlantsLarge.tsx     # 水草・蓮の葉（3Dモデル・波連動）
+│   ├── FallenLeaves.tsx         # 秋の落ち葉（3Dモデル・水面浮遊）
+│   ├── ParticleLayer.tsx        # 季節別パーティクル（形状最適化）
 │   ├── SeasonalEffects.tsx      # 季節エフェクト統合
 │   ├── Sun.tsx                  # 太陽
 │   ├── SceneLights.tsx          # ライティング
@@ -95,6 +102,9 @@ src/
 │   └── bottleMessages.ts        # 季節×時間帯メッセージ集
 ├── constants.ts             # アプリケーション定数
 └── assets/                  # 静的資産（R2アップロード対象）
+    ├── cc0____yellow_striped_flounder.glb       # カレイ3Dモデル
+    ├── cc0__deep_autumn__5k_followers_milestone.glb  # 落ち葉3Dモデル
+    └── cc0__water_lily_nymphaea_cv..glb         # 蓮の葉3Dモデル
 
 functions/
 └── api/
@@ -282,6 +292,62 @@ Cloudflare Pagesの環境変数で設定:
 ```
 GEMINI_API_KEY=your_api_key_here
 ```
+
+## 3Dモデルの詳細
+
+### カレイ（底生魚）
+
+**ファイル**: `cc0____yellow_striped_flounder.glb`
+**実装**: `FishManager.tsx`
+
+- 地面（Y=-0.9）に密着して配置
+- **動き**: 待機（10-20秒）→ 瞬間移動（0.3-0.5秒）→ 待機のサイクル
+- 待機中は透明度を下げて砂に擬態（opacity: 0.6）
+- 夜間はさらに暗く表示（opacity: 0.3）
+- 3匹配置、サイズは1.5-2.0でランダム化
+
+### 蓮の葉（夏限定）
+
+**ファイル**: `cc0__water_lily_nymphaea_cv..glb`
+**実装**: `WaterPlantsLarge.tsx`
+
+- 水面付近（Y=7.9）に4枚配置
+- **波連動**: WaterSurfaceコンポーネントと同じ波の計算式を使用
+  ```typescript
+  // 水面の高さ（WaterSurface.tsxと同じ）
+  const waterHeight = 8 + Math.sin(time * 1.5) * 0.5;
+  // 各葉の位置での波紋を考慮
+  const localWave = Math.sin(data.position[0] * 0.3 + time * 2.5) *
+                   Math.cos(data.position[2] * 0.3 + time * 2.5) * 0.05;
+  ```
+- 各葉の位置での局所的な波紋効果を追加
+- 波の傾斜に合わせてX/Z軸で傾く自然な動き
+
+### 落ち葉（秋限定）
+
+**ファイル**: `cc0__deep_autumn__5k_followers_milestone.glb`
+**実装**: `FallenLeaves.tsx`
+
+- 水面（Y=8.05）に15枚浮遊
+- **リアルな動き**:
+  - 浮き沈み: 各葉が独自の速度と位相で上下に揺れる
+  - 横移動: X/Z軸で異なる速度で円を描く
+  - 回転: Y軸でゆっくり回転、X/Z軸でわずかに傾く
+- 各葉が異なるタイミングで動き自然な表現を実現
+- パフォーマンス最適化: `useMemo`で初期位置データを固定
+
+## パーティクルシステムの改善
+
+**実装**: `ParticleLayer.tsx`
+
+季節ごとにパーティクルの形状を最適化（キューブから自然な形状へ）:
+
+| 季節 | 形状 | ジオメトリ |
+|------|------|-----------|
+| 春 | 桜の花びら | planeGeometry（平たい形） |
+| 夏 | 小さな球体 | sphereGeometry（種や小さな葉） |
+| 秋 | 平たい長方形 | planeGeometry（落ち葉） |
+| 冬 | 雪 | sphereGeometry |
 
 ## ドキュメント
 
