@@ -71,7 +71,7 @@ const FallenLeaves: React.FC = () => {
             if (el) leavesRefs.current[i] = el;
           }}
           position={[data.x, 8.05, data.z]}
-          rotation={[0, data.rotation, 0]}
+          rotation={[0, data.rotationY, 0]}
           scale={[data.scale, data.scale, data.scale]}
         >
           <primitive object={leafScene.clone()} />
