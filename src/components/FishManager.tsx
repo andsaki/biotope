@@ -5,7 +5,6 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import fishModel from '../assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url';
-import flatfishModel from '../assets/cc0____yellow_striped_flounder.glb?url';
 
 /** 魚の種類 */
 type FishType = "normal" | "flatfish";
@@ -202,9 +201,7 @@ const FishManager: React.FC = () => {
   const normalFishUrl = isLocal
     ? fishModel
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
-  const flatfishUrl = isLocal
-    ? flatfishModel
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0____yellow_striped_flounder.glb";
+  const flatfishUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0____yellow_striped_flounder.glb";
 
   const { scene: normalFishScene } = normalFishUrl
     ? useGLTF(normalFishUrl, true)

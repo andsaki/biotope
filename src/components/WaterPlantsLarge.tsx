@@ -3,7 +3,6 @@ import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
-import waterLilyModel from '../assets/cc0__water_lily_nymphaea_cv..glb?url';
 
 /**
  * 大型水草コンポーネント
@@ -13,11 +12,8 @@ const WaterPlantsLarge: React.FC = () => {
   const { season } = useSeason();
   const lilyRefs = useRef<THREE.Group[]>([]);
 
-  // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
-  const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
-  const lilyUrl = isLocal
-    ? waterLilyModel
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__water_lily_nymphaea_cv..glb";
+  // R2から直接読み込み（ファイルサイズが大きいため）
+  const lilyUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__water_lily_nymphaea_cv..glb";
 
   const { scene: lilyScene } = lilyUrl
     ? useGLTF(lilyUrl, true)

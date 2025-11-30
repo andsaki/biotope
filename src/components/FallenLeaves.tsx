@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
-import autumnLeafModel from '../assets/cc0__deep_autumn__5k_followers_milestone.glb?url';
 
 /**
  * 秋の落ち葉エフェクト
@@ -13,11 +12,8 @@ const FallenLeaves: React.FC = () => {
   const { season } = useSeason();
   const leavesRefs = useRef<THREE.Group[]>([]);
 
-  // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
-  const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
-  const leafUrl = isLocal
-    ? autumnLeafModel
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__deep_autumn__5k_followers_milestone.glb";
+  // R2から直接読み込み（ファイルサイズが大きいため）
+  const leafUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__deep_autumn__5k_followers_milestone.glb";
 
   const { scene: leafScene } = leafUrl
     ? useGLTF(leafUrl, true)
