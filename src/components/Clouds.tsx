@@ -55,7 +55,7 @@ interface CloudProps {
  * 風に流れる雲をシミュレート
  * @param props - コンポーネントのプロパティ
  */
-const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
+const Cloud: React.FC<CloudProps> = React.memo(({ position, scale, speed, timeScale }) => {
   const groupRef = useRef<THREE.Group>(null!);
 
   useFrame((state) => {
@@ -76,6 +76,16 @@ const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
   });
 
   // 複数の球体を組み合わせて雲の形を表現
+  // ジオメトリとマテリアルをメモ化してパフォーマンス向上
+  const geometry = useMemo(() => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS), []);
+  const material = useMemo(() => new THREE.MeshStandardMaterial({
+    color: CLOUD_COLOR,
+    transparent: true,
+    opacity: CLOUD_OPACITY,
+    emissive: new THREE.Color(CLOUD_EMISSIVE_COLOR),
+    emissiveIntensity: CLOUD_EMISSIVE_INTENSITY
+  }), []);
+
   const cloudParts = useMemo(() => {
     const parts = [];
     const numParts = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
@@ -87,21 +97,18 @@ const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
         (Math.random() - 0.5) * CLOUD_PART_POSITION_Z_RANGE,
       ];
       parts.push(
-        <mesh key={i} position={partPosition} scale={partScale}>
-          <sphereGeometry args={[CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS]} />
-          <meshStandardMaterial color={CLOUD_COLOR} transparent opacity={CLOUD_OPACITY} emissive={new THREE.Color(CLOUD_EMISSIVE_COLOR)} emissiveIntensity={CLOUD_EMISSIVE_INTENSITY} />
-        </mesh>
+        <mesh key={i} position={partPosition} scale={partScale} geometry={geometry} material={material} />
       );
     }
     return parts;
-  }, []);
+  }, [geometry, material]);
 
   return (
     <group ref={groupRef} position={position} scale={[scale, scale * CLOUD_SCALE_Y_MULTIPLIER, scale]}>
       {cloudParts}
     </group>
   );
-};
+});
 
 const Clouds: React.FC<{ timeScale: number }> = ({ timeScale }) => {
   const clouds = useMemo(() => {

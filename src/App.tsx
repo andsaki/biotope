@@ -6,7 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import FishManager from "./components/FishManager";
-import ParticleLayer from "./components/ParticleLayer";
+import ParticleLayerInstanced from "./components/ParticleLayerInstanced";
 import Clouds from "./components/Clouds";
 import WindDirectionDisplay from "./components/WindDirectionDisplay";
 import Ground from "./components/Ground";
@@ -22,6 +22,7 @@ import { Sun } from "./components/Sun";
 import { SceneLights } from "./components/SceneLights";
 import { SeasonalEffects } from "./components/SeasonalEffects";
 import { DebugHelpers } from "./components/DebugHelpers";
+import { PerformanceMonitor } from "./components/PerformanceMonitor";
 
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
@@ -38,11 +39,12 @@ import { useLoader } from "./hooks/useLoader";
 import { calculateSunPosition } from "./utils/sunPosition";
 
 const DEBUG_MODE = false; // デバッグヘルパーの表示切替
+const PERFORMANCE_MONITOR = false; // パフォーマンスモニターの表示切替
 
 // メモ化されたコンポーネント
 const MemoizedGround = memo(Ground);
 const MemoizedFishManager = memo(FishManager);
-const MemoizedParticleLayer = memo(ParticleLayer);
+const MemoizedParticleLayerInstanced = memo(ParticleLayerInstanced);
 const MemoizedClouds = memo(Clouds);
 const MemoizedStars = memo(Stars);
 const MemoizedReflectedStars = memo(ReflectedStars);
@@ -96,7 +98,15 @@ const AppContent = () => {
             height: "100vh",
           }}
           camera={{ position: [5, 3, 0], fov: 70 }}
-          gl={{ antialias: true }} // よりスムーズなレンダリングのためにアンチエイリアシングを有効化
+          gl={{
+            antialias: true,
+            powerPreference: "high-performance", // 高性能GPUを優先
+            alpha: false, // 透明な背景が不要な場合はfalse
+            stencil: false, // ステンシルバッファを無効化してパフォーマンス向上
+          }}
+          dpr={[1, 2]} // デバイスピクセル比を制限してパフォーマンス向上
+          frameloop="always" // 常にレンダリング
+          performance={{ min: 0.5 }} // パフォーマンス低下時の最小品質
         >
           <Suspense fallback={null}>
             <MemoizedStars />
@@ -145,7 +155,7 @@ const AppContent = () => {
             <MemoizedSundialGnomon />
             <MemoizedSundialBase />
             <MemoizedDriftingBottle position={[-3, 8.2, 2]} />
-            <MemoizedParticleLayer />
+            <MemoizedParticleLayerInstanced />
             <MemoizedClouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} />
 
             {/* 季節エフェクト */}
@@ -154,6 +164,8 @@ const AppContent = () => {
             {/* デバッグヘルパー */}
             <DebugHelpers enabled={DEBUG_MODE} />
           </Suspense>
+          {/* パフォーマンスモニター */}
+          {PERFORMANCE_MONITOR && <PerformanceMonitor enabled={PERFORMANCE_MONITOR} />}
         </Canvas>
         <UI />
         <MemoizedWindDirectionDisplay windDirection={windDirection} />

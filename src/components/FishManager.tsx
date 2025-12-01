@@ -232,6 +232,15 @@ const FishManager: React.FC = () => {
     ? useGLTF(flatfishUrl, true)
     : { scene: new THREE.Group() };
 
+  // モデルのクローンを事前に作成してパフォーマンス向上
+  const normalFishClones = React.useMemo(() => {
+    return Array.from({ length: NORMAL_FISH_COUNT }, () => normalFishScene.clone());
+  }, [normalFishScene]);
+
+  const flatfishClones = React.useMemo(() => {
+    return Array.from({ length: FLATFISH_COUNT }, () => flatfishScene.clone());
+  }, [flatfishScene]);
+
   // デバッグのためにモデルの読み込み成功とシーンの詳細をログする（コメントアウト）
   // useEffect(() => {
   //   console.log("GLTF model loaded successfully:", scene);
@@ -277,17 +286,21 @@ const FishManager: React.FC = () => {
   return (
     <group>
       {fishList.map((fish, index) => {
-        const scene = fish.type === "flatfish" ? flatfishScene : normalFishScene;
-        const scaleMultiplier = fish.type === "flatfish" ? FISH_MODEL_SCALE.FLATFISH : FISH_MODEL_SCALE.NORMAL;
+        const isFlatfish = fish.type === "flatfish";
+        const clonedModel = isFlatfish
+          ? flatfishClones[index - NORMAL_FISH_COUNT]
+          : normalFishClones[index];
+
+        const scaleMultiplier = isFlatfish ? FISH_MODEL_SCALE.FLATFISH : FISH_MODEL_SCALE.NORMAL;
         const scale: [number, number, number] = [fish.size * scaleMultiplier, fish.size * scaleMultiplier, fish.size * scaleMultiplier];
-        const rotation: [number, number, number] = fish.type === "flatfish"
+        const rotation: [number, number, number] = isFlatfish
           ? [FISH_MODEL_ROTATION.FLATFISH, 0, 0]
           : [FISH_MODEL_ROTATION.NORMAL, 0, 0];
 
         // フラットフィッシュの透明度調整
         // 待機中（砂に擬態）は薄く、移動中ははっきり見える
         // 夜はさらに暗く
-        const opacity = fish.type === "flatfish"
+        const opacity = isFlatfish
           ? (!isDay ? FLATFISH_OPACITY.NIGHT : (fish.isMoving ? FLATFISH_OPACITY.MOVING_DAY : FLATFISH_OPACITY.WAITING_DAY))
           : NORMAL_FISH_OPACITY;
 
@@ -297,7 +310,7 @@ const FishManager: React.FC = () => {
             ref={(el) => {
               fishRefs.current[index] = el as THREE.Group;
               // フラットフィッシュの夜間の明るさ調整
-              if (el && fish.type === "flatfish") {
+              if (el && isFlatfish) {
                 el.traverse((child) => {
                   if ((child as THREE.Mesh).isMesh) {
                     const mesh = child as THREE.Mesh;
@@ -312,7 +325,7 @@ const FishManager: React.FC = () => {
             }}
           >
             <primitive
-              object={scene.clone()}
+              object={clonedModel}
               scale={scale}
               rotation={rotation}
             />
