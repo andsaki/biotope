@@ -36,7 +36,8 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 - **AI**: Google Gemini 2.0 Flash (メッセージ生成)
 - **デプロイ**: Cloudflare Pages
 - **サーバーレス**: Cloudflare Functions
-- **ストレージ**: Cloudflare R2
+- **ストレージ**: Cloudflare R2（3Dモデル配信）
+- **CDN**: Cloudflare Workers（R2キャッシュ）
 
 ## セットアップ
 
@@ -109,6 +110,10 @@ src/
 functions/
 └── api/
     └── daily-message.ts     # Cloudflare Functions - AI日次メッセージ生成API
+
+r2-worker/
+└── src/
+    └── index.ts             # Cloudflare R2 Worker - 日付ベースキャッシュ
 ```
 
 ## デザインシステム
@@ -182,14 +187,17 @@ graph TB
     Browser[ブラウザ]
     CFPages[Cloudflare Pages]
     CFFunctions[Cloudflare Functions]
-    R2[Cloudflare R2]
+    R2Worker[R2 Worker<br/>日付ベースキャッシュ]
+    R2[Cloudflare R2<br/>3Dモデル保存]
     Gemini[Google Gemini API]
 
     User -->|アクセス| Browser
     Browser -->|HTMLリクエスト| CFPages
     CFPages -->|HTMLレスポンス| Browser
-    Browser -->|静的アセット| R2
-    R2 -->|画像/音声| Browser
+    Browser -->|3Dモデル要求| R2Worker
+    R2Worker -->|キャッシュミス| R2
+    R2 -->|GLBファイル| R2Worker
+    R2Worker -->|キャッシュ済み<br/>24時間| Browser
     Browser -->|メッセージAPI| CFFunctions
     CFFunctions -->|日付情報| Gemini
     Gemini -->|生成メッセージ| CFFunctions
@@ -197,6 +205,7 @@ graph TB
 
     style CFPages fill:#f96,stroke:#333
     style CFFunctions fill:#69f,stroke:#333
+    style R2Worker fill:#fc6,stroke:#333
     style R2 fill:#9f6,stroke:#333
     style Gemini fill:#ff9,stroke:#333
 ```
@@ -348,6 +357,42 @@ GEMINI_API_KEY=your_api_key_here
 | 夏 | 小さな球体 | sphereGeometry（種や小さな葉） |
 | 秋 | 平たい長方形 | planeGeometry（落ち葉） |
 | 冬 | 雪 | sphereGeometry |
+
+## R2 Workerキャッシュシステム
+
+**実装**: `r2-worker/src/index.ts`
+
+Cloudflare Workers + Cache APIで3Dモデルを効率的に配信:
+
+### 日付ベースキャッシュ
+- 日付（YYYY-MM-DD）をキャッシュキーに含めて同じ日は同じコンテンツを返す
+- Cloudflare Cache APIで初回アクセス時にR2から取得し、以降はキャッシュから配信
+- 日が変わると自動的に新しいキャッシュキーで更新
+
+### キャッシュフロー
+```typescript
+// キャッシュキー例: https://cache.biotope/assets/model.glb?date=2025-12-01
+const today = new Date().toISOString().split('T')[0];
+const cacheKey = new URL(`https://cache.biotope/${objectName}?date=${today}`, request.url);
+
+// Cache APIでキャッシュ確認
+let response = await cache.match(cacheKey);
+if (!response) {
+  // R2から取得してキャッシュに保存
+  const object = await env.R2_BUCKET.get(objectName);
+  response = new Response(object.body, { headers });
+  await cache.put(cacheKey, response.clone());
+}
+```
+
+### 型安全性
+- すべての`as any`を削除
+- R2Bucket、R2Object、cachesの適切な型定義を追加
+- TypeScriptで完全に型安全な実装
+
+### CORS対応
+- すべてのリクエストに適切なCORSヘッダーを付与
+- プリフライトリクエスト（OPTIONS）にも対応
 
 ## ドキュメント
 
