@@ -26,12 +26,17 @@ import {
 const WaterSurface: React.FC = () => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
+  const frameCount = useRef(0);
 
   useFrame((state) => {
     if (meshRef.current && geometryRef.current) {
       const time = state.clock.getElapsedTime();
       // サイン波でy位置を調整して、より顕著な波をシミュレート
       meshRef.current.position.y = WATER_SURFACE_Y + Math.sin(time * WATER_SURFACE_Y_FREQUENCY) * WATER_SURFACE_Y_AMPLITUDE;
+
+      // パフォーマンス向上：2フレームに1回だけ頂点を更新
+      frameCount.current++;
+      if (frameCount.current % 2 !== 0) return;
 
       // 光の反射に影響を与えるためにジオメトリの頂点を変更して、より顕著な波紋効果を作成
       const positions = geometryRef.current.attributes.position
