@@ -70,7 +70,7 @@ const createSnowflakeTexture = (() => {
  * 冬の雪エフェクト
  * 降り積もる雪をパーティクルシステムで表現
  */
-const SnowEffect: React.FC = () => {
+const SnowEffect: React.FC = React.memo(() => {
   const { season } = useSeason();
   const snowRef = useRef<THREE.Points>(null);
 
@@ -146,6 +146,6 @@ const SnowEffect: React.FC = () => {
       />
     </points>
   );
-};
+});
 
 export default SnowEffect;

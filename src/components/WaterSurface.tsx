@@ -49,9 +49,9 @@ const WaterSurface: React.FC = () => {
       // サイン波でy位置を調整して、より顕著な波をシミュレート
       meshRef.current.position.y = WATER_SURFACE_Y + Math.sin(time * WATER_SURFACE_Y_FREQUENCY) * WATER_SURFACE_Y_AMPLITUDE;
 
-      // パフォーマンス向上：2フレームに1回だけ頂点を更新
+      // パフォーマンス向上：4フレームに1回だけ頂点を更新（2→4に変更）
       frameCount.current++;
-      if (frameCount.current % 2 !== 0) return;
+      if (frameCount.current % 4 !== 0) return;
 
       // 光の反射に影響を与えるためにジオメトリの頂点を変更して、より顕著な波紋効果を作成
       const positions = geometryRef.current.attributes.position
@@ -59,15 +59,20 @@ const WaterSurface: React.FC = () => {
       const width = WATER_SURFACE_SCALE_X;
       const height = WATER_SURFACE_SCALE_Y;
       const segments = WATER_SURFACE_SEGMENTS;
+      const timeScale = time * WATER_WAVE_TIME_SCALE;
+
+      // 事前計算で最適化
       for (let i = 0; i <= segments; i++) {
+        const x = (i / segments - 0.5) * width;
+        const sinX = Math.sin(x * WATER_WAVE_FREQUENCY + timeScale);
+
         for (let j = 0; j <= segments; j++) {
           const index = (i * (segments + 1) + j) * 3 + 2; // z座標インデックス
-          const x = (i / segments - 0.5) * width;
           const y = (j / segments - 0.5) * height;
           // よりダイナミックな光の反射のために振幅を増加し、波のパターンを変化
           positions[index] =
-            Math.sin(x * WATER_WAVE_FREQUENCY + time * WATER_WAVE_TIME_SCALE) *
-            Math.cos(y * WATER_WAVE_FREQUENCY + time * WATER_WAVE_TIME_SCALE) *
+            sinX *
+            Math.cos(y * WATER_WAVE_FREQUENCY + timeScale) *
             WATER_WAVE_AMPLITUDE;
         }
       }

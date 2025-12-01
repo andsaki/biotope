@@ -26,16 +26,14 @@ import {
  * 秋: 3Dモデルの紅葉が水面に浮かぶ
  * 冬: 落ち葉が地面に落ちて静止
  */
-const FallenLeaves: React.FC = () => {
+const FallenLeaves: React.FC = React.memo(() => {
   const { season } = useSeason();
   const leavesRefs = useRef<THREE.Group[]>([]);
 
   // R2から直接読み込み（ファイルサイズが大きいため）
   const leafUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__deep_autumn__5k_followers_milestone.glb";
 
-  const { scene: leafScene } = leafUrl
-    ? useGLTF(leafUrl, true)
-    : { scene: new THREE.Group() };
+  const { scene: leafScene } = useGLTF(leafUrl, true);
 
   const isWinter = season === "winter";
 
@@ -116,6 +114,6 @@ const FallenLeaves: React.FC = () => {
       })}
     </group>
   );
-};
+});
 
 export default FallenLeaves;

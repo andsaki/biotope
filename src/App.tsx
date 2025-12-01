@@ -38,6 +38,23 @@ import { useWindDirection } from "./hooks/useWindDirection";
 import { useLoader } from "./hooks/useLoader";
 import { calculateSunPosition } from "./utils/sunPosition";
 
+// 3Dモデルのpreload
+import { useGLTF } from "@react-three/drei";
+import fishModel from './assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url';
+
+// ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
+const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
+const normalFishUrl = isLocal
+  ? fishModel
+  : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
+const flatfishUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0____yellow_striped_flounder.glb";
+const leafUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__deep_autumn__5k_followers_milestone.glb";
+
+// preload実行
+useGLTF.preload(normalFishUrl);
+useGLTF.preload(flatfishUrl);
+useGLTF.preload(leafUrl);
+
 const DEBUG_MODE = false; // デバッグヘルパーの表示切替
 const PERFORMANCE_MONITOR = false; // パフォーマンスモニターの表示切替
 

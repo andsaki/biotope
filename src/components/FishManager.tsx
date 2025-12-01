@@ -143,12 +143,8 @@ const FishManager: React.FC = () => {
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
   const flatfishUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0____yellow_striped_flounder.glb";
 
-  const { scene: normalFishScene } = normalFishUrl
-    ? useGLTF(normalFishUrl, true)
-    : { scene: new THREE.Group() };
-  const { scene: flatfishScene } = flatfishUrl
-    ? useGLTF(flatfishUrl, true)
-    : { scene: new THREE.Group() };
+  const { scene: normalFishScene } = useGLTF(normalFishUrl, true);
+  const { scene: flatfishScene } = useGLTF(flatfishUrl, true);
 
   // モデルのクローンを事前に作成してパフォーマンス向上
   const normalFishClones = React.useMemo(() => {
@@ -167,11 +163,12 @@ const FishManager: React.FC = () => {
   }, [fishList.length]);
 
   // useFrameを1つに統合してパフォーマンス向上
+  // 状態更新を排除し、refのみを更新することで再レンダリングを削減
   useFrame((_, delta) => {
     timeRef.current += delta;
 
-    // 状態更新と参照更新を同じフレーム内で処理
-    const updatedFishList = fishList.map((fish, index) => {
+    // fishListの参照を直接変更（再レンダリングを避ける）
+    fishList.forEach((fish, index) => {
       // フラットフィッシュ：カレイらしい「待機→瞬間移動→待機」の動き
       if (fish.type === "flatfish") {
         let newWaitTime = fish.waitTime ?? 0;
@@ -211,14 +208,20 @@ const FishManager: React.FC = () => {
           }
         }
 
+        // データを直接変更
+        fish.x = newX;
+        fish.y = newY;
+        fish.z = newZ;
+        fish.waitTime = newWaitTime;
+        fish.isMoving = newIsMoving;
+
         // 参照も同時に更新
         const ref = fishRefs.current[index];
         if (ref) {
           ref.position.set(newX, newY, newZ);
           ref.rotation.set(0, fish.directionX, 0);
         }
-
-        return { ...fish, x: newX, y: newY, z: newZ, waitTime: newWaitTime, isMoving: newIsMoving };
+        return;
       }
 
       // 通常の魚：従来通りの動き
@@ -251,17 +254,18 @@ const FishManager: React.FC = () => {
         fish.directionY += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
       }
 
+      // データを直接変更
+      fish.x = newX;
+      fish.y = newY;
+      fish.z = newZ;
+
       // 参照も同時に更新
       const ref = fishRefs.current[index];
       if (ref) {
         ref.position.set(newX, newY, newZ);
         ref.rotation.set(0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0);
       }
-
-      return { ...fish, x: newX, y: newY, z: newZ };
     });
-
-    setFishList(updatedFishList);
   });
 
   // デバッグのために位置をログする（コメントアウト）

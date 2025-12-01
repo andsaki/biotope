@@ -5,7 +5,7 @@ import { useSeason } from "../contexts/SeasonContext";
  * 夏の追加エフェクト
  * 夏の強い日差しを表現する追加照明
  */
-const SummerEffects: React.FC = () => {
+const SummerEffects: React.FC = React.memo(() => {
   const { season } = useSeason();
 
   if (season !== "summer") {
@@ -23,6 +23,6 @@ const SummerEffects: React.FC = () => {
       />
     </group>
   );
-};
+});
 
 export default SummerEffects;

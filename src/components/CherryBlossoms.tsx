@@ -66,7 +66,7 @@ const createPetalTexture = (() => {
  * 春の桜の花びらエフェクト
  * 舞い落ちる桜の花びらをパーティクルシステムで表現
  */
-const CherryBlossoms: React.FC = () => {
+const CherryBlossoms: React.FC = React.memo(() => {
   const { season } = useSeason();
   const particlesRef = useRef<THREE.Points>(null);
 
@@ -149,6 +149,6 @@ const CherryBlossoms: React.FC = () => {
       />
     </points>
   );
-};
+});
 
 export default CherryBlossoms;
