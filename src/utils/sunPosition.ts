@@ -21,7 +21,8 @@ export interface SunPosition {
 export function calculateSunPosition(hours: number, minutes: number): SunPosition {
   const radius = 15; // 太陽の軌道半径
   const heightY = 15; // 太陽の高さ
-  const angle = ((hours + minutes / 60) % 12) * (Math.PI / 6); // 12時間サイクルで角度を計算
+  // 12時間サイクルで角度を計算、12時が上（-90度）になるように調整
+  const angle = ((hours + minutes / 60) % 12) * (Math.PI / 6) - Math.PI / 2;
 
   return {
     x: radius * Math.cos(angle),
