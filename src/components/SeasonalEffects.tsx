@@ -15,7 +15,7 @@ export const SeasonalEffects: React.FC = () => {
     <>
       {season === 'spring' && <CherryBlossoms />}
       {season === 'summer' && <SummerEffects />}
-      {season === 'autumn' && <FallenLeaves />}
+      {(season === 'autumn' || season === 'winter') && <FallenLeaves />}
       {season === 'winter' && <SnowEffect />}
     </>
   );
