@@ -5,6 +5,30 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import fishModel from '../assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url';
+import {
+  NORMAL_FISH_COUNT,
+  FLATFISH_COUNT,
+  FISH_SPEED,
+  FISH_COLOR,
+  NORMAL_FISH_SPAWN,
+  NORMAL_FISH_SPEED_VARIATION,
+  NORMAL_FISH_SIZE_MIN,
+  NORMAL_FISH_SIZE_VARIATION,
+  FLATFISH_GROUND_Y,
+  FLATFISH_SPEED,
+  FLATFISH_SIZE_MIN,
+  FLATFISH_SIZE_VARIATION,
+  FLATFISH_WAIT_TIME_MIN,
+  FLATFISH_WAIT_TIME_VARIATION,
+  FLATFISH_MOVE_TIME_MIN,
+  FLATFISH_MOVE_TIME_VARIATION,
+  FISH_MOVEMENT,
+  FISH_BOUNDARY,
+  FISH_MODEL_SCALE,
+  FISH_MODEL_ROTATION,
+  FLATFISH_OPACITY,
+  NORMAL_FISH_OPACITY,
+} from "../constants/fish";
 
 /** 魚の種類 */
 type FishType = "normal" | "flatfish";
@@ -51,61 +75,59 @@ const FishManager: React.FC = () => {
     const newFishList: Fish[] = [];
     let fishSpeed: number;
     let fishColor: string;
-    const fishCount = 10;
 
     switch (season) {
       case "spring":
-        fishSpeed = 0.015; // より穏やかな動きのために速度をさらに減らす
-        fishColor = "#FF6347"; // トマト
+        fishSpeed = FISH_SPEED.SPRING;
+        fishColor = FISH_COLOR.SPRING;
         break;
       case "summer":
-        fishSpeed = 0.02; // より穏やかな動きのために速度をさらに減らす
-        fishColor = "#FF4500"; // オレンジレッド
+        fishSpeed = FISH_SPEED.SUMMER;
+        fishColor = FISH_COLOR.SUMMER;
         break;
       case "autumn":
-        fishSpeed = 0.01; // より穏やかな動きのために速度をさらに減らす
-        fishColor = "#DAA520"; // ゴールデンロッド
+        fishSpeed = FISH_SPEED.AUTUMN;
+        fishColor = FISH_COLOR.AUTUMN;
         break;
       case "winter":
-        fishSpeed = 0.005; // より穏やかな動きのために速度をさらに減らす
-        fishColor = "#4682B4"; // スティールブルー
+        fishSpeed = FISH_SPEED.WINTER;
+        fishColor = FISH_COLOR.WINTER;
         break;
       default:
-        fishSpeed = 0.015; // より穏やかな動きのために速度をさらに減らす
-        fishColor = "#FF6347";
+        fishSpeed = FISH_SPEED.DEFAULT;
+        fishColor = FISH_COLOR.DEFAULT;
     }
 
     // 通常の魚を追加
-    for (let i = 0; i < fishCount; i++) {
+    for (let i = 0; i < NORMAL_FISH_COUNT; i++) {
       newFishList.push({
         id: i,
-        x: Math.random() * 10 - 5,
-        y: Math.random() * 8 + 0.0, // Y=0から上向きに開始し、上面をさらに下げるように調整する
-        z: Math.random() * 4.5 - 1.5, // 地面より少し上から始まるボックス空間を利用するように調整する
-        speed: fishSpeed + (Math.random() * 0.02 - 0.01),
+        x: Math.random() * (NORMAL_FISH_SPAWN.X_MAX - NORMAL_FISH_SPAWN.X_MIN) + NORMAL_FISH_SPAWN.X_MIN,
+        y: Math.random() * (NORMAL_FISH_SPAWN.Y_MAX - NORMAL_FISH_SPAWN.Y_MIN) + NORMAL_FISH_SPAWN.Y_MIN,
+        z: Math.random() * (NORMAL_FISH_SPAWN.Z_MAX - NORMAL_FISH_SPAWN.Z_MIN) + NORMAL_FISH_SPAWN.Z_MIN,
+        speed: fishSpeed + (Math.random() * NORMAL_FISH_SPEED_VARIATION - NORMAL_FISH_SPEED_VARIATION / 2),
         directionX: Math.random() * Math.PI * 2,
         directionY: Math.random() * Math.PI * 2,
         color: fishColor,
-        size: 0.2 + Math.random() * 0.3,
+        size: NORMAL_FISH_SIZE_MIN + Math.random() * NORMAL_FISH_SIZE_VARIATION,
         type: "normal",
       });
     }
 
     // フラットフィッシュ（底生魚）を追加
-    const flatfishCount = 3;
-    for (let i = 0; i < flatfishCount; i++) {
+    for (let i = 0; i < FLATFISH_COUNT; i++) {
       newFishList.push({
-        id: fishCount + i,
-        x: Math.random() * 10 - 5,
-        y: -0.9, // 地面（Y=-1）のすぐ上に密着
-        z: Math.random() * 4.5 - 1.5,
-        speed: 0.2, // 瞬間移動時の速度
+        id: NORMAL_FISH_COUNT + i,
+        x: Math.random() * (NORMAL_FISH_SPAWN.X_MAX - NORMAL_FISH_SPAWN.X_MIN) + NORMAL_FISH_SPAWN.X_MIN,
+        y: FLATFISH_GROUND_Y,
+        z: Math.random() * (NORMAL_FISH_SPAWN.Z_MAX - NORMAL_FISH_SPAWN.Z_MIN) + NORMAL_FISH_SPAWN.Z_MIN,
+        speed: FLATFISH_SPEED,
         directionX: Math.random() * Math.PI * 2,
-        directionY: 0, // 底生魚は垂直方向にはほとんど動かない
+        directionY: 0,
         color: fishColor,
-        size: 1.5 + Math.random() * 0.5, // サイズを大きく
+        size: FLATFISH_SIZE_MIN + Math.random() * FLATFISH_SIZE_VARIATION,
         type: "flatfish",
-        waitTime: 10 + Math.random() * 10, // 10〜20秒待機（砂に擬態）
+        waitTime: FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION,
         isMoving: false,
       });
     }
@@ -125,7 +147,7 @@ const FishManager: React.FC = () => {
           let newIsMoving = fish.isMoving ?? false;
           let newX = fish.x;
           let newZ = fish.z;
-          const newY = -0.9; // 地面に密着
+          const newY = FLATFISH_GROUND_Y;
 
           newWaitTime -= delta;
 
@@ -134,27 +156,27 @@ const FishManager: React.FC = () => {
               // 待機終了 → 移動開始
               newIsMoving = true;
               fish.directionX = Math.random() * Math.PI * 2;
-              newWaitTime = 0.3 + Math.random() * 0.2; // 0.3〜0.5秒移動（短く素早く）
+              newWaitTime = FLATFISH_MOVE_TIME_MIN + Math.random() * FLATFISH_MOVE_TIME_VARIATION;
             } else {
               // 移動終了 → 待機開始（砂に擬態）
               newIsMoving = false;
-              newWaitTime = 10 + Math.random() * 10; // 10〜20秒待機
+              newWaitTime = FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION;
             }
           }
 
           // 移動中のみ位置を更新
           if (newIsMoving) {
-            newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * 60;
-            newZ = fish.z + Math.sin(fish.directionX) * fish.speed * delta * 60;
+            newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+            newZ = fish.z + Math.sin(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
 
             // 境界チェック
-            if (newX < -6.0 || newX > 6.0) {
+            if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
               fish.directionX = Math.PI - fish.directionX;
-              newX = Math.max(-6.0, Math.min(6.0, newX));
+              newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
             }
-            if (newZ < -1.5 || newZ > 3.0) {
+            if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
               fish.directionX = Math.PI - fish.directionX;
-              newZ = Math.max(-1.5, Math.min(3.0, newZ));
+              newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
             }
           }
 
@@ -162,33 +184,33 @@ const FishManager: React.FC = () => {
         }
 
         // 通常の魚：従来通りの動き
-        let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * 60;
-        let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * 60;
+        let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+        let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
         let newZ =
-          fish.z + Math.sin(fish.directionX) * fish.speed * 0.2 * delta * 60;
-        newZ = Math.max(-1.5, Math.min(3.0, newZ));
+          fish.z + Math.sin(fish.directionX) * fish.speed * FISH_MOVEMENT.Z_DRIFT_DAMPING * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+        newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
 
         // 通常の魚：泳ぐ動きを模倣するためにわずかな垂直振動を追加する
-        newY += Math.sin(timeRef.current * 2 + fish.id) * 0.01;
+        newY += Math.sin(timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.id) * FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE;
 
         // 境界チェック
-        if (newX < -6.0 || newX > 6.0) {
+        if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
           fish.directionX = Math.PI - fish.directionX;
-          newX = Math.max(-6.0, Math.min(6.0, newX));
+          newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
         }
-        if (newY < 0.0 || newY > 8.0) {
+        if (newY < FISH_BOUNDARY.Y_MIN || newY > FISH_BOUNDARY.Y_MAX) {
           fish.directionY = -fish.directionY;
-          newY = Math.max(0.0, Math.min(8.0, newY));
+          newY = Math.max(FISH_BOUNDARY.Y_MIN, Math.min(FISH_BOUNDARY.Y_MAX, newY));
         }
-        if (newZ < -1.5 || newZ > 3.0) {
+        if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
           fish.directionX = Math.PI - fish.directionX;
-          newZ = Math.max(-1.5, Math.min(3.0, newZ));
+          newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
         }
 
         // ランダムな方向変更
-        if (Math.random() < 0.005) {
-          fish.directionX += (Math.random() * Math.PI) / 4 - Math.PI / 8;
-          fish.directionY += (Math.random() * Math.PI) / 4 - Math.PI / 8;
+        if (Math.random() < FISH_MOVEMENT.DIRECTION_CHANGE_PROBABILITY) {
+          fish.directionX += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
+          fish.directionY += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
         }
 
         return { ...fish, x: newX, y: newY, z: newZ };
@@ -233,7 +255,7 @@ const FishManager: React.FC = () => {
           // フラットフィッシュは移動方向に頭を向ける
           ref.rotation.set(0, fish.directionX, 0);
         } else {
-          ref.rotation.set(0, fish.directionX + Math.PI / 2, 0);
+          ref.rotation.set(0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0);
         }
       }
     });
@@ -256,19 +278,18 @@ const FishManager: React.FC = () => {
     <group>
       {fishList.map((fish, index) => {
         const scene = fish.type === "flatfish" ? flatfishScene : normalFishScene;
-        const scale = fish.type === "flatfish"
-          ? [fish.size * 0.05, fish.size * 0.05, fish.size * 0.05] // フラットフィッシュを大きく
-          : [fish.size * 10, fish.size * 10, fish.size * 10];
-        const rotation = fish.type === "flatfish"
-          ? [0, 0, 0] // フラットフィッシュは水平に配置
-          : [Math.PI / 2, 0, 0]; // 通常の魚は垂直方向に調整
+        const scaleMultiplier = fish.type === "flatfish" ? FISH_MODEL_SCALE.FLATFISH : FISH_MODEL_SCALE.NORMAL;
+        const scale: [number, number, number] = [fish.size * scaleMultiplier, fish.size * scaleMultiplier, fish.size * scaleMultiplier];
+        const rotation: [number, number, number] = fish.type === "flatfish"
+          ? [FISH_MODEL_ROTATION.FLATFISH, 0, 0]
+          : [FISH_MODEL_ROTATION.NORMAL, 0, 0];
 
         // フラットフィッシュの透明度調整
         // 待機中（砂に擬態）は薄く、移動中ははっきり見える
         // 夜はさらに暗く
         const opacity = fish.type === "flatfish"
-          ? (!isDay ? 0.3 : (fish.isMoving ? 0.9 : 0.6))
-          : 1.0;
+          ? (!isDay ? FLATFISH_OPACITY.NIGHT : (fish.isMoving ? FLATFISH_OPACITY.MOVING_DAY : FLATFISH_OPACITY.WAITING_DAY))
+          : NORMAL_FISH_OPACITY;
 
         return (
           <group

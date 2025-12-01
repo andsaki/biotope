@@ -3,6 +3,23 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
+import {
+  LEAF_COUNT,
+  LEAF_SPREAD_X,
+  LEAF_SPREAD_Z,
+  LEAF_BASE_SCALE,
+  LEAF_SCALE_VARIATION,
+  LEAF_FLOAT_SPEED_BASE,
+  LEAF_FLOAT_SPEED_VARIATION,
+  LEAF_DRIFT_SPEED_BASE,
+  LEAF_DRIFT_SPEED_VARIATION,
+  LEAF_ROTATION_SPEED_BASE,
+  LEAF_ROTATION_SPEED_VARIATION,
+  LEAF_GROUND_TILT,
+  WATER_SURFACE_Y,
+  GROUND_Y,
+  WINTER_FLATTEN_SCALE,
+} from "../constants/fallenLeaves";
 
 /**
  * 秋・冬の落ち葉エフェクト
@@ -24,16 +41,16 @@ const FallenLeaves: React.FC = () => {
 
   // 落ち葉の初期位置データ（コンポーネント再レンダリング時に位置が変わらないようにuseMemoで固定）
   const leafData = useMemo(() =>
-    Array.from({ length: 15 }, () => ({
-      x: (Math.random() - 0.5) * 12,
-      z: (Math.random() - 0.5) * 10,
+    Array.from({ length: LEAF_COUNT }, () => ({
+      x: (Math.random() - 0.5) * LEAF_SPREAD_X,
+      z: (Math.random() - 0.5) * LEAF_SPREAD_Z,
       rotationY: Math.random() * Math.PI * 2,
-      rotationX: Math.random() * 0.3 - 0.15, // 地面での傾き
-      rotationZ: Math.random() * 0.3 - 0.15, // 地面での傾き
-      scale: 0.03 + Math.random() * 0.02,
-      floatSpeed: 0.3 + Math.random() * 0.4, // 浮き沈みの速度
-      driftSpeed: 0.05 + Math.random() * 0.1, // 横移動の速度
-      rotationSpeed: 0.2 + Math.random() * 0.3, // 回転速度
+      rotationX: Math.random() * LEAF_GROUND_TILT - LEAF_GROUND_TILT / 2, // 地面での傾き
+      rotationZ: Math.random() * LEAF_GROUND_TILT - LEAF_GROUND_TILT / 2, // 地面での傾き
+      scale: LEAF_BASE_SCALE + Math.random() * LEAF_SCALE_VARIATION,
+      floatSpeed: LEAF_FLOAT_SPEED_BASE + Math.random() * LEAF_FLOAT_SPEED_VARIATION, // 浮き沈みの速度
+      driftSpeed: LEAF_DRIFT_SPEED_BASE + Math.random() * LEAF_DRIFT_SPEED_VARIATION, // 横移動の速度
+      rotationSpeed: LEAF_ROTATION_SPEED_BASE + Math.random() * LEAF_ROTATION_SPEED_VARIATION, // 回転速度
       phaseOffset: Math.random() * Math.PI * 2, // 位相オフセット
     }))
   , []);
@@ -46,7 +63,7 @@ const FallenLeaves: React.FC = () => {
       if (ref) {
         const data = leafData[i];
         // 水面の揺れに合わせた浮き沈み
-        ref.position.y = 8.05 + Math.sin(time * data.floatSpeed + data.phaseOffset) * 0.03;
+        ref.position.y = WATER_SURFACE_Y + Math.sin(time * data.floatSpeed + data.phaseOffset) * 0.03;
 
         // ゆっくりとした横移動（水の流れ）
         ref.position.x = data.x + Math.sin(time * data.driftSpeed + data.phaseOffset) * 0.8;
@@ -69,14 +86,14 @@ const FallenLeaves: React.FC = () => {
     <group>
       {leafData.map((data, i) => {
         // 冬は地面に、秋は水面に
-        const yPosition = isWinter ? -0.85 : 8.05;
-        const rotation = isWinter
-          ? [data.rotationX, data.rotationY, data.rotationZ] as [number, number, number]
-          : [0, data.rotationY, 0] as [number, number, number];
+        const yPosition = isWinter ? GROUND_Y : WATER_SURFACE_Y;
+        const rotation: [number, number, number] = isWinter
+          ? [data.rotationX, data.rotationY, data.rotationZ]
+          : [0, data.rotationY, 0];
         // 冬は平らに（Y軸を圧縮）、秋は通常
-        const scale = isWinter
-          ? [data.scale, data.scale * 0.1, data.scale] as [number, number, number]
-          : [data.scale, data.scale, data.scale] as [number, number, number];
+        const scale: [number, number, number] = isWinter
+          ? [data.scale, data.scale * WINTER_FLATTEN_SCALE, data.scale]
+          : [data.scale, data.scale, data.scale];
 
         return (
           <group

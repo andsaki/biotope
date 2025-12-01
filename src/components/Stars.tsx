@@ -1,9 +1,22 @@
-
 import React, { useRef, useMemo, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 import { useTime } from "../contexts/TimeContext";
+import {
+  STAR_COUNT,
+  STAR_POSITION_RANGE,
+  STAR_HUE,
+  STAR_SATURATION,
+  STAR_LIGHTNESS_MIN,
+  STAR_LIGHTNESS_MAX,
+  STAR_SIZE_MIN,
+  STAR_SIZE_MAX,
+  STAR_ROTATION_SPEED,
+  STAR_DISPLAY_DELAY,
+  STAR_FADE_SPEED,
+  STAR_MATERIAL,
+} from "../constants/stars";
 
 /**
  * 星空コンポーネント
@@ -19,7 +32,7 @@ const Stars: React.FC = () => {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isNight) {
-      timer = setTimeout(() => setVisible(true), 5000); // 5秒後に表示
+      timer = setTimeout(() => setVisible(true), STAR_DISPLAY_DELAY);
     } else {
       setVisible(false);
     }
@@ -32,16 +45,16 @@ const Stars: React.FC = () => {
     const sizes = [];
     const color = new THREE.Color();
 
-    for (let i = 0; i < 5000; i++) {
-      const x = (Math.random() - 0.5) * 100;
-      const y = (Math.random() - 0.5) * 100;
-      const z = (Math.random() - 0.5) * 100;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const x = (Math.random() - 0.5) * STAR_POSITION_RANGE;
+      const y = (Math.random() - 0.5) * STAR_POSITION_RANGE;
+      const z = (Math.random() - 0.5) * STAR_POSITION_RANGE;
       positions.push(x, y, z);
 
-      color.setHSL(0, 0, Math.random() * 0.5 + 0.5);
+      color.setHSL(STAR_HUE, STAR_SATURATION, Math.random() * (STAR_LIGHTNESS_MAX - STAR_LIGHTNESS_MIN) + STAR_LIGHTNESS_MIN);
       colors.push(color.r, color.g, color.b);
 
-      sizes.push(Math.random() * 0.5 + 0.2);
+      sizes.push(Math.random() * (STAR_SIZE_MAX - STAR_SIZE_MIN) + STAR_SIZE_MIN);
     }
 
     return {
@@ -53,13 +66,13 @@ const Stars: React.FC = () => {
 
   useFrame((_, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += delta / 100;
+      meshRef.current.rotation.y += delta * STAR_ROTATION_SPEED;
     }
     if (materialRef.current) {
       materialRef.current.opacity = THREE.MathUtils.lerp(
         materialRef.current.opacity,
         visible ? 1 : 0,
-        0.05
+        STAR_FADE_SPEED
       );
     }
   });
@@ -93,10 +106,10 @@ const Stars: React.FC = () => {
         ref={materialRef}
         transparent
         vertexColors
-        size={0.05}
-        sizeAttenuation={true}
-        depthWrite={false}
-        fog={false}
+        size={STAR_MATERIAL.size}
+        sizeAttenuation={STAR_MATERIAL.sizeAttenuation}
+        depthWrite={STAR_MATERIAL.depthWrite}
+        fog={STAR_MATERIAL.fog}
         opacity={0}
       />
     </points>

@@ -1,6 +1,20 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import {
+  BUBBLE_COUNT,
+  BUBBLE_SIZE_MIN,
+  BUBBLE_SIZE_MAX,
+  BUBBLE_SPEED_MIN,
+  BUBBLE_SPEED_MAX,
+  BUBBLE_RESET_Y_THRESHOLD,
+  BUBBLE_START_Y,
+  BUBBLE_LOCATIONS,
+  BUBBLE_SPHERE_WIDTH_SEGMENTS,
+  BUBBLE_SPHERE_HEIGHT_SEGMENTS,
+  BUBBLE_COLOR,
+  BUBBLE_OPACITY,
+} from "../constants/bubbleEffect";
 
 /**
  * 泡エフェクトコンポーネント
@@ -21,28 +35,15 @@ const BubbleEffect: React.FC = () => {
 
   // 特定の場所から新しい泡を作成する関数
   const createBubble = () => {
-    const size = Math.random() * 0.03 + 0.01; // さらに小さい泡のためにサイズ範囲を減らす (0.01から0.04)
-    const speed = Math.random() * 0.08 + 0.03; // より速く上昇する泡のために速度範囲を増やす
-    // バウンドボックスの外側にある可能性のある、泡の放出のための10の特定の場所を定義する
-    const locations = [
-      { x: -3.0, z: -3.0 }, // 場所1
-      { x: 3.0, z: 0.0 }, // 場所2
-      { x: -2.0, z: 3.0 }, // 場所3
-      { x: -1.5, z: -2.0 }, // 場所4
-      { x: 2.0, z: -1.5 }, // 場所5
-      { x: -2.5, z: 1.5 }, // 場所6
-      { x: 1.5, z: 2.0 }, // 場所7
-      { x: -1.0, z: -1.0 }, // 場所8
-      { x: 1.0, z: 1.0 }, // 場所9
-      { x: 0.0, z: -2.5 }, // 場所10
-    ];
+    const size = Math.random() * (BUBBLE_SIZE_MAX - BUBBLE_SIZE_MIN) + BUBBLE_SIZE_MIN;
+    const speed = Math.random() * (BUBBLE_SPEED_MAX - BUBBLE_SPEED_MIN) + BUBBLE_SPEED_MIN;
     // 場所からランダムに1つを選択する
-    const location = locations[Math.floor(Math.random() * locations.length)];
+    const location = BUBBLE_LOCATIONS[Math.floor(Math.random() * BUBBLE_LOCATIONS.length)];
 
     return {
       id: Math.random(), // キー用のユニークIDにする
       x: location.x,
-      y: -1, // 地面レベルから開始する
+      y: BUBBLE_START_Y,
       z: location.z,
       size,
       speed,
@@ -51,7 +52,7 @@ const BubbleEffect: React.FC = () => {
 
   // 泡を初期化する
   useEffect(() => {
-    const initialBubbles = Array.from({ length: 50 }, createBubble); // より多くの場所を考慮して泡の数を増やす
+    const initialBubbles = Array.from({ length: BUBBLE_COUNT }, createBubble);
     setBubbleData(initialBubbles);
   }, []);
 
@@ -62,7 +63,7 @@ const BubbleEffect: React.FC = () => {
         prevData.map((bubble) => {
           const newY = bubble.y + bubble.speed;
           // 泡が上がりすぎた場合は底にリセットする
-          if (newY > 8) {
+          if (newY > BUBBLE_RESET_Y_THRESHOLD) {
             return createBubble();
           }
           return { ...bubble, y: newY };
@@ -78,11 +79,11 @@ const BubbleEffect: React.FC = () => {
       position={[bubble.x, bubble.y, bubble.z]}
       scale={[bubble.size, bubble.size, bubble.size]}
     >
-      <sphereGeometry args={[1, 8, 8]} />
+      <sphereGeometry args={[1, BUBBLE_SPHERE_WIDTH_SEGMENTS, BUBBLE_SPHERE_HEIGHT_SEGMENTS]} />
       <meshStandardMaterial
-        color="#ADD8E6" // 泡の色のためのライトブルーにする
+        color={BUBBLE_COLOR}
         transparent={true}
-        opacity={0.8} // 視認性を向上させるために不透明度を増やす
+        opacity={BUBBLE_OPACITY}
       />
     </mesh>
   ));

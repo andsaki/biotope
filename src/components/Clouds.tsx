@@ -1,6 +1,42 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import {
+  CLOUD_COUNT,
+  CLOUD_POSITION_X_RANGE,
+  CLOUD_POSITION_X_OFFSET,
+  CLOUD_POSITION_Y_BASE,
+  CLOUD_POSITION_Y_RANGE,
+  CLOUD_POSITION_Z_RANGE,
+  CLOUD_POSITION_Z_OFFSET,
+  CLOUD_SCALE_BASE,
+  CLOUD_SCALE_RANGE,
+  CLOUD_SPEED_BASE,
+  CLOUD_SPEED_RANGE,
+  CLOUD_MOVEMENT_SPEED,
+  CLOUD_ROTATION_SPEED,
+  CLOUD_WAVE_Y_SPEED,
+  CLOUD_WAVE_Y_AMPLITUDE,
+  CLOUD_WAVE_Z_SPEED,
+  CLOUD_WAVE_Z_AMPLITUDE,
+  CLOUD_RESET_X_THRESHOLD,
+  CLOUD_RESET_X_POSITION,
+  CLOUD_PARTS_MIN,
+  CLOUD_PARTS_MAX,
+  CLOUD_PART_SCALE_BASE,
+  CLOUD_PART_SCALE_RANGE,
+  CLOUD_PART_POSITION_X_RANGE,
+  CLOUD_PART_POSITION_Y_RANGE,
+  CLOUD_PART_POSITION_Z_RANGE,
+  CLOUD_SCALE_Y_MULTIPLIER,
+  CLOUD_SPHERE_RADIUS,
+  CLOUD_SPHERE_WIDTH_SEGMENTS,
+  CLOUD_SPHERE_HEIGHT_SEGMENTS,
+  CLOUD_COLOR,
+  CLOUD_OPACITY,
+  CLOUD_EMISSIVE_COLOR,
+  CLOUD_EMISSIVE_INTENSITY,
+} from '../constants/clouds';
 
 /** 雲コンポーネントのプロパティ */
 interface CloudProps {
@@ -26,15 +62,15 @@ const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
     if (groupRef.current) {
       const time = state.clock.getElapsedTime();
       // X軸方向にゆっくりと移動
-      groupRef.current.position.x += speed * 0.001 * timeScale; // timeScaleを乗算
+      groupRef.current.position.x += speed * CLOUD_MOVEMENT_SPEED * timeScale; // timeScaleを乗算
       // Y軸とZ軸に微細な揺れを追加して、風に揺れるような効果を出す
-      groupRef.current.position.y = position[1] + Math.sin(time * 0.5 + position[0]) * 0.1;
-      groupRef.current.position.z = position[2] + Math.cos(time * 0.5 + position[1]) * 0.1;
+      groupRef.current.position.y = position[1] + Math.sin(time * CLOUD_WAVE_Y_SPEED + position[0]) * CLOUD_WAVE_Y_AMPLITUDE;
+      groupRef.current.position.z = position[2] + Math.cos(time * CLOUD_WAVE_Z_SPEED + position[1]) * CLOUD_WAVE_Z_AMPLITUDE;
       // ゆっくりと回転させる
-      groupRef.current.rotation.y += speed * 0.00005 * timeScale; // timeScaleを乗算
+      groupRef.current.rotation.y += speed * CLOUD_ROTATION_SPEED * timeScale; // timeScaleを乗算
 
-      if (groupRef.current.position.x > 50) { // 画面外に出たら反対側から再出現
-        groupRef.current.position.x = -50;
+      if (groupRef.current.position.x > CLOUD_RESET_X_THRESHOLD) { // 画面外に出たら反対側から再出現
+        groupRef.current.position.x = CLOUD_RESET_X_POSITION;
       }
     }
   });
@@ -42,18 +78,18 @@ const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
   // 複数の球体を組み合わせて雲の形を表現
   const cloudParts = useMemo(() => {
     const parts = [];
-    const numParts = 20 + Math.floor(Math.random() * 20); // 20〜39個の球体で構成
+    const numParts = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
     for (let i = 0; i < numParts; i++) {
-      const partScale = 0.5 + Math.random() * 1.0; // 各球体のスケールをさらにランダムに
+      const partScale = CLOUD_PART_SCALE_BASE + Math.random() * CLOUD_PART_SCALE_RANGE;
       const partPosition: [number, number, number] = [
-        (Math.random() - 0.5) * 4, // X方向のオフセットをさらに広げる
-        (Math.random() - 0.5) * 3, // Y方向のオフセットをさらに広げる
-        (Math.random() - 0.5) * 4, // Z方向のオフセットをさらに広げる
+        (Math.random() - 0.5) * CLOUD_PART_POSITION_X_RANGE,
+        (Math.random() - 0.5) * CLOUD_PART_POSITION_Y_RANGE,
+        (Math.random() - 0.5) * CLOUD_PART_POSITION_Z_RANGE,
       ];
       parts.push(
         <mesh key={i} position={partPosition} scale={partScale}>
-          <sphereGeometry args={[1, 16, 16]} />
-          <meshStandardMaterial color="#FFFFFF" transparent opacity={0.8} emissive={new THREE.Color(0xffffff)} emissiveIntensity={0.1} /> {/* emissiveを追加 */}
+          <sphereGeometry args={[CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS]} />
+          <meshStandardMaterial color={CLOUD_COLOR} transparent opacity={CLOUD_OPACITY} emissive={new THREE.Color(CLOUD_EMISSIVE_COLOR)} emissiveIntensity={CLOUD_EMISSIVE_INTENSITY} />
         </mesh>
       );
     }
@@ -61,7 +97,7 @@ const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
   }, []);
 
   return (
-    <group ref={groupRef} position={position} scale={[scale, scale * 0.7, scale]}>
+    <group ref={groupRef} position={position} scale={[scale, scale * CLOUD_SCALE_Y_MULTIPLIER, scale]}>
       {cloudParts}
     </group>
   );
@@ -70,12 +106,12 @@ const Cloud: React.FC<CloudProps> = ({ position, scale, speed, timeScale }) => {
 const Clouds: React.FC<{ timeScale: number }> = ({ timeScale }) => {
   const clouds = useMemo(() => {
     const tempClouds = [];
-    for (let i = 0; i < 30; i++) { // 30個の雲を生成
-      const x = Math.random() * 100 - 50; // -50から50の範囲で初期位置をランダムに設定
-      const y = 20 + Math.random() * 5; // 地面より高い位置に設定（20〜25の範囲）
-      const z = Math.random() * 60 - 30; // -30から30の範囲で初期位置をランダムに設定
-      const scale = 2 + Math.random() * 3; // スケールをランダムに設定
-      const speed = 0.5 + Math.random() * 0.5; // スピードをランダムに設定
+    for (let i = 0; i < CLOUD_COUNT; i++) {
+      const x = Math.random() * CLOUD_POSITION_X_RANGE + CLOUD_POSITION_X_OFFSET;
+      const y = CLOUD_POSITION_Y_BASE + Math.random() * CLOUD_POSITION_Y_RANGE;
+      const z = Math.random() * CLOUD_POSITION_Z_RANGE + CLOUD_POSITION_Z_OFFSET;
+      const scale = CLOUD_SCALE_BASE + Math.random() * CLOUD_SCALE_RANGE;
+      const speed = CLOUD_SPEED_BASE + Math.random() * CLOUD_SPEED_RANGE;
       tempClouds.push({ position: [x, y, z], scale, speed });
     }
     return tempClouds;

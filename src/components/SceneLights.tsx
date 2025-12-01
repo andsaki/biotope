@@ -1,6 +1,7 @@
 import React from 'react';
 import * as THREE from 'three';
 import type { SunPosition } from '../utils/sunPosition';
+import { SCENE_LIGHTS } from '../constants/lighting';
 
 /** ライティングコンポーネントのプロパティ */
 interface SceneLightsProps {
@@ -33,42 +34,42 @@ export const SceneLights: React.FC<SceneLightsProps> = ({
       {/* 環境光 */}
       <ambientLight
         ref={ambientLightRef}
-        intensity={0.5}
-        color="#87CEEB"
+        intensity={SCENE_LIGHTS.ambient.intensity}
+        color={SCENE_LIGHTS.ambient.color}
       />
 
       {/* ポイントライト */}
       <pointLight
         ref={pointLightRef}
-        position={[10, 10, 10]}
-        intensity={0.5}
-        color="#FFFFFF"
+        position={SCENE_LIGHTS.point.position}
+        intensity={SCENE_LIGHTS.point.intensity}
+        color={SCENE_LIGHTS.point.color}
       />
 
       {/* 太陽光をシミュレートする指向性ライト */}
       <directionalLight
         ref={directionalLightRef}
         position={[sunPosition.x, sunPosition.y, sunPosition.z]}
-        intensity={8.0}
-        color="#FFD700"
+        intensity={SCENE_LIGHTS.directional.intensity}
+        color={SCENE_LIGHTS.directional.color}
         castShadow={true}
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-near={0.5}
-        shadow-camera-far={50}
-        shadow-camera-left={-20}
-        shadow-camera-right={20}
-        shadow-camera-top={20}
-        shadow-camera-bottom={-20}
+        shadow-mapSize={SCENE_LIGHTS.directional.shadowMapSize}
+        shadow-camera-near={SCENE_LIGHTS.directional.shadowCameraNear}
+        shadow-camera-far={SCENE_LIGHTS.directional.shadowCameraFar}
+        shadow-camera-left={SCENE_LIGHTS.directional.shadowCameraLeft}
+        shadow-camera-right={SCENE_LIGHTS.directional.shadowCameraRight}
+        shadow-camera-top={SCENE_LIGHTS.directional.shadowCameraTop}
+        shadow-camera-bottom={SCENE_LIGHTS.directional.shadowCameraBottom}
       />
 
       {/* スポットライト */}
       <spotLight
         ref={spotLightRef}
-        position={[5, 8, 5]}
-        angle={0.5}
-        penumbra={0.2}
-        intensity={1.0}
-        color="#FFFFFF"
+        position={SCENE_LIGHTS.spot.position}
+        angle={SCENE_LIGHTS.spot.angle}
+        penumbra={SCENE_LIGHTS.spot.penumbra}
+        intensity={SCENE_LIGHTS.spot.intensity}
+        color={SCENE_LIGHTS.spot.color}
         castShadow={true}
       />
     </>

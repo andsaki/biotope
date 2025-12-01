@@ -3,6 +3,12 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
 import { useTime } from "../contexts/TimeContext";
+import {
+  LIGHTING_TRANSITION_SPEED,
+  DAY_INTENSITY,
+  NIGHT_INTENSITY,
+  SEASON_COLORS,
+} from "../constants/lighting";
 
 /** ライティング制御のプロパティ */
 interface LightingControllerProps {
@@ -38,50 +44,40 @@ const LightingController: React.FC<LightingControllerProps> = ({
       spotLightRef.current
     ) {
       // 季節ごとの照明設定
-      let targetColor = "#FFD700";
-      let targetAmbientColor = "#87CEEB";
-      let targetIntensity = isDay ? 5.0 : 1.0;
+      const seasonColors = SEASON_COLORS[season];
+      const dayNightColors = isDay ? seasonColors.day : seasonColors.night;
 
-      switch (season) {
-        case "spring":
-          targetColor = isDay ? "#FFFACD" : "#CCCCCC"; // 柔らかい黄色
-          targetAmbientColor = isDay ? "#E6F3FF" : "#333333"; // 明るい青空
-          break;
-        case "summer":
-          targetColor = isDay ? "#FFE55C" : "#B0C4DE"; // 強い黄色
-          targetAmbientColor = isDay ? "#87CEEB" : "#2F4F4F"; // 鮮やかな青
-          targetIntensity = isDay ? 6.0 : 1.0; // 夏は日差しが強い
-          break;
-        case "autumn":
-          targetColor = isDay ? "#FFA500" : "#A9A9A9"; // オレンジ色
-          targetAmbientColor = isDay ? "#DEB887" : "#3A3A3A"; // 温かみのある色
-          break;
-        case "winter":
-          targetColor = isDay ? "#E0F7FA" : "#778899"; // 冷たい青白色
-          targetAmbientColor = isDay ? "#B0E0E6" : "#2C2C2C"; // 冬の青空
-          targetIntensity = isDay ? 4.0 : 0.8; // 冬は日差しが弱い
-          break;
+      const targetColor = dayNightColors.directional;
+      const targetAmbientColor = dayNightColors.ambient;
+
+      let targetIntensity: number;
+      if (season === "summer") {
+        targetIntensity = isDay ? DAY_INTENSITY.directional.summer : NIGHT_INTENSITY.directional.summer;
+      } else if (season === "winter") {
+        targetIntensity = isDay ? DAY_INTENSITY.directional.winter : NIGHT_INTENSITY.directional.winter;
+      } else {
+        targetIntensity = isDay ? DAY_INTENSITY.directional.default : NIGHT_INTENSITY.directional.default;
       }
 
-      const targetAmbientIntensity = isDay ? 0.5 : 0.3;
-      const targetPointIntensity = isDay ? 0.5 : 0.4;
-      const targetSpotIntensity = isDay ? 1.0 : 0.6;
+      const targetAmbientIntensity = isDay ? DAY_INTENSITY.ambient : NIGHT_INTENSITY.ambient;
+      const targetPointIntensity = isDay ? DAY_INTENSITY.point : NIGHT_INTENSITY.point;
+      const targetSpotIntensity = isDay ? DAY_INTENSITY.spot : NIGHT_INTENSITY.spot;
 
       // スムーズな切り替え
       directionalLightRef.current.intensity +=
-        (targetIntensity - directionalLightRef.current.intensity) * delta * 2;
-      directionalLightRef.current.color.lerp(new THREE.Color(targetColor), delta * 2);
+        (targetIntensity - directionalLightRef.current.intensity) * delta * LIGHTING_TRANSITION_SPEED;
+      directionalLightRef.current.color.lerp(new THREE.Color(targetColor), delta * LIGHTING_TRANSITION_SPEED);
 
       ambientLightRef.current.intensity +=
         (targetAmbientIntensity - ambientLightRef.current.intensity) *
         delta *
-        2;
-      ambientLightRef.current.color.lerp(new THREE.Color(targetAmbientColor), delta * 2);
+        LIGHTING_TRANSITION_SPEED;
+      ambientLightRef.current.color.lerp(new THREE.Color(targetAmbientColor), delta * LIGHTING_TRANSITION_SPEED);
 
       pointLightRef.current.intensity +=
-        (targetPointIntensity - pointLightRef.current.intensity) * delta * 2;
+        (targetPointIntensity - pointLightRef.current.intensity) * delta * LIGHTING_TRANSITION_SPEED;
       spotLightRef.current.intensity +=
-        (targetSpotIntensity - spotLightRef.current.intensity) * delta * 2;
+        (targetSpotIntensity - spotLightRef.current.intensity) * delta * LIGHTING_TRANSITION_SPEED;
     }
   });
 

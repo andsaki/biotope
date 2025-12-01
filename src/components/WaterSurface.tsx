@@ -1,6 +1,23 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import {
+  WATER_SURFACE_Y,
+  WATER_SURFACE_Y_AMPLITUDE,
+  WATER_SURFACE_Y_FREQUENCY,
+  WATER_SURFACE_SCALE_X,
+  WATER_SURFACE_SCALE_Y,
+  WATER_SURFACE_SCALE_Z,
+  WATER_SURFACE_SEGMENTS,
+  WATER_WAVE_FREQUENCY,
+  WATER_WAVE_TIME_SCALE,
+  WATER_WAVE_AMPLITUDE,
+  WATER_COLOR,
+  WATER_OPACITY,
+  WATER_METALNESS,
+  WATER_ROUGHNESS,
+  WATER_ENV_MAP_INTENSITY,
+} from "../constants/waterSurface";
 
 /**
  * 水面コンポーネント
@@ -14,14 +31,14 @@ const WaterSurface: React.FC = () => {
     if (meshRef.current && geometryRef.current) {
       const time = state.clock.getElapsedTime();
       // サイン波でy位置を調整して、より顕著な波をシミュレート
-      meshRef.current.position.y = 8 + Math.sin(time * 1.5) * 0.5;
+      meshRef.current.position.y = WATER_SURFACE_Y + Math.sin(time * WATER_SURFACE_Y_FREQUENCY) * WATER_SURFACE_Y_AMPLITUDE;
 
       // 光の反射に影響を与えるためにジオメトリの頂点を変更して、より顕著な波紋効果を作成
       const positions = geometryRef.current.attributes.position
         .array as Float32Array;
-      const width = 80; // スケールに一致
-      const height = 80; // スケールに一致
-      const segments = 32; // より滑らかな波紋のための解像度を増加
+      const width = WATER_SURFACE_SCALE_X;
+      const height = WATER_SURFACE_SCALE_Y;
+      const segments = WATER_SURFACE_SEGMENTS;
       for (let i = 0; i <= segments; i++) {
         for (let j = 0; j <= segments; j++) {
           const index = (i * (segments + 1) + j) * 3 + 2; // z座標インデックス
@@ -29,9 +46,9 @@ const WaterSurface: React.FC = () => {
           const y = (j / segments - 0.5) * height;
           // よりダイナミックな光の反射のために振幅を増加し、波のパターンを変化
           positions[index] =
-            Math.sin(x * 0.3 + time * 2.5) *
-            Math.cos(y * 0.3 + time * 2.5) *
-            1.2;
+            Math.sin(x * WATER_WAVE_FREQUENCY + time * WATER_WAVE_TIME_SCALE) *
+            Math.cos(y * WATER_WAVE_FREQUENCY + time * WATER_WAVE_TIME_SCALE) *
+            WATER_WAVE_AMPLITUDE;
         }
       }
       geometryRef.current.attributes.position.needsUpdate = true;
@@ -41,21 +58,20 @@ const WaterSurface: React.FC = () => {
   return (
     <mesh
       ref={meshRef}
-      position={[0, 8, 0]}
+      position={[0, WATER_SURFACE_Y, 0]}
       rotation={[-Math.PI / 2, 0, 0]}
-      scale={[80, 80, 1]} // さらに広い範囲をカバーするために大幅に拡張
-      receiveShadow={true} // 水面が影を受け取れるようにする
+      scale={[WATER_SURFACE_SCALE_X, WATER_SURFACE_SCALE_Y, WATER_SURFACE_SCALE_Z]}
+      receiveShadow={true}
     >
-      <planeGeometry ref={geometryRef} args={[1, 1, 32, 32]} />{" "}
-      {/* 波紋のための解像度を増加 */}
+      <planeGeometry ref={geometryRef} args={[1, 1, WATER_SURFACE_SEGMENTS, WATER_SURFACE_SEGMENTS]} />
       <meshStandardMaterial
-        color="#4A90E2"
+        color={WATER_COLOR}
         transparent={true}
-        opacity={0.3} // より明確な反射のために不透明度をさらに減少
-        side={THREE.DoubleSide} // 下から見えるように両面レンダリング
-        metalness={0.9} // より強い鏡のような効果のために金属性を増加
-        roughness={0.1} // よりシャープで明確な反射のために粗さをさらに減少
-        envMapIntensity={1.5} // より良い反射の視認性のために環境マップの強度を増加
+        opacity={WATER_OPACITY}
+        side={THREE.DoubleSide}
+        metalness={WATER_METALNESS}
+        roughness={WATER_ROUGHNESS}
+        envMapIntensity={WATER_ENV_MAP_INTENSITY}
       />
     </mesh>
   );

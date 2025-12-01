@@ -2,6 +2,26 @@ import React, { useEffect, useState } from "react";
 import { useSeason } from "../contexts/SeasonContext";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import {
+  PARTICLE_COUNT,
+  PARTICLE_COLOR,
+  PARTICLE_SPEED_Y,
+  PARTICLE_SIZE_MODIFIER,
+  PARTICLE_BASE_SIZE_MIN,
+  PARTICLE_BASE_SIZE_VARIATION,
+  PARTICLE_SPAWN,
+  PARTICLE_SPEED_X_MIN,
+  PARTICLE_SPEED_X_MAX,
+  PARTICLE_SPEED_Z_MIN,
+  PARTICLE_SPEED_Z_MAX,
+  PARTICLE_LIFE_MIN,
+  PARTICLE_LIFE_VARIATION,
+  PARTICLE_RESET_Y,
+  PARTICLE_FRAME_SKIP,
+  PARTICLE_SPEED_MULTIPLIER,
+  PARTICLE_OPACITY,
+  PARTICLE_GEOMETRY_SIZE,
+} from "../constants/particle";
 
 /** パーティクルの状態データ */
 interface Particle {
@@ -41,53 +61,54 @@ const ParticleLayer: React.FC = () => {
     let particleColor: string;
     let particleCount: number;
     let speedYRange: [number, number];
-    let particleSizeModifier: number = 1.0; // Default size modifier
+    let particleSizeModifier: number;
 
     switch (season) {
       case "spring":
-        particleColor = "#FFB6C1"; // ライトピンク (花びら)
-        particleCount = 15; // 50から減少
-        speedYRange = [0.025, 0.05]; // アニメーションを遅くするために速度を減少
+        particleColor = PARTICLE_COLOR.SPRING;
+        particleCount = PARTICLE_COUNT.SPRING;
+        speedYRange = PARTICLE_SPEED_Y.SPRING;
+        particleSizeModifier = PARTICLE_SIZE_MODIFIER.SPRING;
         break;
       case "summer":
-        particleColor = "#98FB98"; // ペールグリーン (葉)
-        particleCount = 10; // 20から減少
-        speedYRange = [0.01, 0.025]; // アニメーションを遅くするために速度を減少
-        particleSizeModifier = 0.5; // 夏のためにさらに小さいパーティクル
+        particleColor = PARTICLE_COLOR.SUMMER;
+        particleCount = PARTICLE_COUNT.SUMMER;
+        speedYRange = PARTICLE_SPEED_Y.SUMMER;
+        particleSizeModifier = PARTICLE_SIZE_MODIFIER.SUMMER;
         break;
       case "autumn":
-        particleColor = "#FFA500"; // オレンジ (落ち葉)
-        particleCount = 5; // パフォーマンス向上のためにさらに減少
-        speedYRange = [0.005, 0.015]; // 穏やかな落下のために速度を遅く
-        particleSizeModifier = 1.2; // 秋の葉のために大きいパーティクル
+        particleColor = PARTICLE_COLOR.AUTUMN;
+        particleCount = PARTICLE_COUNT.AUTUMN;
+        speedYRange = PARTICLE_SPEED_Y.AUTUMN;
+        particleSizeModifier = PARTICLE_SIZE_MODIFIER.AUTUMN;
         break;
       case "winter":
-        particleColor = "#FFFFFF"; // ホワイト (雪)
-        particleCount = 20; // 60から減少
-        speedYRange = [0.005, 0.015]; // アニメーションを遅くするために速度を減少
-        particleSizeModifier = 0.5; // 冬のためにさらに小さいパーティクル
+        particleColor = PARTICLE_COLOR.WINTER;
+        particleCount = PARTICLE_COUNT.WINTER;
+        speedYRange = PARTICLE_SPEED_Y.WINTER;
+        particleSizeModifier = PARTICLE_SIZE_MODIFIER.WINTER;
         break;
       default:
-        particleColor = "#FFB6C1";
-        particleCount = 15; // 50から減少
-        speedYRange = [0.025, 0.05]; // アニメーションを遅くするために速度を減少
+        particleColor = PARTICLE_COLOR.DEFAULT;
+        particleCount = PARTICLE_COUNT.DEFAULT;
+        speedYRange = PARTICLE_SPEED_Y.DEFAULT;
+        particleSizeModifier = PARTICLE_SIZE_MODIFIER.DEFAULT;
     }
 
     for (let i = 0; i < particleCount; i++) {
-      const baseSize = 0.03 + Math.random() * 0.07; // パーティクルサイズをわずかに減少
-      const finalSize = baseSize * (particleSizeModifier || 1.0); // 存在する場合、季節のサイズ修飾子を適用
+      const baseSize = PARTICLE_BASE_SIZE_MIN + Math.random() * PARTICLE_BASE_SIZE_VARIATION;
+      const finalSize = baseSize * particleSizeModifier;
       newParticles.push({
         id: i,
-        x: Math.random() * 10 - 5,
-        y: Math.random() * 5,
-        z: Math.random() * 5 - 2.5,
-        speedX: Math.random() * 0.02 - 0.01,
-        speedY:
-          speedYRange[0] + Math.random() * (speedYRange[1] - speedYRange[0]),
-        speedZ: Math.random() * 0.02 - 0.01,
+        x: Math.random() * (PARTICLE_SPAWN.X_MAX - PARTICLE_SPAWN.X_MIN) + PARTICLE_SPAWN.X_MIN,
+        y: Math.random() * PARTICLE_SPAWN.Y_MAX,
+        z: Math.random() * (PARTICLE_SPAWN.Z_MAX - PARTICLE_SPAWN.Z_MIN) + PARTICLE_SPAWN.Z_MIN,
+        speedX: Math.random() * (PARTICLE_SPEED_X_MAX - PARTICLE_SPEED_X_MIN) + PARTICLE_SPEED_X_MIN,
+        speedY: speedYRange[0] + Math.random() * (speedYRange[1] - speedYRange[0]),
+        speedZ: Math.random() * (PARTICLE_SPEED_Z_MAX - PARTICLE_SPEED_Z_MIN) + PARTICLE_SPEED_Z_MIN,
         color: particleColor,
         size: finalSize,
-        life: Math.random() * 100 + 100,
+        life: Math.random() * PARTICLE_LIFE_VARIATION + PARTICLE_LIFE_MIN,
       });
     }
     setParticles(newParticles);
@@ -97,24 +118,24 @@ const ParticleLayer: React.FC = () => {
 
   useFrame(() => {
     frameCount.current++;
-    // 2フレームに1回更新してパフォーマンスを向上
-    if (frameCount.current % 2 !== 0) return;
+    // パフォーマンス向上のためフレームスキップ
+    if (frameCount.current % PARTICLE_FRAME_SKIP !== 0) return;
 
     setParticles((prevParticles) =>
       prevParticles
         .map((particle) => {
-          const newY = particle.y - particle.speedY * 2; // フレームスキップ分を調整
-          const newX = particle.x + particle.speedX * 2;
-          const newZ = particle.z + particle.speedZ * 2;
-          const newLife = particle.life - 2;
+          const newY = particle.y - particle.speedY * PARTICLE_SPEED_MULTIPLIER;
+          const newX = particle.x + particle.speedX * PARTICLE_SPEED_MULTIPLIER;
+          const newZ = particle.z + particle.speedZ * PARTICLE_SPEED_MULTIPLIER;
+          const newLife = particle.life - PARTICLE_SPEED_MULTIPLIER;
 
-          if (newY < -2 || newLife <= 0) {
+          if (newY < PARTICLE_RESET_Y || newLife <= 0) {
             return {
               ...particle,
-              y: 5,
-              x: Math.random() * 10 - 5,
-              z: Math.random() * 5 - 2.5,
-              life: Math.random() * 100 + 100,
+              y: PARTICLE_SPAWN.Y_MAX,
+              x: Math.random() * (PARTICLE_SPAWN.X_MAX - PARTICLE_SPAWN.X_MIN) + PARTICLE_SPAWN.X_MIN,
+              z: Math.random() * (PARTICLE_SPAWN.Z_MAX - PARTICLE_SPAWN.Z_MIN) + PARTICLE_SPAWN.Z_MIN,
+              life: Math.random() * PARTICLE_LIFE_VARIATION + PARTICLE_LIFE_MIN,
             };
           }
           return { ...particle, y: newY, x: newX, z: newZ, life: newLife };
@@ -129,21 +150,21 @@ const ParticleLayer: React.FC = () => {
         <mesh key={particle.id} position={[particle.x, particle.y, particle.z]}>
           {season === "winter" ? (
             // 雪は球体
-            <sphereGeometry args={[particle.size, 8, 8]} />
+            <sphereGeometry args={[particle.size, PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS, PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS]} />
           ) : season === "spring" ? (
             // 桜の花びらは平たい形
-            <planeGeometry args={[particle.size * 1.5, particle.size, 1]} />
+            <planeGeometry args={[particle.size * PARTICLE_GEOMETRY_SIZE.SPRING_WIDTH, particle.size * PARTICLE_GEOMETRY_SIZE.SPRING_HEIGHT, 1]} />
           ) : season === "autumn" ? (
             // 落ち葉は平たい長方形
-            <planeGeometry args={[particle.size * 1.2, particle.size * 1.8, 1]} />
+            <planeGeometry args={[particle.size * PARTICLE_GEOMETRY_SIZE.AUTUMN_WIDTH, particle.size * PARTICLE_GEOMETRY_SIZE.AUTUMN_HEIGHT, 1]} />
           ) : (
             // 夏は小さな球体（種や小さな葉）
-            <sphereGeometry args={[particle.size, 6, 6]} />
+            <sphereGeometry args={[particle.size, PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS, PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS]} />
           )}
           <meshStandardMaterial
             color={particle.color}
             transparent={true}
-            opacity={0.8}
+            opacity={PARTICLE_OPACITY}
             side={THREE.DoubleSide}
           />
         </mesh>

@@ -3,6 +3,19 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 import { useTime } from "../contexts/TimeContext";
+import {
+  REFLECTED_STAR_COUNT,
+  STAR_DISPLAY_DELAY,
+  STAR_FADE_SPEED,
+  STAR_MATERIAL,
+  REFLECTED_STAR_POSITION_Y,
+  REFLECTED_STAR_SPREAD_X,
+  REFLECTED_STAR_SPREAD_Z,
+  REFLECTED_STAR_WAVE_FREQUENCY,
+  REFLECTED_STAR_WAVE_AMPLITUDE,
+  REFLECTED_STAR_COLOR,
+  REFLECTED_STAR_OPACITY,
+} from "../constants/stars";
 
 /**
  * 水面に反射する星空コンポーネント
@@ -18,7 +31,7 @@ const ReflectedStars: React.FC = () => {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isNight) {
-      timer = setTimeout(() => setVisible(true), 5000); // 星と同じ遅延
+      timer = setTimeout(() => setVisible(true), STAR_DISPLAY_DELAY);
     } else {
       setVisible(false);
     }
@@ -26,11 +39,11 @@ const ReflectedStars: React.FC = () => {
   }, [isNight]);
 
   const particles = useMemo(() => {
-    const positions = new Float32Array(2000 * 3); // 反射用の星は少なめに
+    const positions = new Float32Array(REFLECTED_STAR_COUNT * 3);
     for (let i = 0; i < positions.length; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 20; // 水面に広がるようにX座標を設定
-      positions[i + 1] = 0; // Y座標は0で初期化（後で水面の位置に合わせる）
-      positions[i + 2] = (Math.random() - 0.5) * 20; // 水面に広がるようにZ座標を設定
+      positions[i] = (Math.random() - 0.5) * REFLECTED_STAR_SPREAD_X;
+      positions[i + 1] = 0;
+      positions[i + 2] = (Math.random() - 0.5) * REFLECTED_STAR_SPREAD_Z;
     }
     return positions;
   }, []);
@@ -46,7 +59,7 @@ const ReflectedStars: React.FC = () => {
         const x = originalPositions[i];
         const z = originalPositions[i + 2];
         // Y座標を波のようにアニメーションさせる
-        positions[i + 1] = Math.sin(x * 0.5 + time) * 0.1 + Math.cos(z * 0.5 + time) * 0.1;
+        positions[i + 1] = Math.sin(x * REFLECTED_STAR_WAVE_FREQUENCY + time) * REFLECTED_STAR_WAVE_AMPLITUDE + Math.cos(z * REFLECTED_STAR_WAVE_FREQUENCY + time) * REFLECTED_STAR_WAVE_AMPLITUDE;
       }
       pointsRef.current.geometry.attributes.position.needsUpdate = true;
     }
@@ -54,14 +67,14 @@ const ReflectedStars: React.FC = () => {
     if (materialRef.current) {
       materialRef.current.opacity = THREE.MathUtils.lerp(
         materialRef.current.opacity,
-        visible ? 0.5 : 0, // 反射なので少し薄く表示
-        0.05
+        visible ? REFLECTED_STAR_OPACITY : 0,
+        STAR_FADE_SPEED
       );
     }
   });
 
   return (
-    <points ref={pointsRef} position={[0, 8, 0]}>
+    <points ref={pointsRef} position={[0, REFLECTED_STAR_POSITION_Y, 0]}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -74,11 +87,11 @@ const ReflectedStars: React.FC = () => {
       <PointMaterial
         ref={materialRef}
         transparent
-        color="#FFFFFF"
-        size={0.05}
-        sizeAttenuation={true}
-        depthWrite={false}
-        fog={false}
+        color={REFLECTED_STAR_COLOR}
+        size={STAR_MATERIAL.size}
+        sizeAttenuation={STAR_MATERIAL.sizeAttenuation}
+        depthWrite={STAR_MATERIAL.depthWrite}
+        fog={STAR_MATERIAL.fog}
         opacity={0}
       />
     </points>

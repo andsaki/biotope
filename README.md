@@ -99,8 +99,21 @@ src/
 │   ├── random.ts                # ランダム選択
 │   ├── messageUtils.ts          # メッセージ取得ロジック
 │   └── dailyMessage.ts          # AI日次メッセージAPI呼び出し
-├── constants/               # 定数データ
-│   └── bottleMessages.ts        # 季節×時間帯メッセージ集
+├── constants/               # 定数ファイル（リファクタリング済み）
+│   ├── bottleMessages.ts        # 季節×時間帯メッセージ集
+│   ├── fish.ts                  # 魚の動作・表示定数
+│   ├── fallenLeaves.ts          # 落ち葉エフェクト定数
+│   ├── particle.ts              # パーティクルシステム定数
+│   ├── cherryBlossoms.ts        # 桜エフェクト定数
+│   ├── snowEffect.ts            # 雪エフェクト定数
+│   ├── clouds.ts                # 雲の定数
+│   ├── waterSurface.ts          # 水面の定数
+│   ├── bubbleEffect.ts          # 泡エフェクト定数
+│   ├── lighting.ts              # ライティング定数
+│   ├── waterPlants.ts           # 水草・蓮の葉定数
+│   ├── rocks.ts                 # 岩の配置定数
+│   ├── stars.ts                 # 星空の定数
+│   └── sundial.ts               # 日時計の定数
 ├── constants.ts             # アプリケーション定数
 └── assets/                  # 静的資産（R2アップロード対象）
     ├── cc0____yellow_striped_flounder.glb       # カレイ3Dモデル
@@ -131,6 +144,33 @@ r2-worker/
 - **typography**: フォント設定
 - **transitions**: アニメーション速度
 - **zIndex**: 重なり順
+
+### 定数ファイルの設計原則
+
+プロジェクト全体の保守性向上のため、**全てのマジックナンバーを定数化**:
+
+#### 命名規則
+- `UPPER_SNAKE_CASE`で統一
+- 意味が明確な名前を使用（例: `FISH_BOUNDARY_X_MAX`）
+
+#### ファイル構成
+各コンポーネントの定数は独立したファイルに分離:
+```typescript
+// src/constants/fish.ts の例
+export const NORMAL_FISH_COUNT = 10;
+export const FISH_SPEED = {
+  SPRING: 0.015,
+  SUMMER: 0.02,
+  AUTUMN: 0.01,
+  WINTER: 0.005,
+} as const;
+```
+
+#### メリット
+1. **一箇所での調整**: パラメータ変更時に定数ファイルのみ編集
+2. **可読性向上**: マジックナンバーが消え、意図が明確に
+3. **型安全性**: `as const`で読み取り専用オブジェクトとして型推論
+4. **再利用性**: 複数コンポーネントで同じ定数を共有可能
 
 ## パフォーマンス最適化
 
