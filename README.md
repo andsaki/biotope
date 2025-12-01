@@ -39,6 +39,8 @@ React、TypeScript、Three.jsを使用したビオトープ環境シミュレー
 - **ストレージ**: Cloudflare R2（3Dモデル配信）
 - **CDN**: Cloudflare Workers（R2キャッシュ）
 
+Cloudflare 上での各サービスの役割とシーケンス図は `docs/cloudflare-services.md` を参照してください。
+
 ## セットアップ
 
 1. リポジトリをクローン:
@@ -216,6 +218,7 @@ export default defineConfig({
 
 ### デプロイ
 Cloudflare Pagesに自動デプロイ。アセットはR2から配信。
+Cloudflare 上の各サービスの役割と詳細なフローは `docs/cloudflare-services.md` を参照してください。
 
 ## アーキテクチャ
 
@@ -315,6 +318,7 @@ graph LR
 ### Gemini API統合
 
 `functions/api/daily-message.ts` でCloudflare Functionsを使用し、毎日日本時間の日付に応じた心温まるメッセージを生成。
+Cloudflare 上の各サービス構成やシーケンス図の詳細は `docs/cloudflare-services.md` を参照。
 
 **特徴**:
 - **モデル**: Gemini 2.0 Flash (高速・低コスト)
@@ -439,6 +443,7 @@ if (!response) {
 - [`docs/drifting-bottle-feature.md`](docs/drifting-bottle-feature.md): 漂流する瓶の機能説明
 - [`docs/realtime-clock-feature.md`](docs/realtime-clock-feature.md): リアルタイム時計の機能説明
 - [`docs/seasonal-effects-feature.md`](docs/seasonal-effects-feature.md): 季節エフェクトの機能説明
+- [`docs/cloudflare-services.md`](docs/cloudflare-services.md): Cloudflare Functions / R2 Worker の役割とフロー
 
 ## ライセンス
 

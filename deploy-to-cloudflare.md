@@ -59,13 +59,15 @@ Cloudflare Pages は、接続されたリポジトリの本番ブランチに変
        npx gltf-pipeline -i public/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf -o public/assets/Smoked Fish Raw/optimized_weflciqaa_tier_0.gltf --draco.compressionLevel=7
        ```
        圧縮後、プロジェクト内で新しい最適化されたファイルパスを参照するように更新してください。
-  - **GitHub から外部ストレージへの自動アップロードを設定する**: GitHub へのプッシュ時に自動的にファイルを外部ストレージにアップロードするワークフローを設定できます。以下の手順で設定してください：
+- **GitHub から外部ストレージへの自動アップロードを設定する**: GitHub へのプッシュ時に自動的にファイルを外部ストレージにアップロードするワークフローを設定できます。以下の手順で設定してください：
     1. GitHub リポジトリの「Settings」タブに移動します。
     2. 「Secrets and variables」セクションで「Actions」を選択し、「New repository secret」をクリックします。
     3. 使用するストレージサービスの認証情報をシークレットとして追加します（例：AWS の場合は`AWS_ACCESS_KEY_ID`と`AWS_SECRET_ACCESS_KEY`、Google Cloud の場合はサービスアカウントキーなど）。
     4. `.github/workflows/upload-to-storage.yml`ファイルを作成し、選択したストレージサービスにファイルをアップロードする GitHub Actions ワークフローを定義します。現在の`.github/workflows/upload-to-r2.yml`を参考に、適切なツールやコマンドに置き換えてください。
     5. 必要に応じて、ワークフロー内のバケット名やファイルパスをプロジェクトに合わせて調整します。
        こうすることで、GitHub にプッシュするたびに、指定したアセットが自動的に外部ストレージにアップロードされます。
+
+Cloudflare 上の各サービスの役割やシーケンス図は `docs/cloudflare-services.md` も参照してください。
 
 ## 追加リソース
 
