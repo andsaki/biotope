@@ -73,6 +73,10 @@ const FallenLeaves: React.FC = () => {
         const rotation = isWinter
           ? [data.rotationX, data.rotationY, data.rotationZ] as [number, number, number]
           : [0, data.rotationY, 0] as [number, number, number];
+        // 冬は平らに（Y軸を圧縮）、秋は通常
+        const scale = isWinter
+          ? [data.scale, data.scale * 0.1, data.scale] as [number, number, number]
+          : [data.scale, data.scale, data.scale] as [number, number, number];
 
         return (
           <group
@@ -82,7 +86,7 @@ const FallenLeaves: React.FC = () => {
             }}
             position={[data.x, yPosition, data.z]}
             rotation={rotation}
-            scale={[data.scale, data.scale, data.scale]}
+            scale={scale}
           >
             <primitive object={leafScene.clone()} />
           </group>
