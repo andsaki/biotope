@@ -280,6 +280,7 @@ export const FISH_SPEED = {
 - **メモリ使用量**: 約40-50%削減
 
 ### Viteビルド最適化
+
 ```ts
 // vite.config.ts
 export default defineConfig({
