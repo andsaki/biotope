@@ -39,7 +39,7 @@ const SundialBase: React.FC = () => {
     // 水波と同期する時間数字のための強化された波紋効果
     hourTextRefs.current.forEach((ref, i) => {
       if (ref) {
-        const angle = i * (Math.PI / SUNDIAL_HOUR_COUNT / 2); // 1時間ごとに30度
+        const angle = (i * 2 * Math.PI) / SUNDIAL_HOUR_COUNT - Math.PI / 2;
         const x = SUNDIAL_HOUR_RADIUS * Math.cos(angle);
         const z = SUNDIAL_HOUR_RADIUS * Math.sin(angle);
         const rippleHeight =
@@ -66,7 +66,7 @@ const SundialBase: React.FC = () => {
       </mesh>
       {[...Array(SUNDIAL_HOUR_COUNT)].map((_, i) => {
         const hour = i === 0 ? SUNDIAL_HOUR_COUNT : i;
-        const angle = i * (Math.PI / SUNDIAL_HOUR_COUNT / 2);
+        const angle = (i * 2 * Math.PI) / SUNDIAL_HOUR_COUNT - Math.PI / 2;
         return (
           <Text
             key={i}

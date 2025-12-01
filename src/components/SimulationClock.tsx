@@ -93,7 +93,7 @@ const SimulationClock: React.FC = () => {
             }}
           />
           <Clock
-            value={new Date(0, 0, 0, hours, minutes, seconds)}
+            value={new Date(2000, 0, 1, hours, minutes, seconds)}
             size={200}
             renderNumbers={true}
             renderSecondHand={false}
