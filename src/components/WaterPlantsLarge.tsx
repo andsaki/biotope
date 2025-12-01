@@ -37,6 +37,11 @@ const WaterPlantsLarge: React.FC = () => {
     ? useGLTF(LILY_MODEL_URL, true)
     : { scene: new THREE.Group() };
 
+  // 蓮の葉のcloneを事前に作成してパフォーマンス向上
+  const lilyClones = useMemo(() =>
+    LILY_DATA.map(() => lilyScene.clone())
+  , [lilyScene]);
+
   // 蓮の葉のアニメーション（水面の波に連動）
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
@@ -96,7 +101,7 @@ const WaterPlantsLarge: React.FC = () => {
           rotation={[0, data.rotation, 0]}
           scale={[data.scale, data.scale, data.scale]}
         >
-          <primitive object={lilyScene.clone()} />
+          <primitive object={lilyClones[i]} />
         </group>
       ))}
     </group>

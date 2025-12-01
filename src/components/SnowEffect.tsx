@@ -33,6 +33,39 @@ import {
   SNOW_TEXTURE_GRADIENT_STOPS,
 } from "../constants/snowEffect";
 
+// 雪の結晶テクスチャ生成（一度だけ作成してメモ化）
+const createSnowflakeTexture = (() => {
+  let cachedTexture: THREE.Texture | null = null;
+  return (): THREE.Texture => {
+    if (cachedTexture) return cachedTexture;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = SNOW_TEXTURE_SIZE;
+    canvas.height = SNOW_TEXTURE_SIZE;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(
+        SNOW_TEXTURE_GRADIENT_CENTER.x,
+        SNOW_TEXTURE_GRADIENT_CENTER.y,
+        SNOW_TEXTURE_GRADIENT_CENTER.innerRadius,
+        SNOW_TEXTURE_GRADIENT_CENTER.x,
+        SNOW_TEXTURE_GRADIENT_CENTER.y,
+        SNOW_TEXTURE_GRADIENT_CENTER.outerRadius
+      );
+      gradient.addColorStop(SNOW_TEXTURE_GRADIENT_STOPS.center, SNOW_TEXTURE_GRADIENT.centerColor);
+      gradient.addColorStop(SNOW_TEXTURE_GRADIENT_STOPS.mid, SNOW_TEXTURE_GRADIENT.midColor);
+      gradient.addColorStop(SNOW_TEXTURE_GRADIENT_STOPS.edge, SNOW_TEXTURE_GRADIENT.edgeColor);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, SNOW_TEXTURE_SIZE, SNOW_TEXTURE_SIZE);
+    }
+
+    cachedTexture = new THREE.CanvasTexture(canvas);
+    return cachedTexture;
+  };
+})();
+
 /**
  * 冬の雪エフェクト
  * 降り積もる雪をパーティクルシステムで表現
@@ -114,34 +147,5 @@ const SnowEffect: React.FC = () => {
     </points>
   );
 };
-
-// 雪の結晶テクスチャ生成
-function createSnowflakeTexture(): THREE.Texture {
-  const canvas = document.createElement("canvas");
-  canvas.width = SNOW_TEXTURE_SIZE;
-  canvas.height = SNOW_TEXTURE_SIZE;
-  const ctx = canvas.getContext("2d");
-
-  if (ctx) {
-    // グラデーション
-    const gradient = ctx.createRadialGradient(
-      SNOW_TEXTURE_GRADIENT_CENTER.x,
-      SNOW_TEXTURE_GRADIENT_CENTER.y,
-      SNOW_TEXTURE_GRADIENT_CENTER.innerRadius,
-      SNOW_TEXTURE_GRADIENT_CENTER.x,
-      SNOW_TEXTURE_GRADIENT_CENTER.y,
-      SNOW_TEXTURE_GRADIENT_CENTER.outerRadius
-    );
-    gradient.addColorStop(SNOW_TEXTURE_GRADIENT_STOPS.center, SNOW_TEXTURE_GRADIENT.centerColor);
-    gradient.addColorStop(SNOW_TEXTURE_GRADIENT_STOPS.mid, SNOW_TEXTURE_GRADIENT.midColor);
-    gradient.addColorStop(SNOW_TEXTURE_GRADIENT_STOPS.edge, SNOW_TEXTURE_GRADIENT.edgeColor);
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, SNOW_TEXTURE_SIZE, SNOW_TEXTURE_SIZE);
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
-}
 
 export default SnowEffect;

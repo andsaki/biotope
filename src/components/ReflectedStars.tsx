@@ -27,6 +27,7 @@ const ReflectedStars: React.FC = () => {
   const pointsRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<any>(null!);
   const [visible, setVisible] = useState(false);
+  const frameCount = useRef(0);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -51,7 +52,9 @@ const ReflectedStars: React.FC = () => {
   const originalPositions = useMemo(() => new Float32Array(particles), [particles]);
 
   useFrame((state) => {
-    if (pointsRef.current && visible) {
+    // パフォーマンス向上：2フレームに1回だけ頂点を更新
+    frameCount.current++;
+    if (frameCount.current % 2 === 0 && pointsRef.current && visible) {
       const time = state.clock.getElapsedTime();
       const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
 

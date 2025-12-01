@@ -29,6 +29,39 @@ import {
   PETAL_TEXTURE_GRADIENT_STOPS,
 } from "../constants/cherryBlossoms";
 
+// 花びらのテクスチャ生成（一度だけ作成してメモ化）
+const createPetalTexture = (() => {
+  let cachedTexture: THREE.Texture | null = null;
+  return (): THREE.Texture => {
+    if (cachedTexture) return cachedTexture;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = PETAL_TEXTURE_SIZE;
+    canvas.height = PETAL_TEXTURE_SIZE;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(
+        PETAL_TEXTURE_GRADIENT_CENTER.x,
+        PETAL_TEXTURE_GRADIENT_CENTER.y,
+        PETAL_TEXTURE_GRADIENT_CENTER.innerRadius,
+        PETAL_TEXTURE_GRADIENT_CENTER.x,
+        PETAL_TEXTURE_GRADIENT_CENTER.y,
+        PETAL_TEXTURE_GRADIENT_CENTER.outerRadius
+      );
+      gradient.addColorStop(PETAL_TEXTURE_GRADIENT_STOPS.center, PETAL_TEXTURE_GRADIENT.centerColor);
+      gradient.addColorStop(PETAL_TEXTURE_GRADIENT_STOPS.mid, PETAL_TEXTURE_GRADIENT.midColor);
+      gradient.addColorStop(PETAL_TEXTURE_GRADIENT_STOPS.edge, PETAL_TEXTURE_GRADIENT.edgeColor);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, PETAL_TEXTURE_SIZE, PETAL_TEXTURE_SIZE);
+    }
+
+    cachedTexture = new THREE.CanvasTexture(canvas);
+    return cachedTexture;
+  };
+})();
+
 /**
  * 春の桜の花びらエフェクト
  * 舞い落ちる桜の花びらをパーティクルシステムで表現
@@ -117,34 +150,5 @@ const CherryBlossoms: React.FC = () => {
     </points>
   );
 };
-
-// 花びらのテクスチャ生成
-function createPetalTexture(): THREE.Texture {
-  const canvas = document.createElement("canvas");
-  canvas.width = PETAL_TEXTURE_SIZE;
-  canvas.height = PETAL_TEXTURE_SIZE;
-  const ctx = canvas.getContext("2d");
-
-  if (ctx) {
-    // グラデーション
-    const gradient = ctx.createRadialGradient(
-      PETAL_TEXTURE_GRADIENT_CENTER.x,
-      PETAL_TEXTURE_GRADIENT_CENTER.y,
-      PETAL_TEXTURE_GRADIENT_CENTER.innerRadius,
-      PETAL_TEXTURE_GRADIENT_CENTER.x,
-      PETAL_TEXTURE_GRADIENT_CENTER.y,
-      PETAL_TEXTURE_GRADIENT_CENTER.outerRadius
-    );
-    gradient.addColorStop(PETAL_TEXTURE_GRADIENT_STOPS.center, PETAL_TEXTURE_GRADIENT.centerColor);
-    gradient.addColorStop(PETAL_TEXTURE_GRADIENT_STOPS.mid, PETAL_TEXTURE_GRADIENT.midColor);
-    gradient.addColorStop(PETAL_TEXTURE_GRADIENT_STOPS.edge, PETAL_TEXTURE_GRADIENT.edgeColor);
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, PETAL_TEXTURE_SIZE, PETAL_TEXTURE_SIZE);
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
-}
 
 export default CherryBlossoms;
