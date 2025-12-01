@@ -5,8 +5,9 @@ import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
 
 /**
- * 秋の落ち葉エフェクト
- * 3Dモデルの紅葉が水面に浮かぶ
+ * 秋・冬の落ち葉エフェクト
+ * 秋: 3Dモデルの紅葉が水面に浮かぶ
+ * 冬: 落ち葉が地面に落ちて静止
  */
 const FallenLeaves: React.FC = () => {
   const { season } = useSeason();
@@ -19,12 +20,16 @@ const FallenLeaves: React.FC = () => {
     ? useGLTF(leafUrl, true)
     : { scene: new THREE.Group() };
 
+  const isWinter = season === "winter";
+
   // 落ち葉の初期位置データ（コンポーネント再レンダリング時に位置が変わらないようにuseMemoで固定）
   const leafData = useMemo(() =>
     Array.from({ length: 15 }, () => ({
       x: (Math.random() - 0.5) * 12,
       z: (Math.random() - 0.5) * 10,
       rotationY: Math.random() * Math.PI * 2,
+      rotationX: Math.random() * 0.3 - 0.15, // 地面での傾き
+      rotationZ: Math.random() * 0.3 - 0.15, // 地面での傾き
       scale: 0.03 + Math.random() * 0.02,
       floatSpeed: 0.3 + Math.random() * 0.4, // 浮き沈みの速度
       driftSpeed: 0.05 + Math.random() * 0.1, // 横移動の速度
@@ -34,6 +39,8 @@ const FallenLeaves: React.FC = () => {
   , []);
 
   useFrame((state) => {
+    if (isWinter) return; // 冬は静止
+
     const time = state.clock.getElapsedTime();
     leavesRefs.current.forEach((ref, i) => {
       if (ref) {
@@ -54,25 +61,33 @@ const FallenLeaves: React.FC = () => {
     });
   });
 
-  if (season !== "autumn") {
-    return null; // 秋の間だけ葉をレンダリング
+  if (season !== "autumn" && season !== "winter") {
+    return null; // 秋と冬の間だけ葉をレンダリング
   }
 
   return (
     <group>
-      {leafData.map((data, i) => (
-        <group
-          key={i}
-          ref={(el) => {
-            if (el) leavesRefs.current[i] = el;
-          }}
-          position={[data.x, 8.05, data.z]}
-          rotation={[0, data.rotationY, 0]}
-          scale={[data.scale, data.scale, data.scale]}
-        >
-          <primitive object={leafScene.clone()} />
-        </group>
-      ))}
+      {leafData.map((data, i) => {
+        // 冬は地面に、秋は水面に
+        const yPosition = isWinter ? -0.85 : 8.05;
+        const rotation = isWinter
+          ? [data.rotationX, data.rotationY, data.rotationZ] as [number, number, number]
+          : [0, data.rotationY, 0] as [number, number, number];
+
+        return (
+          <group
+            key={i}
+            ref={(el) => {
+              if (el) leavesRefs.current[i] = el;
+            }}
+            position={[data.x, yPosition, data.z]}
+            rotation={rotation}
+            scale={[data.scale, data.scale, data.scale]}
+          >
+            <primitive object={leafScene.clone()} />
+          </group>
+        );
+      })}
     </group>
   );
 };
