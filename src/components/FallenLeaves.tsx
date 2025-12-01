@@ -15,13 +15,9 @@ const FallenLeaves: React.FC = () => {
   // R2から直接読み込み（ファイルサイズが大きいため）
   const leafUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__deep_autumn__5k_followers_milestone.glb";
 
-  console.log("Loading fallen leaves from:", leafUrl);
-
   const { scene: leafScene } = leafUrl
     ? useGLTF(leafUrl, true)
     : { scene: new THREE.Group() };
-
-  console.log("Fallen leaves scene loaded:", leafScene);
 
   // 落ち葉の初期位置データ（コンポーネント再レンダリング時に位置が変わらないようにuseMemoで固定）
   const leafData = useMemo(() =>

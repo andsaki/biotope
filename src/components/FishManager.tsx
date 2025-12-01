@@ -203,16 +203,12 @@ const FishManager: React.FC = () => {
     : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
   const flatfishUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0____yellow_striped_flounder.glb";
 
-  console.log("Loading flatfish from:", flatfishUrl);
-
   const { scene: normalFishScene } = normalFishUrl
     ? useGLTF(normalFishUrl, true)
     : { scene: new THREE.Group() };
   const { scene: flatfishScene } = flatfishUrl
     ? useGLTF(flatfishUrl, true)
     : { scene: new THREE.Group() };
-
-  console.log("Flatfish scene loaded:", flatfishScene);
 
   // デバッグのためにモデルの読み込み成功とシーンの詳細をログする（コメントアウト）
   // useEffect(() => {
