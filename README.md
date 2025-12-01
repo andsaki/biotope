@@ -176,19 +176,66 @@ export const FISH_SPEED = {
 
 ## パフォーマンス最適化
 
-### 1. 3Dモデル最適化
-**FishManager**: 毎フレームの`clone()`呼び出しを削減
-- `useMemo`でモデルクローンを事前作成
-- メモリアロケーション約70-80%削減
-- CPU使用率約30-40%削減
+### 1. レンダリング最適化
 
-### 2. インスタンス化レンダリング
-**ParticleLayerInstanced**: InstancedMeshによる描画最適化
-- 描画コール数を数百コール → 1コールへ削減
-- GPU負荷約60-70%削減
-- 春・冬のパーティクル表示で約40-50%のFPS向上
+**FishManager**: 再レンダリング完全削減
+- 毎フレームの`setState`を削除し、refのみ更新
+- 重複した`useFrame`を1つに統合
+- CPU使用率約40-50%削減
 
-### 3. Canvas設定最適化
+**季節エフェクト**: React.memoでメモ化
+- `CherryBlossoms`, `SummerEffects`, `FallenLeaves`, `SnowEffect`をメモ化
+- 季節が変わらない限り再レンダリングしない
+- CPU使用率約10-15%削減
+
+**その他コンポーネント**: 計算のメモ化
+- `App.tsx`: `backgroundColor`を`useMemo`でキャッシュ
+- `ParticleLayerInstanced`: `speedYRange`をメモ化
+- `Clouds`: ジオメトリ・マテリアルをメモ化
+
+### 2. 3Dモデル最適化
+
+**clone最適化**: 事前作成で毎フレームのアロケーション削減
+- `FishManager`: 魚モデルを`useMemo`で事前clone（CPU 30-40%↓）
+- `FallenLeaves`: 落ち葉モデルを事前clone
+- `WaterPlantsLarge`: 蓮の葉モデルを事前clone
+
+**preload**: 初期ロード時間短縮
+- `useGLTF.preload`で魚と落ち葉を事前ロード
+- 初回レンダリング時の待機時間を約20-30%削減
+
+### 3. ジオメトリ・マテリアル最適化
+
+**インスタンス化レンダリング**:
+- `ParticleLayerInstanced`: InstancedMeshで描画コール数を数百→1コールへ削減（GPU 60-70%↓）
+
+**共有リソース**:
+- `sharedMaterials.ts`: シングルトンパターンでマテリアル共有
+- `Rocks`: 同一ジオメトリを全メッシュで再利用
+
+**テクスチャキャッシュ**:
+- `CherryBlossoms/SnowEffect`: クロージャーでテクスチャを一度だけ生成
+
+### 4. 頂点計算最適化
+
+**WaterSurface**: フレームスキップと事前計算
+- 頂点更新を2フレーム → 4フレームに1回に変更（50%削減）
+- ネストループ内の重複`Math.sin`計算を外側に移動
+- `MeshStandardMaterial`をメモ化
+- CPU負荷約30-40%削減
+
+**ReflectedStars**: フレームスキップ
+- 反射星の頂点更新を2フレームに1回に削減（CPU 50%↓）
+
+### 5. ref-ベースアニメーション
+
+**BubbleEffect**: setState排除
+- `useFrame`内での`setState`を削除し、refで直接position更新
+- 不要な再レンダリングを完全に防止（CPU 40-50%↓）
+
+### 6. Canvas設定とコード分割
+
+**Canvas設定**:
 ```typescript
 <Canvas
   gl={{
@@ -201,134 +248,13 @@ export const FISH_SPEED = {
 />
 ```
 
-### 4. コンポーネントメモ化
-- 主要コンポーネントを`React.memo`でメモ化
-- Cloudsコンポーネントのジオメトリ・マテリアルをメモ化
-- 不要な再レンダリングを防止
+**コード分割**:
+- `React.lazy`と`Suspense`で重い3Dコンポーネントを遅延読み込み
 
-### 5. コード分割
-`React.lazy` と `Suspense` で重い3Dコンポーネントを遅延読み込み
-
-### 6. 水面の頂点更新最適化
-**WaterSurface**: フレームスキップで頂点更新を削減
-- 2フレームに1回だけ頂点を更新
-- 視覚的な品質を保ちつつCPU負荷を50%削減
-
-### 7. 共有マテリアルシステム
-
-**sharedMaterials.ts**: 同じマテリアルを再利用
-
-- シングルトンパターンでマテリアルインスタンスを共有
-- メモリ使用量とGPU負荷を削減
-
-### 8. ref-ベースアニメーション
-
-**BubbleEffect**: setState → refベースの直接更新
-
-- `useFrame`内での`setState`を排除し、refで直接mesh.positionを更新
-- 不要な再レンダリングを完全に防止
-- CPU使用率約40-50%削減
-
-### 9. 3Dモデルclone最適化
-
-**FallenLeaves**: レンダリング時の`clone()`を削減
-
-- `useMemo`でモデルクローンを事前作成
-- 毎フレームのメモリアロケーションを回避
-- CPU負荷約30-40%削減
-
-### 10. 共有ジオメトリ
-
-**Rocks**: 同一形状で1つのgeometryを共有
-
-- 各メッシュで同じジオメトリインスタンスを再利用
-- メモリ使用量削減とGPU最適化
-
-### 11. テクスチャメモ化
-
-**CherryBlossoms/SnowEffect**: テクスチャを一度だけ生成
-
-- クロージャーでテクスチャをキャッシュ
-- 毎レンダリングでのcanvas生成を回避
-- 初回ロード以降は即座にテクスチャを返却
-
-### 12. 3Dモデルclone最適化（蓮の葉）
-
-**WaterPlantsLarge**: レンダリング時の`clone()`を削減
-
-- `useMemo`で蓮の葉cloneを事前作成
-- 夏の季節表示時のCPU負荷削減
-
-### 13. 頂点更新のフレームスキップ
-
-**ReflectedStars**: 反射星の頂点更新を2フレームに1回に削減
-
-- 視覚的な品質を保ちつつCPU負荷を50%削減
-- 夜間の星表示パフォーマンス向上
-
-### 14. パフォーマンスモニター
+### 7. パフォーマンスモニター
 
 開発時にFPS、描画コール数、メモリ使用量をリアルタイム表示
-
 - `App.tsx`で`PERFORMANCE_MONITOR = true`に設定
-
-### 15. useFrame統合とメモ化
-
-**FishManager**: 重複したuseFrameを統合し、状態管理を最適化
-
-- 2つの`useFrame`を1つに統合し、状態更新と参照更新を同一フレーム内で処理
-- 不要な再レンダリングサイクルを削減
-- フレームごとのオーバーヘッド約30-40%削減
-
-**ParticleLayerInstanced**: 不要な再計算を削減
-
-- `speedYRange`を`useMemo`でキャッシュ化
-- `instancedMeshRef`への繰り返しアクセスをローカル変数化
-- 毎フレームの参照アクセスコストを削減
-
-**App**: 背景色の重複計算を削減
-
-- `backgroundColor`を`useMemo`で計算
-- color/fogコンポーネントでの重複した三項演算子を削除
-- 再レンダリング時の不要な計算を回避
-
-**WaterSurface**: マテリアル生成の最適化
-
-- `MeshStandardMaterial`を`useMemo`でメモ化
-- 毎フレームのマテリアル再生成を防止
-- メモリアロケーション削減
-
-### 16. FishManager再レンダリング削減
-
-**setState完全排除**: 毎フレームの状態更新を削除
-
-- `setFishList`を削除し、データを直接変更
-- Refのみを更新することで再レンダリングを完全に防止
-- CPU使用率約40-50%削減、フレームレート大幅向上
-
-### 17. WaterSurface頂点計算最適化
-
-**フレームスキップと事前計算**:
-
-- 頂点更新を2フレーム → 4フレームに1回に変更（50%削減）
-- ネストループ内の重複`Math.sin`計算を外側ループに移動
-- CPU負荷約30-40%削減
-
-### 18. 季節エフェクトのメモ化
-
-**React.memoでラップ**: 不要な再レンダリングを防止
-
-- `CherryBlossoms`, `SummerEffects`, `FallenLeaves`, `SnowEffect`を全てメモ化
-- 季節が変わらない限り再レンダリングしない
-- CPU使用率約10-15%削減
-
-### 19. 3Dモデルpreload
-
-**useGLTF.preload**: 初期ローディング時間を短縮
-
-- 魚（normalFish, flatfish）と落ち葉のGLTFモデルを事前ロード
-- 初回レンダリング時のローディング待機時間を削減
-- ユーザー体験の向上
 
 ### 期待効果
 
