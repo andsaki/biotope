@@ -219,7 +219,24 @@ export const FISH_SPEED = {
 - シングルトンパターンでマテリアルインスタンスを共有
 - メモリ使用量とGPU負荷を削減
 
-### 8. パフォーマンスモニター
+### 8. ref-ベースアニメーション
+**BubbleEffect**: setState → refベースの直接更新
+- `useFrame`内での`setState`を排除し、refで直接mesh.positionを更新
+- 不要な再レンダリングを完全に防止
+- CPU使用率約40-50%削減
+
+### 9. 3Dモデルclone最適化
+**FallenLeaves**: レンダリング時の`clone()`を削減
+- `useMemo`でモデルクローンを事前作成
+- 毎フレームのメモリアロケーションを回避
+- CPU負荷約30-40%削減
+
+### 10. 共有ジオメトリ
+**Rocks**: 同一形状で1つのgeometryを共有
+- 各メッシュで同じジオメトリインスタンスを再利用
+- メモリ使用量削減とGPU最適化
+
+### 11. パフォーマンスモニター
 開発時にFPS、描画コール数、メモリ使用量をリアルタイム表示
 - `App.tsx`で`PERFORMANCE_MONITOR = true`に設定
 

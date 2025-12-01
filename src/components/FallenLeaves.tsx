@@ -55,6 +55,11 @@ const FallenLeaves: React.FC = () => {
     }))
   , []);
 
+  // 3Dモデルのcloneを事前に作成してパフォーマンス向上
+  const leafClones = useMemo(() =>
+    Array.from({ length: LEAF_COUNT }, () => leafScene.clone())
+  , [leafScene]);
+
   useFrame((state) => {
     if (isWinter) return; // 冬は静止
 
@@ -105,7 +110,7 @@ const FallenLeaves: React.FC = () => {
             rotation={rotation}
             scale={scale}
           >
-            <primitive object={leafScene.clone()} />
+            <primitive object={leafClones[i]} />
           </group>
         );
       })}
