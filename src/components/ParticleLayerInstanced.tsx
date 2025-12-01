@@ -146,6 +146,9 @@ const ParticleLayerInstanced: React.FC = () => {
     particlesRef.current = newParticles;
   }, [particleConfig]);
 
+  // speedYRangeを定数としてキャッシュしてパフォーマンス向上
+  const speedYRange = useMemo(() => particleConfig.speedYRange, [particleConfig.speedYRange]);
+
   // アニメーションループ
   useFrame(() => {
     frameCount.current++;
@@ -155,7 +158,7 @@ const ParticleLayerInstanced: React.FC = () => {
     if (!instancedMeshRef.current) return;
 
     const particles = particlesRef.current;
-    const { speedYRange } = particleConfig;
+    const mesh = instancedMeshRef.current;
 
     for (let i = 0; i < particles.length; i++) {
       const particle = particles[i];
@@ -179,10 +182,10 @@ const ParticleLayerInstanced: React.FC = () => {
       dummy.position.set(particle.x, particle.y, particle.z);
       dummy.scale.setScalar(particle.size);
       dummy.updateMatrix();
-      instancedMeshRef.current.setMatrixAt(i, dummy.matrix);
+      mesh.setMatrixAt(i, dummy.matrix);
     }
 
-    instancedMeshRef.current.instanceMatrix.needsUpdate = true;
+    mesh.instanceMatrix.needsUpdate = true;
   });
 
   const material = useMemo(

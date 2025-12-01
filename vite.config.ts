@@ -28,8 +28,16 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 1000,
+    target: 'esnext',
+    cssCodeSplit: true,
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
+    esbuildOptions: {
+      target: 'esnext',
+    },
+  },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
   },
 });

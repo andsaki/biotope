@@ -75,6 +75,9 @@ const AppContent = () => {
     [realTime.hours, realTime.minutes]
   );
 
+  // 背景色をメモ化
+  const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
+
   return (
       <div
         className="App"
@@ -84,7 +87,7 @@ const AppContent = () => {
           height: "100vh",
           margin: 0,
           border: "none",
-          backgroundColor: isDay ? "#4A90E2" : "#2A2A4E", // 昼と夜の背景の切り替え、夜を明るく
+          backgroundColor, // 昼と夜の背景の切り替え、夜を明るく
           overflow: "hidden",
           transition: "background-color 2s ease", // 背景色のスムーズな切り替え
         }}
@@ -114,8 +117,8 @@ const AppContent = () => {
             <MemoizedReflectedStars />
 
             {/* シーンの背景と霧 */}
-            <color attach="background" args={[isDay ? "#4A90E2" : "#2A2A4E"]} />
-            <fog attach="fog" args={[isDay ? "#4A90E2" : "#2A2A4E", 10, isDay ? 60 : 40]} />
+            <color attach="background" args={[backgroundColor]} />
+            <fog attach="fog" args={[backgroundColor, 10, isDay ? 60 : 40]} />
 
             {/* ライティング */}
             <SceneLights

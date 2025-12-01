@@ -136,88 +136,6 @@ const FishManager: React.FC = () => {
 
   const timeRef = React.useRef(0);
 
-  useFrame((_, delta) => {
-    timeRef.current += delta;
-
-    setFishList((prevFishList) =>
-      prevFishList.map((fish) => {
-        // フラットフィッシュ：カレイらしい「待機→瞬間移動→待機」の動き
-        if (fish.type === "flatfish") {
-          let newWaitTime = fish.waitTime ?? 0;
-          let newIsMoving = fish.isMoving ?? false;
-          let newX = fish.x;
-          let newZ = fish.z;
-          const newY = FLATFISH_GROUND_Y;
-
-          newWaitTime -= delta;
-
-          if (newWaitTime <= 0) {
-            if (!newIsMoving) {
-              // 待機終了 → 移動開始
-              newIsMoving = true;
-              fish.directionX = Math.random() * Math.PI * 2;
-              newWaitTime = FLATFISH_MOVE_TIME_MIN + Math.random() * FLATFISH_MOVE_TIME_VARIATION;
-            } else {
-              // 移動終了 → 待機開始（砂に擬態）
-              newIsMoving = false;
-              newWaitTime = FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION;
-            }
-          }
-
-          // 移動中のみ位置を更新
-          if (newIsMoving) {
-            newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-            newZ = fish.z + Math.sin(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-
-            // 境界チェック
-            if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
-              fish.directionX = Math.PI - fish.directionX;
-              newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
-            }
-            if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
-              fish.directionX = Math.PI - fish.directionX;
-              newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
-            }
-          }
-
-          return { ...fish, x: newX, y: newY, z: newZ, waitTime: newWaitTime, isMoving: newIsMoving };
-        }
-
-        // 通常の魚：従来通りの動き
-        let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-        let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-        let newZ =
-          fish.z + Math.sin(fish.directionX) * fish.speed * FISH_MOVEMENT.Z_DRIFT_DAMPING * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-        newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
-
-        // 通常の魚：泳ぐ動きを模倣するためにわずかな垂直振動を追加する
-        newY += Math.sin(timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.id) * FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE;
-
-        // 境界チェック
-        if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
-          fish.directionX = Math.PI - fish.directionX;
-          newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
-        }
-        if (newY < FISH_BOUNDARY.Y_MIN || newY > FISH_BOUNDARY.Y_MAX) {
-          fish.directionY = -fish.directionY;
-          newY = Math.max(FISH_BOUNDARY.Y_MIN, Math.min(FISH_BOUNDARY.Y_MAX, newY));
-        }
-        if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
-          fish.directionX = Math.PI - fish.directionX;
-          newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
-        }
-
-        // ランダムな方向変更
-        if (Math.random() < FISH_MOVEMENT.DIRECTION_CHANGE_PROBABILITY) {
-          fish.directionX += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
-          fish.directionY += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
-        }
-
-        return { ...fish, x: newX, y: newY, z: newZ };
-      })
-    );
-  });
-
   // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
   const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
   const normalFishUrl = isLocal
@@ -241,12 +159,6 @@ const FishManager: React.FC = () => {
     return Array.from({ length: FLATFISH_COUNT }, () => flatfishScene.clone());
   }, [flatfishScene]);
 
-  // デバッグのためにモデルの読み込み成功とシーンの詳細をログする（コメントアウト）
-  // useEffect(() => {
-  //   console.log("GLTF model loaded successfully:", scene);
-  //   console.log("Scene children:", scene.children);
-  // }, [scene]);
-
   // 各魚の位置を動的に更新するための参照を作成する
   const fishRefs = React.useRef<THREE.Group[]>([]);
 
@@ -254,20 +166,102 @@ const FishManager: React.FC = () => {
     fishRefs.current = fishList.map(() => new THREE.Group());
   }, [fishList.length]);
 
-  useFrame(() => {
-    fishRefs.current.forEach((ref, index) => {
-      const fish = fishList[index];
-      if (ref && fish) {
-        ref.position.set(fish.x, fish.y, fish.z);
-        // より自然な見た目のために移動方向に回転を合わせるようにする
-        if (fish.type === "flatfish") {
-          // フラットフィッシュは移動方向に頭を向ける
-          ref.rotation.set(0, fish.directionX, 0);
-        } else {
-          ref.rotation.set(0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0);
+  // useFrameを1つに統合してパフォーマンス向上
+  useFrame((_, delta) => {
+    timeRef.current += delta;
+
+    // 状態更新と参照更新を同じフレーム内で処理
+    const updatedFishList = fishList.map((fish, index) => {
+      // フラットフィッシュ：カレイらしい「待機→瞬間移動→待機」の動き
+      if (fish.type === "flatfish") {
+        let newWaitTime = fish.waitTime ?? 0;
+        let newIsMoving = fish.isMoving ?? false;
+        let newX = fish.x;
+        let newZ = fish.z;
+        const newY = FLATFISH_GROUND_Y;
+
+        newWaitTime -= delta;
+
+        if (newWaitTime <= 0) {
+          if (!newIsMoving) {
+            // 待機終了 → 移動開始
+            newIsMoving = true;
+            fish.directionX = Math.random() * Math.PI * 2;
+            newWaitTime = FLATFISH_MOVE_TIME_MIN + Math.random() * FLATFISH_MOVE_TIME_VARIATION;
+          } else {
+            // 移動終了 → 待機開始（砂に擬態）
+            newIsMoving = false;
+            newWaitTime = FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION;
+          }
         }
+
+        // 移動中のみ位置を更新
+        if (newIsMoving) {
+          newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+          newZ = fish.z + Math.sin(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+
+          // 境界チェック
+          if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
+            fish.directionX = Math.PI - fish.directionX;
+            newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
+          }
+          if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
+            fish.directionX = Math.PI - fish.directionX;
+            newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
+          }
+        }
+
+        // 参照も同時に更新
+        const ref = fishRefs.current[index];
+        if (ref) {
+          ref.position.set(newX, newY, newZ);
+          ref.rotation.set(0, fish.directionX, 0);
+        }
+
+        return { ...fish, x: newX, y: newY, z: newZ, waitTime: newWaitTime, isMoving: newIsMoving };
       }
+
+      // 通常の魚：従来通りの動き
+      let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      let newZ =
+        fish.z + Math.sin(fish.directionX) * fish.speed * FISH_MOVEMENT.Z_DRIFT_DAMPING * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
+
+      // 通常の魚：泳ぐ動きを模倣するためにわずかな垂直振動を追加する
+      newY += Math.sin(timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.id) * FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE;
+
+      // 境界チェック
+      if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
+        fish.directionX = Math.PI - fish.directionX;
+        newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
+      }
+      if (newY < FISH_BOUNDARY.Y_MIN || newY > FISH_BOUNDARY.Y_MAX) {
+        fish.directionY = -fish.directionY;
+        newY = Math.max(FISH_BOUNDARY.Y_MIN, Math.min(FISH_BOUNDARY.Y_MAX, newY));
+      }
+      if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
+        fish.directionX = Math.PI - fish.directionX;
+        newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
+      }
+
+      // ランダムな方向変更
+      if (Math.random() < FISH_MOVEMENT.DIRECTION_CHANGE_PROBABILITY) {
+        fish.directionX += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
+        fish.directionY += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
+      }
+
+      // 参照も同時に更新
+      const ref = fishRefs.current[index];
+      if (ref) {
+        ref.position.set(newX, newY, newZ);
+        ref.rotation.set(0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0);
+      }
+
+      return { ...fish, x: newX, y: newY, z: newZ };
     });
+
+    setFishList(updatedFishList);
   });
 
   // デバッグのために位置をログする（コメントアウト）

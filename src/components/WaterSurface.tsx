@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -27,6 +27,21 @@ const WaterSurface: React.FC = () => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
   const frameCount = useRef(0);
+
+  // マテリアルをメモ化してパフォーマンス向上
+  const material = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: WATER_COLOR,
+        transparent: true,
+        opacity: WATER_OPACITY,
+        side: THREE.DoubleSide,
+        metalness: WATER_METALNESS,
+        roughness: WATER_ROUGHNESS,
+        envMapIntensity: WATER_ENV_MAP_INTENSITY,
+      }),
+    []
+  );
 
   useFrame((state) => {
     if (meshRef.current && geometryRef.current) {
@@ -69,15 +84,7 @@ const WaterSurface: React.FC = () => {
       receiveShadow={true}
     >
       <planeGeometry ref={geometryRef} args={[1, 1, WATER_SURFACE_SEGMENTS, WATER_SURFACE_SEGMENTS]} />
-      <meshStandardMaterial
-        color={WATER_COLOR}
-        transparent={true}
-        opacity={WATER_OPACITY}
-        side={THREE.DoubleSide}
-        metalness={WATER_METALNESS}
-        roughness={WATER_ROUGHNESS}
-        envMapIntensity={WATER_ENV_MAP_INTENSITY}
-      />
+      <primitive object={material} attach="material" />
     </mesh>
   );
 };
