@@ -1,12 +1,18 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import type { SunPosition } from "../utils/sunPosition";
+
+interface SundialGnomonProps {
+  /** 太陽の位置 */
+  sunPosition: SunPosition;
+}
 
 /**
  * 日時計のノモン（影を作る棒）コンポーネント
- * 水面の波と同期して上下に動く
+ * 水面の波と同期して上下に動き、太陽/月の位置に応じて影を落とす
  */
-const SundialGnomon: React.FC = () => {
+const SundialGnomon: React.FC<SundialGnomonProps> = ({ sunPosition }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
 
   useFrame((state) => {
@@ -14,6 +20,12 @@ const SundialGnomon: React.FC = () => {
       const time = state.clock.getElapsedTime();
       // 水面と同じ波パターンで移動
       meshRef.current.position.y = 8.2 + Math.sin(time * 1.5) * 0.5;
+
+      // 太陽/月の方向を向くように回転（影を正しく落とすため）
+      const sunVector = new THREE.Vector3(sunPosition.x, sunPosition.y, sunPosition.z).normalize();
+      // 棒を太陽の反対方向に傾ける（影が太陽の反対側に落ちるように）
+      const angle = Math.atan2(sunVector.x, sunVector.z);
+      meshRef.current.rotation.set(0, -angle, 0);
     }
   });
 

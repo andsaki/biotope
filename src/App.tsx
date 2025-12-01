@@ -49,6 +49,7 @@ const MemoizedClouds = memo(Clouds);
 const MemoizedStars = memo(Stars);
 const MemoizedReflectedStars = memo(ReflectedStars);
 const MemoizedWaterSurface = memo(WaterSurface);
+// SundialGnomonはsunPositionを受け取るのでメモ化の条件を調整
 const MemoizedSundialGnomon = memo(SundialGnomon);
 const MemoizedSundialBase = memo(SundialBase);
 const MemoizedDriftingBottle = memo(DriftingBottle);
@@ -152,7 +153,7 @@ const AppContent = () => {
             <Rocks />
             <BubbleEffect />
             <MemoizedWaterSurface />
-            <MemoizedSundialGnomon />
+            <MemoizedSundialGnomon sunPosition={sunPosition} />
             <MemoizedSundialBase />
             <MemoizedDriftingBottle position={[-3, 8.2, 2]} />
             <MemoizedParticleLayerInstanced />
