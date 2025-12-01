@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -26,26 +25,59 @@ export default {
       );
     }
 
-    const object = await env.R2_BUCKET.get(objectName);
+    // 日付ベースのキャッシュキーを作成（同じ日は同じ内容を返す）
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD形式
+    const cacheKey = new URL(`https://cache.biotope/${objectName}?date=${today}`, request.url);
+    const cache = caches.default;
 
-    if (object === null) {
-      return new Response(`Object Not Found: ${objectName}`, {
-        status: 404,
-        headers: corsHeaders
-      });
+    // まずキャッシュから取得を試みる
+    let response = await cache.match(cacheKey);
+
+    if (!response) {
+      // キャッシュミス - R2から取得
+      const object = await env.R2_BUCKET.get(objectName);
+
+      if (object === null) {
+        return new Response(`Object Not Found: ${objectName}`, {
+          status: 404,
+          headers: corsHeaders
+        });
+      }
+
+      const headers = new Headers(corsHeaders);
+      headers.set(
+        "Content-Type",
+        object.httpMetadata?.contentType || "application/octet-stream"
+      );
+      // 24時間キャッシュ
+      headers.set("Cache-Control", "public, max-age=86400");
+
+      response = new Response(object.body, { headers });
+
+      // キャッシュに保存
+      await cache.put(cacheKey, response.clone());
     }
 
-    const headers = new Headers(corsHeaders);
-    headers.set(
-      "Content-Type",
-      (object.httpMetadata as any)?.contentType || "application/octet-stream"
-    );
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
-
-    return new Response(object.body as any, { headers });
+    return response;
   },
 };
 
 interface Env {
-  R2_BUCKET: any; // Temporarily using any to avoid type issues; ideally, use Cloudflare types
+  R2_BUCKET: R2Bucket;
+}
+
+// Cloudflare Workers用の型定義
+declare const caches: {
+  default: Cache;
+};
+
+interface R2Bucket {
+  get(key: string): Promise<R2Object | null>;
+}
+
+interface R2Object {
+  body: ReadableStream;
+  httpMetadata?: {
+    contentType?: string;
+  };
 }
