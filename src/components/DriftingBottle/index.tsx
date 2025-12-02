@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSeason } from "../../contexts/SeasonContext";
-import { getRandomMessage } from "../../utils/messageUtils";
 import { fetchDailyMessage } from "../../utils/dailyMessage";
 import { useBottleAnimation } from "../../hooks/useBottleAnimation";
 import { BottleModel } from "./BottleModel";
@@ -23,7 +21,6 @@ export const DriftingBottle = ({
   position,
   onMessageRead,
 }: DriftingBottleProps) => {
-  const { season } = useSeason();
   const [showMessage, setShowMessage] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -38,9 +35,12 @@ export const DriftingBottle = ({
       const message = await fetchDailyMessage();
       if (message) {
         setCurrentMessage(message);
-        setCurrentSender("今日の言葉");
-        setShowMessage(true);
-        onMessageRead?.();
+        setCurrentSender("海からの便り");
+      } else {
+        // APIが失敗した場合のフォールバック
+        console.error('Failed to load daily message');
+        setCurrentMessage("海からの便りが届きませんでした。\n\nまた明日お越しください。");
+        setCurrentSender("海からの便り");
       }
     };
 
@@ -48,13 +48,10 @@ export const DriftingBottle = ({
       loadDailyMessage();
       setDailyMessageFetched(true);
     }
-  }, []);
+  }, [dailyMessageFetched]);
 
   const handleClick = () => {
-    const hour = new Date().getHours();
-    const { message, sender } = getRandomMessage(season, hour);
-    setCurrentMessage(message);
-    setCurrentSender(sender);
+    // 1日中同じGemini生成メッセージを表示
     setShowMessage(true);
     onMessageRead?.();
   };

@@ -4,6 +4,12 @@ compatibility_date = "2024-01-01"
 # Pages configuration
 pages_build_output_dir = "dist"
 
+# KV Namespace for caching daily messages
+[[kv_namespaces]]
+binding = "DAILY_MESSAGE_CACHE"
+id = "placeholder"
+preview_id = "placeholder"
+
 # Environment variables for local development
 [vars]
 # GEMINI_API_KEY will be loaded from .dev.vars
