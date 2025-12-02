@@ -78,13 +78,41 @@ export const DIRECTIONAL_SHADOW_MAP_SIZE: Record<"day" | "night", [number, numbe
   night: [512, 512],
 };
 
-export const SCENE_LIGHTS = {
+export const SCENE_LIGHTS: {
+  readonly ambient: {
+    readonly intensity: number;
+    readonly color: string;
+  };
+  readonly point: {
+    readonly position: [number, number, number];
+    readonly intensity: number;
+    readonly color: string;
+  };
+  readonly directional: {
+    readonly intensity: number;
+    readonly color: string;
+    readonly shadowMapSize: [number, number];
+    readonly shadowCameraNear: number;
+    readonly shadowCameraFar: number;
+    readonly shadowCameraLeft: number;
+    readonly shadowCameraRight: number;
+    readonly shadowCameraTop: number;
+    readonly shadowCameraBottom: number;
+  };
+  readonly spot: {
+    readonly position: [number, number, number];
+    readonly angle: number;
+    readonly penumbra: number;
+    readonly intensity: number;
+    readonly color: string;
+  };
+} = {
   ambient: {
     intensity: 0.5,
     color: "#87CEEB",
   },
   point: {
-    position: [10, 10, 10] as [number, number, number],
+    position: [10, 10, 10],
     intensity: 0.5,
     color: "#FFFFFF",
   },
@@ -100,10 +128,10 @@ export const SCENE_LIGHTS = {
     shadowCameraBottom: -20,
   },
   spot: {
-    position: [5, 8, 5] as [number, number, number],
+    position: [5, 8, 5],
     angle: 0.5,
     penumbra: 0.2,
     intensity: 1.0,
     color: "#FFFFFF",
   },
-} as const;
+};

@@ -3,32 +3,37 @@
  */
 
 // 蓮の葉のデータ
-export const LILY_DATA = [
+export const LILY_DATA: ReadonlyArray<{
+  position: [number, number, number];
+  rotation: number;
+  scale: number;
+  phaseOffset: number;
+}> = [
   {
-    position: [-4, 7.9, 1] as [number, number, number],
+    position: [-4, 7.9, 1],
     rotation: 0,
     scale: 0.08,
     phaseOffset: 0,
   },
   {
-    position: [3.5, 7.9, -0.5] as [number, number, number],
+    position: [3.5, 7.9, -0.5],
     rotation: Math.PI / 3,
     scale: 0.06,
     phaseOffset: 1.2,
   },
   {
-    position: [0, 7.9, 2.5] as [number, number, number],
+    position: [0, 7.9, 2.5],
     rotation: Math.PI / 2,
     scale: 0.1,
     phaseOffset: 2.5,
   },
   {
-    position: [-1.5, 7.9, -1.8] as [number, number, number],
+    position: [-1.5, 7.9, -1.8],
     rotation: Math.PI / 6,
     scale: 0.07,
     phaseOffset: 3.8,
   },
-] as const;
+];
 
 // 水面の波の設定
 export const WATER_HEIGHT_BASE = 8;
@@ -52,28 +57,32 @@ export const LILY_TILT_Z_PHASE_MULTIPLIER = 0.7;
 export const LILY_TILT_Z_AMPLITUDE = 0.03;
 
 // 水草の設定
-export const WATER_PLANTS = [
+export const WATER_PLANTS: ReadonlyArray<{
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+}> = [
   {
-    position: [-3, -1, -2] as [number, number, number],
-    rotation: [0, 0, 0] as [number, number, number],
-    scale: [0.3, 2.0, 0.3] as [number, number, number],
+    position: [-3, -1, -2],
+    rotation: [0, 0, 0],
+    scale: [0.3, 2.0, 0.3],
   },
   {
-    position: [2, -1, -1] as [number, number, number],
-    rotation: [0, Math.PI / 4, 0] as [number, number, number],
-    scale: [0.25, 1.8, 0.25] as [number, number, number],
+    position: [2, -1, -1],
+    rotation: [0, Math.PI / 4, 0],
+    scale: [0.25, 1.8, 0.25],
   },
   {
-    position: [-2, -1, 2] as [number, number, number],
-    rotation: [0, Math.PI / 2, 0] as [number, number, number],
-    scale: [0.35, 2.2, 0.35] as [number, number, number],
+    position: [-2, -1, 2],
+    rotation: [0, Math.PI / 2, 0],
+    scale: [0.35, 2.2, 0.35],
   },
   {
-    position: [3, -1, -3] as [number, number, number],
-    rotation: [0, -Math.PI / 4, 0] as [number, number, number],
-    scale: [0.2, 1.5, 0.2] as [number, number, number],
+    position: [3, -1, -3],
+    rotation: [0, -Math.PI / 4, 0],
+    scale: [0.2, 1.5, 0.2],
   },
-] as const;
+];
 
 // 水草のジオメトリ
 export const WATER_PLANT_CYLINDER = {
