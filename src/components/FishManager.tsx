@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSeason } from "../contexts/SeasonContext";
-import { useTime } from "../contexts/TimeContext";
+import { useDayPeriod } from "../contexts/TimeContext";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import fishModel from '../assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url';
+import { useModelScene } from "../hooks/useModelScene";
 import {
   NORMAL_FISH_COUNT,
   FLATFISH_COUNT,
@@ -67,7 +66,7 @@ interface Fish {
  */
 const FishManager: React.FC = () => {
   const { season } = useSeason();
-  const { isDay } = useTime();
+  const isDay = useDayPeriod();
   const [fishList, setFishList] = useState<Fish[]>([]);
 
   useEffect(() => {
@@ -136,15 +135,8 @@ const FishManager: React.FC = () => {
 
   const timeRef = React.useRef(0);
 
-  // ローカルとCloudflare Workerのどちらを参照するかを環境変数で切り替え
-  const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
-  const normalFishUrl = isLocal
-    ? fishModel
-    : "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/Smoked Fish Raw/weflciqaa_tier_0.gltf";
-  const flatfishUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0____yellow_striped_flounder.glb";
-
-  const { scene: normalFishScene } = useGLTF(normalFishUrl, true);
-  const { scene: flatfishScene } = useGLTF(flatfishUrl, true);
+  const normalFishScene = useModelScene("normalFish");
+  const flatfishScene = useModelScene("flatfish");
 
   // モデルのクローンを事前に作成してパフォーマンス向上
   const normalFishClones = React.useMemo(() => {

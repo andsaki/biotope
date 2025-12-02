@@ -2,12 +2,13 @@ import React from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
-import { useTime } from "../contexts/TimeContext";
+import { useDayPeriod } from "../contexts/TimeContext";
 import {
   LIGHTING_TRANSITION_SPEED,
   DAY_INTENSITY,
   NIGHT_INTENSITY,
   SEASON_COLORS,
+  DIRECTIONAL_SHADOW_MAP_SIZE,
 } from "../constants/lighting";
 
 /** ライティング制御のプロパティ */
@@ -33,8 +34,9 @@ const LightingController: React.FC<LightingControllerProps> = ({
   pointLightRef,
   spotLightRef,
 }) => {
-  const { isDay } = useTime();
+  const isDay = useDayPeriod();
   const { season } = useSeason();
+  const shadowQualityRef = React.useRef<"day" | "night">(isDay ? "day" : "night");
 
   useFrame((_, delta) => {
     if (
@@ -43,6 +45,15 @@ const LightingController: React.FC<LightingControllerProps> = ({
       pointLightRef.current &&
       spotLightRef.current
     ) {
+      const shadowProfile = isDay ? "day" : "night";
+      if (shadowQualityRef.current !== shadowProfile) {
+        shadowQualityRef.current = shadowProfile;
+        const [width, height] = DIRECTIONAL_SHADOW_MAP_SIZE[shadowProfile];
+        directionalLightRef.current.shadow.mapSize.set(width, height);
+        directionalLightRef.current.shadow.map?.dispose();
+        directionalLightRef.current.shadow.map = null;
+      }
+
       // 季節ごとの照明設定
       const seasonColors = SEASON_COLORS[season];
       const dayNightColors = isDay ? seasonColors.day : seasonColors.night;

@@ -2,7 +2,7 @@ import React, { useRef, useMemo, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
-import { useTime } from "../contexts/TimeContext";
+import { useDayPeriod } from "../contexts/TimeContext";
 import {
   REFLECTED_STAR_COUNT,
   STAR_DISPLAY_DELAY,
@@ -22,8 +22,7 @@ import {
  * 夜間に水面下に表示される星の反射
  */
 const ReflectedStars: React.FC = () => {
-  const { isDay } = useTime();
-  const isNight = !isDay;
+  const isNight = !useDayPeriod();
   const pointsRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<any>(null!);
   const [visible, setVisible] = useState(false);

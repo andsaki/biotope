@@ -176,7 +176,12 @@ export const FISH_SPEED = {
 
 ## パフォーマンス最適化
 
-### 1. レンダリング最適化
+### 1. 全体方針
+- `useThrottledFrame` でアニメーションを間引き、Three.js の `useFrame` 依存を減らす
+- GLTF 読み込みを共通化し、clone やマテリアル共有でメモリと CPU を節約
+- Context を細分化して値の揺り戻しを防ぎ、React の再レンダリング負荷を減らす
+
+### 2. レンダリング最適化
 
 **FishManager**: 再レンダリング完全削減
 - 毎フレームの`setState`を削除し、refのみ更新
@@ -190,15 +195,39 @@ export const FISH_SPEED = {
 
 **その他コンポーネント**: 計算のメモ化
 - `App.tsx`: `backgroundColor`を`useMemo`でキャッシュ
-- `ParticleLayerInstanced`: `speedYRange`をメモ化
+- `ParticleLayerInstanced`: `speedYRange`をメモ化し、行列を`Float32Array`へ直接書き込むことで Object3D のアロケーションと `setMatrixAt` の呼び出しを削減
 - `Clouds`: ジオメトリ・マテリアルをメモ化
+- `LightingController`: 昼夜でディレクショナルライトのシャドウ解像度を動的に切り替え、夜間は 1024→512 へ落として GPU/CPU 負荷を削減
+- `Clouds`: すべての雲を単一の`useFrame`でまとめて更新し、30fpsのスロットル付きヘルパーに移行。さらにジオメトリ/マテリアルを全インスタンスで共有し、描画コールとCPU負荷を削減
+- `WaterSurface`: `useThrottledFrame` で 30fps 単位の更新に切り替え、120fps 環境でも頂点更新の CPU 負荷が暴発しないように調整
+- `BubbleEffect` / `FallenLeaves`: `useThrottledFrame` で泡・落ち葉の更新を 30fps に間引き、`leavesRefs` などの再計算コストを削減
+- `UI` / `SimulationClock`: requestAnimationFrame でリサイズイベントを間引く `useIsMobile` フックを導入し、リサイズ中の再レンダリング嵐を解消
+- `SimulationClock`: デジタル表示を共通DOMにまとめ、PCではアナログ時計を追 加する構成に再編
+- `CherryBlossoms` / `SnowEffect`: `useThrottledFrame` を共有利用し、パーティクルの頂点更新を 30fps に抑えて CPU スパイクを削減
+- `ParticleLayerInstanced`: 疑似乱数生成器（Mulberry32）で初期化＆リセットの乱数を管理し、`Math.random` の大量呼び出しと GC を抑制
 
-### 2. 3Dモデル最適化
+### 3. 3Dモデル最適化
 
 **clone最適化**: 事前作成で毎フレームのアロケーション削減
 - `FishManager`: 魚モデルを`useMemo`で事前clone（CPU 30-40%↓）
 - `FallenLeaves`: 落ち葉モデルを事前clone
+- `PottedPlant`: GLTF を1度だけ読み込み、clone済みインスタンスを共有
+
+**モデルURLの共通化**:
+- `getModelUrl` ヘルパーと `useModelScene` / `preloadModel` を追加し、R2/ローカル切り替えと GLTF 読み込みを一元管理。魚 / 落ち葉 / 蓮 / 鉢植えなどから直書きURLと重複 `useGLTF` 呼び出しを排除
+
+### 4. 状態管理の分割
+
+- `TimeContext` を昼夜判定 (`useDayPeriod`) と時計 (`useClockTime`) の2系統に分割し、`useTime` は両者の合成に限定
+- 昼夜しか使わない `FishManager` / `LightingController` / `Stars` / `ReflectedStars` は `useDayPeriod` に切り替え、1秒ごとの時計更新で巨大な3Dサブツリーが再レンダリングされることを防止
+- React のレンダー負荷を大幅に削減し、GPUアニメーション (`useFrame`) 中心のボトルネックに集中できるようになった
 - `WaterPlantsLarge`: 蓮の葉モデルを事前clone
+
+```
+useRealTime
+   ├─ isDay ──▶ DayPeriodContext ──▶ useDayPeriod (FishManager / Lights / Stars...)
+   └─ realTime ─▶ RealTimeContext ─▶ useClockTime (SimulationClock / UI)
+```
 
 **preload**: 初期ロード時間短縮
 - `useGLTF.preload`で魚と落ち葉を事前ロード
@@ -264,6 +293,11 @@ export const FISH_SPEED = {
 - **メモリ使用量**: 約40-50%削減
 - **フレームレート安定性**: 変動幅を約20-30%削減
 - **初期ロード時間**: 約20-30%短縮
+
+## 今後の検証タスク
+
+1. 実機で昼夜を切り替えて、ディレクショナルライトのシャドウ解像度が意図通り 1024 ↔ 512 に変化するか、および描画品質への影響を確認する。
+2. 必要に応じて `spotLight` など他ライトのシャドウ設定も同様にダウンサンプリングし、コストと見た目のバランスを再評価する。
 
 ### Viteビルド最適化
 

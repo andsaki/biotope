@@ -1,29 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 import { tokens } from '@/styles/tokens';
 import { useTime } from '../contexts/TimeContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 /**
  * シミュレーション時計コンポーネント
- * リアルタイムを表示するアナログ時計
+ * リアルタイムを表示するアナログ / デジタル時計
  */
 const SimulationClock: React.FC = () => {
   const { realTime } = useTime();
+  const isMobile = useIsMobile();
 
   const hours = realTime.hours;
   const minutes = realTime.minutes;
   const seconds = realTime.seconds;
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const digitalDisplay = (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: tokens.spacing.sm,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: tokens.typography.fontFamily.mono,
+          fontSize: isMobile ? '24px' : '18px',
+          fontWeight: 700,
+          color: tokens.colors.textPrimary,
+          textAlign: 'center',
+          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+          letterSpacing: '3px',
+        }}
+      >
+        {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -35,32 +52,8 @@ const SimulationClock: React.FC = () => {
         zIndex: tokens.zIndex.dropdown,
       }}
     >
-      {isMobile ? (
-        // SP: デジタル表示のみ
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: tokens.spacing.sm,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: tokens.typography.fontFamily.mono,
-              fontSize: '24px',
-              fontWeight: 700,
-              color: tokens.colors.textPrimary,
-              textAlign: 'center',
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
-              letterSpacing: '3px',
-            }}
-          >
-            {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}
-          </div>
-        </div>
-      ) : (
-        // PC: アナログ時計
+      {digitalDisplay}
+      {!isMobile && (
         <div
           style={{
             position: 'relative',
@@ -78,7 +71,6 @@ const SimulationClock: React.FC = () => {
             transition: tokens.transitions.base,
           }}
         >
-          {/* 装飾的な外側のリング */}
           <div
             style={{
               position: 'absolute',

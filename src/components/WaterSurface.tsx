@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   WATER_SURFACE_Y,
   WATER_SURFACE_Y_AMPLITUDE,
@@ -26,7 +26,6 @@ import {
 const WaterSurface: React.FC = () => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
-  const frameCount = useRef(0);
 
   // マテリアルをメモ化してパフォーマンス向上
   const material = useMemo(
@@ -43,42 +42,32 @@ const WaterSurface: React.FC = () => {
     []
   );
 
-  useFrame((state) => {
-    if (meshRef.current && geometryRef.current) {
-      const time = state.clock.getElapsedTime();
-      // サイン波でy位置を調整して、より顕著な波をシミュレート
-      meshRef.current.position.y = WATER_SURFACE_Y + Math.sin(time * WATER_SURFACE_Y_FREQUENCY) * WATER_SURFACE_Y_AMPLITUDE;
+  useThrottledFrame((state) => {
+    if (!meshRef.current || !geometryRef.current) return;
 
-      // パフォーマンス向上：4フレームに1回だけ頂点を更新（2→4に変更）
-      frameCount.current++;
-      if (frameCount.current % 4 !== 0) return;
+    const time = state.clock.getElapsedTime();
+    meshRef.current.position.y =
+      WATER_SURFACE_Y + Math.sin(time * WATER_SURFACE_Y_FREQUENCY) * WATER_SURFACE_Y_AMPLITUDE;
 
-      // 光の反射に影響を与えるためにジオメトリの頂点を変更して、より顕著な波紋効果を作成
-      const positions = geometryRef.current.attributes.position
-        .array as Float32Array;
-      const width = WATER_SURFACE_SCALE_X;
-      const height = WATER_SURFACE_SCALE_Y;
-      const segments = WATER_SURFACE_SEGMENTS;
-      const timeScale = time * WATER_WAVE_TIME_SCALE;
+    const positions = geometryRef.current.attributes.position.array as Float32Array;
+    const width = WATER_SURFACE_SCALE_X;
+    const height = WATER_SURFACE_SCALE_Y;
+    const segments = WATER_SURFACE_SEGMENTS;
+    const timeScale = time * WATER_WAVE_TIME_SCALE;
 
-      // 事前計算で最適化
-      for (let i = 0; i <= segments; i++) {
-        const x = (i / segments - 0.5) * width;
-        const sinX = Math.sin(x * WATER_WAVE_FREQUENCY + timeScale);
+    for (let i = 0; i <= segments; i++) {
+      const x = (i / segments - 0.5) * width;
+      const sinX = Math.sin(x * WATER_WAVE_FREQUENCY + timeScale);
 
-        for (let j = 0; j <= segments; j++) {
-          const index = (i * (segments + 1) + j) * 3 + 2; // z座標インデックス
-          const y = (j / segments - 0.5) * height;
-          // よりダイナミックな光の反射のために振幅を増加し、波のパターンを変化
-          positions[index] =
-            sinX *
-            Math.cos(y * WATER_WAVE_FREQUENCY + timeScale) *
-            WATER_WAVE_AMPLITUDE;
-        }
+      for (let j = 0; j <= segments; j++) {
+        const index = (i * (segments + 1) + j) * 3 + 2;
+        const y = (j / segments - 0.5) * height;
+        positions[index] =
+          sinX * Math.cos(y * WATER_WAVE_FREQUENCY + timeScale) * WATER_WAVE_AMPLITUDE;
       }
-      geometryRef.current.attributes.position.needsUpdate = true;
     }
-  });
+    geometryRef.current.attributes.position.needsUpdate = true;
+  }, 30);
 
   return (
     <mesh

@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useThrottledFrame } from '../hooks/useThrottledFrame';
 import {
   CLOUD_COUNT,
   CLOUD_POSITION_X_RANGE,
@@ -38,96 +38,111 @@ import {
   CLOUD_EMISSIVE_INTENSITY,
 } from '../constants/clouds';
 
-/** 雲コンポーネントのプロパティ */
-interface CloudProps {
-  /** 雲の位置 */
-  position: [number, number, number];
-  /** 雲のスケール */
+interface CloudInstance {
+  basePosition: [number, number, number];
   scale: number;
-  /** 移動速度 */
   speed: number;
-  /** 時間スケール */
-  timeScale: number;
+  waveOffsetY: number;
+  waveOffsetZ: number;
+  parts: Array<{ position: [number, number, number]; scale: number }>;
 }
 
-/**
- * 個別の雲コンポーネント
- * 風に流れる雲をシミュレート
- * @param props - コンポーネントのプロパティ
- */
-const Cloud: React.FC<CloudProps> = React.memo(({ position, scale, speed, timeScale }) => {
-  const groupRef = useRef<THREE.Group>(null!);
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      const time = state.clock.getElapsedTime();
-      // X軸方向にゆっくりと移動
-      groupRef.current.position.x += speed * CLOUD_MOVEMENT_SPEED * timeScale; // timeScaleを乗算
-      // Y軸とZ軸に微細な揺れを追加して、風に揺れるような効果を出す
-      groupRef.current.position.y = position[1] + Math.sin(time * CLOUD_WAVE_Y_SPEED + position[0]) * CLOUD_WAVE_Y_AMPLITUDE;
-      groupRef.current.position.z = position[2] + Math.cos(time * CLOUD_WAVE_Z_SPEED + position[1]) * CLOUD_WAVE_Z_AMPLITUDE;
-      // ゆっくりと回転させる
-      groupRef.current.rotation.y += speed * CLOUD_ROTATION_SPEED * timeScale; // timeScaleを乗算
-
-      if (groupRef.current.position.x > CLOUD_RESET_X_THRESHOLD) { // 画面外に出たら反対側から再出現
-        groupRef.current.position.x = CLOUD_RESET_X_POSITION;
-      }
-    }
-  });
-
-  // 複数の球体を組み合わせて雲の形を表現
-  // ジオメトリとマテリアルをメモ化してパフォーマンス向上
-  const geometry = useMemo(() => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS), []);
-  const material = useMemo(() => new THREE.MeshStandardMaterial({
-    color: CLOUD_COLOR,
-    transparent: true,
-    opacity: CLOUD_OPACITY,
-    emissive: new THREE.Color(CLOUD_EMISSIVE_COLOR),
-    emissiveIntensity: CLOUD_EMISSIVE_INTENSITY
-  }), []);
-
-  const cloudParts = useMemo(() => {
-    const parts = [];
-    const numParts = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
-    for (let i = 0; i < numParts; i++) {
-      const partScale = CLOUD_PART_SCALE_BASE + Math.random() * CLOUD_PART_SCALE_RANGE;
-      const partPosition: [number, number, number] = [
-        (Math.random() - 0.5) * CLOUD_PART_POSITION_X_RANGE,
-        (Math.random() - 0.5) * CLOUD_PART_POSITION_Y_RANGE,
-        (Math.random() - 0.5) * CLOUD_PART_POSITION_Z_RANGE,
-      ];
-      parts.push(
-        <mesh key={i} position={partPosition} scale={partScale} geometry={geometry} material={material} />
-      );
-    }
-    return parts;
-  }, [geometry, material]);
-
-  return (
-    <group ref={groupRef} position={position} scale={[scale, scale * CLOUD_SCALE_Y_MULTIPLIER, scale]}>
-      {cloudParts}
-    </group>
-  );
-});
-
 const Clouds: React.FC<{ timeScale: number }> = ({ timeScale }) => {
-  const clouds = useMemo(() => {
-    const tempClouds = [];
+  const cloudRefs = useRef<Array<THREE.Group | null>>([]);
+  const sharedGeometry = useMemo(
+    () => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS),
+    []
+  );
+  const sharedMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: CLOUD_COLOR,
+        transparent: true,
+        opacity: CLOUD_OPACITY,
+        emissive: new THREE.Color(CLOUD_EMISSIVE_COLOR),
+        emissiveIntensity: CLOUD_EMISSIVE_INTENSITY,
+      }),
+    []
+  );
+
+  const clouds = useMemo<CloudInstance[]>(() => {
+    const instances: CloudInstance[] = [];
     for (let i = 0; i < CLOUD_COUNT; i++) {
       const x = Math.random() * CLOUD_POSITION_X_RANGE + CLOUD_POSITION_X_OFFSET;
       const y = CLOUD_POSITION_Y_BASE + Math.random() * CLOUD_POSITION_Y_RANGE;
       const z = Math.random() * CLOUD_POSITION_Z_RANGE + CLOUD_POSITION_Z_OFFSET;
       const scale = CLOUD_SCALE_BASE + Math.random() * CLOUD_SCALE_RANGE;
       const speed = CLOUD_SPEED_BASE + Math.random() * CLOUD_SPEED_RANGE;
-      tempClouds.push({ position: [x, y, z], scale, speed });
+      const numParts = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
+      const parts: Array<{ position: [number, number, number]; scale: number }> = [];
+      for (let j = 0; j < numParts; j++) {
+        parts.push({
+          position: [
+            (Math.random() - 0.5) * CLOUD_PART_POSITION_X_RANGE,
+            (Math.random() - 0.5) * CLOUD_PART_POSITION_Y_RANGE,
+            (Math.random() - 0.5) * CLOUD_PART_POSITION_Z_RANGE,
+          ],
+          scale: CLOUD_PART_SCALE_BASE + Math.random() * CLOUD_PART_SCALE_RANGE,
+        });
+      }
+      instances.push({
+        basePosition: [x, y, z],
+        scale,
+        speed,
+        parts,
+        waveOffsetY: x,
+        waveOffsetZ: y,
+      });
     }
-    return tempClouds;
+    return instances;
   }, []);
+
+  useThrottledFrame(
+    (state, accumulatedDelta) => {
+      const frameScale = accumulatedDelta * 60; // 60fps換算で速度を維持
+      const time = state.clock.getElapsedTime();
+      cloudRefs.current.forEach((ref, index) => {
+        if (!ref) return;
+        const data = clouds[index];
+        const xIncrement = data.speed * CLOUD_MOVEMENT_SPEED * timeScale * frameScale;
+        ref.position.x += xIncrement;
+        ref.position.y =
+          data.basePosition[1] +
+          Math.sin(time * CLOUD_WAVE_Y_SPEED + data.waveOffsetY) * CLOUD_WAVE_Y_AMPLITUDE;
+        ref.position.z =
+          data.basePosition[2] +
+          Math.cos(time * CLOUD_WAVE_Z_SPEED + data.waveOffsetZ) * CLOUD_WAVE_Z_AMPLITUDE;
+        ref.rotation.y += data.speed * CLOUD_ROTATION_SPEED * timeScale * frameScale;
+
+        if (ref.position.x > CLOUD_RESET_X_THRESHOLD) {
+          ref.position.x = CLOUD_RESET_X_POSITION;
+        }
+      });
+    },
+    30
+  );
 
   return (
     <group>
       {clouds.map((cloud, index) => (
-        <Cloud key={index} position={cloud.position as [number, number, number]} scale={cloud.scale} speed={cloud.speed} timeScale={timeScale} />
+        <group
+          key={index}
+          ref={(node) => {
+            cloudRefs.current[index] = node;
+          }}
+          position={[cloud.basePosition[0], cloud.basePosition[1], cloud.basePosition[2]]}
+          scale={[cloud.scale, cloud.scale * CLOUD_SCALE_Y_MULTIPLIER, cloud.scale]}
+        >
+          {cloud.parts.map((part, partIndex) => (
+            <mesh
+              key={partIndex}
+              position={part.position}
+              scale={part.scale}
+              geometry={sharedGeometry}
+              material={sharedMaterial}
+            />
+          ))}
+        </group>
       ))}
     </group>
   );

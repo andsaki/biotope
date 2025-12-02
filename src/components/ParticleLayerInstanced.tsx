@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSeason } from "../contexts/SeasonContext";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -22,6 +22,7 @@ import {
   PARTICLE_OPACITY,
   PARTICLE_GEOMETRY_SIZE,
 } from "../constants/particle";
+import { createRng, randomBetween } from "../utils/random";
 
 /** パーティクルの状態データ */
 interface Particle {
@@ -56,7 +57,14 @@ const ParticleLayerInstanced: React.FC = () => {
   const particlesRef = useRef<Particle[]>([]);
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const frameCount = useRef(0);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const matrixArrayRef = useRef<Float32Array | null>(null);
+  const rng = useMemo(() => createRng(0x1a2b3c4d), []);
+  const randomInRange = useCallback(
+    (min: number, max: number) => randomBetween(rng, min, max),
+    [rng]
+  );
+  const scaleMatrix = useMemo(() => new THREE.Matrix4(), []);
+  const positionMatrix = useMemo(() => new THREE.Matrix4(), []);
 
   // 季節に応じたパーティクル設定
   const particleConfig = useMemo(() => {
@@ -128,19 +136,19 @@ const ParticleLayerInstanced: React.FC = () => {
     const { particleColor, particleCount, speedYRange, particleSizeModifier } = particleConfig;
 
     for (let i = 0; i < particleCount; i++) {
-      const baseSize = PARTICLE_BASE_SIZE_MIN + Math.random() * PARTICLE_BASE_SIZE_VARIATION;
+      const baseSize = randomInRange(PARTICLE_BASE_SIZE_MIN, PARTICLE_BASE_SIZE_MIN + PARTICLE_BASE_SIZE_VARIATION);
       const finalSize = baseSize * particleSizeModifier;
       newParticles.push({
         id: i,
-        x: Math.random() * (PARTICLE_SPAWN.X_MAX - PARTICLE_SPAWN.X_MIN) + PARTICLE_SPAWN.X_MIN,
-        y: Math.random() * PARTICLE_SPAWN.Y_MAX,
-        z: Math.random() * (PARTICLE_SPAWN.Z_MAX - PARTICLE_SPAWN.Z_MIN) + PARTICLE_SPAWN.Z_MIN,
-        speedX: Math.random() * (PARTICLE_SPEED_X_MAX - PARTICLE_SPEED_X_MIN) + PARTICLE_SPEED_X_MIN,
-        speedY: speedYRange[0] + Math.random() * (speedYRange[1] - speedYRange[0]),
-        speedZ: Math.random() * (PARTICLE_SPEED_Z_MAX - PARTICLE_SPEED_Z_MIN) + PARTICLE_SPEED_Z_MIN,
+        x: randomInRange(PARTICLE_SPAWN.X_MIN, PARTICLE_SPAWN.X_MAX),
+        y: randomInRange(0, PARTICLE_SPAWN.Y_MAX),
+        z: randomInRange(PARTICLE_SPAWN.Z_MIN, PARTICLE_SPAWN.Z_MAX),
+        speedX: randomInRange(PARTICLE_SPEED_X_MIN, PARTICLE_SPEED_X_MAX),
+        speedY: randomInRange(speedYRange[0], speedYRange[1]),
+        speedZ: randomInRange(PARTICLE_SPEED_Z_MIN, PARTICLE_SPEED_Z_MAX),
         color: particleColor,
         size: finalSize,
-        life: Math.random() * PARTICLE_LIFE_VARIATION + PARTICLE_LIFE_MIN,
+        life: randomInRange(PARTICLE_LIFE_MIN, PARTICLE_LIFE_MIN + PARTICLE_LIFE_VARIATION),
       });
     }
     particlesRef.current = newParticles;
@@ -159,6 +167,12 @@ const ParticleLayerInstanced: React.FC = () => {
 
     const particles = particlesRef.current;
     const mesh = instancedMeshRef.current;
+    const matrixArray =
+      matrixArrayRef.current ??
+      (() => {
+        matrixArrayRef.current = new Float32Array(particles.length * 16);
+        return matrixArrayRef.current;
+      })();
 
     for (let i = 0; i < particles.length; i++) {
       const particle = particles[i];
@@ -172,19 +186,20 @@ const ParticleLayerInstanced: React.FC = () => {
       // パーティクルがリセット位置を下回ったか寿命が尽きたらリセット
       if (particle.y < PARTICLE_RESET_Y || particle.life <= 0) {
         particle.y = PARTICLE_SPAWN.Y_MAX;
-        particle.x = Math.random() * (PARTICLE_SPAWN.X_MAX - PARTICLE_SPAWN.X_MIN) + PARTICLE_SPAWN.X_MIN;
-        particle.z = Math.random() * (PARTICLE_SPAWN.Z_MAX - PARTICLE_SPAWN.Z_MIN) + PARTICLE_SPAWN.Z_MIN;
-        particle.life = Math.random() * PARTICLE_LIFE_VARIATION + PARTICLE_LIFE_MIN;
-        particle.speedY = speedYRange[0] + Math.random() * (speedYRange[1] - speedYRange[0]);
+        particle.x = randomInRange(PARTICLE_SPAWN.X_MIN, PARTICLE_SPAWN.X_MAX);
+        particle.z = randomInRange(PARTICLE_SPAWN.Z_MIN, PARTICLE_SPAWN.Z_MAX);
+        particle.life = randomInRange(PARTICLE_LIFE_MIN, PARTICLE_LIFE_MIN + PARTICLE_LIFE_VARIATION);
+        particle.speedY = randomInRange(speedYRange[0], speedYRange[1]);
       }
 
-      // インスタンスの行列を更新
-      dummy.position.set(particle.x, particle.y, particle.z);
-      dummy.scale.setScalar(particle.size);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
+      // 行列を直接Float32Arrayに書き込む
+      positionMatrix.makeTranslation(particle.x, particle.y, particle.z);
+      scaleMatrix.makeScale(particle.size, particle.size, particle.size);
+      positionMatrix.multiply(scaleMatrix);
+      positionMatrix.toArray(matrixArray, i * 16);
     }
 
+    mesh.instanceMatrix.array.set(matrixArray);
     mesh.instanceMatrix.needsUpdate = true;
   });
 

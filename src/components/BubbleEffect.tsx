@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   BUBBLE_COUNT,
   BUBBLE_SIZE_MIN,
@@ -24,16 +24,10 @@ interface BubbleData {
   speed: number;
 }
 
-/**
- * 泡エフェクトコンポーネント
- * 水中から浮かび上がる泡をアニメーション
- * refベースで最適化
- */
 const BubbleEffect: React.FC = () => {
   const bubbleRefs = useRef<THREE.Mesh[]>([]);
   const bubbleDataRef = useRef<BubbleData[]>([]);
 
-  // 特定の場所から新しい泡を作成する関数
   const createBubble = (): BubbleData => {
     const size = Math.random() * (BUBBLE_SIZE_MAX - BUBBLE_SIZE_MIN) + BUBBLE_SIZE_MIN;
     const speed = Math.random() * (BUBBLE_SPEED_MAX - BUBBLE_SPEED_MIN) + BUBBLE_SPEED_MIN;
@@ -48,37 +42,40 @@ const BubbleEffect: React.FC = () => {
     };
   };
 
-  // 泡を初期化（一度だけ）
   useMemo(() => {
     bubbleDataRef.current = Array.from({ length: BUBBLE_COUNT }, createBubble);
   }, []);
 
-  // 各フレームで泡の位置を更新する（refベースで高速）
-  useFrame(() => {
+  useThrottledFrame((_, delta) => {
     bubbleRefs.current.forEach((mesh, index) => {
-      if (mesh && bubbleDataRef.current[index]) {
-        const bubble = bubbleDataRef.current[index];
-        bubble.y += bubble.speed;
+      const bubble = bubbleDataRef.current[index];
+      if (!mesh || !bubble) return;
 
-        // 泡が上がりすぎた場合は底にリセット
-        if (bubble.y > BUBBLE_RESET_Y_THRESHOLD) {
-          const newBubble = createBubble();
-          bubbleDataRef.current[index] = newBubble;
-          mesh.position.set(newBubble.x, newBubble.y, newBubble.z);
-        } else {
-          mesh.position.y = bubble.y;
-        }
+      bubble.y += bubble.speed * delta * 60;
+
+      if (bubble.y > BUBBLE_RESET_Y_THRESHOLD) {
+        const newBubble = createBubble();
+        bubbleDataRef.current[index] = newBubble;
+        mesh.position.set(newBubble.x, newBubble.y, newBubble.z);
+      } else {
+        mesh.position.y = bubble.y;
       }
     });
-  });
+  }, 30);
 
-  // ジオメトリとマテリアルを共有
-  const geometry = useMemo(() => new THREE.SphereGeometry(1, BUBBLE_SPHERE_WIDTH_SEGMENTS, BUBBLE_SPHERE_HEIGHT_SEGMENTS), []);
-  const material = useMemo(() => new THREE.MeshStandardMaterial({
-    color: BUBBLE_COLOR,
-    transparent: true,
-    opacity: BUBBLE_OPACITY,
-  }), []);
+  const geometry = useMemo(
+    () => new THREE.SphereGeometry(1, BUBBLE_SPHERE_WIDTH_SEGMENTS, BUBBLE_SPHERE_HEIGHT_SEGMENTS),
+    []
+  );
+  const material = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: BUBBLE_COLOR,
+        transparent: true,
+        opacity: BUBBLE_OPACITY,
+      }),
+    []
+  );
 
   return (
     <group>

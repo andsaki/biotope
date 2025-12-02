@@ -1,10 +1,9 @@
 import React, { useMemo, useRef } from "react";
-import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
+import { useModelScene } from "../hooks/useModelScene";
 import {
-  LILY_MODEL_URL,
   LILY_DATA,
   WATER_HEIGHT_BASE,
   WATER_HEIGHT_AMPLITUDE,
@@ -32,10 +31,7 @@ const WaterPlantsLarge: React.FC = () => {
   const { season } = useSeason();
   const lilyRefs = useRef<THREE.Group[]>([]);
 
-  // R2から直接読み込み（ファイルサイズが大きいため）
-  const { scene: lilyScene } = LILY_MODEL_URL
-    ? useGLTF(LILY_MODEL_URL, true)
-    : { scene: new THREE.Group() };
+  const lilyScene = useModelScene("lily");
 
   // 蓮の葉のcloneを事前に作成してパフォーマンス向上
   const lilyClones = useMemo(() =>

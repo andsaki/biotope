@@ -1,8 +1,8 @@
 import React, { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
+import { useModelScene } from "../hooks/useModelScene";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   LEAF_COUNT,
   LEAF_SPREAD_X,
@@ -31,9 +31,7 @@ const FallenLeaves: React.FC = React.memo(() => {
   const leavesRefs = useRef<THREE.Group[]>([]);
 
   // R2から直接読み込み（ファイルサイズが大きいため）
-  const leafUrl = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__deep_autumn__5k_followers_milestone.glb";
-
-  const { scene: leafScene } = useGLTF(leafUrl, true);
+  const leafScene = useModelScene("leaf");
 
   const isWinter = season === "winter";
 
@@ -58,19 +56,24 @@ const FallenLeaves: React.FC = React.memo(() => {
     Array.from({ length: LEAF_COUNT }, () => leafScene.clone())
   , [leafScene]);
 
-  useFrame((state) => {
+  useThrottledFrame((state, delta) => {
     if (isWinter) return; // 冬は静止
 
     const time = state.clock.getElapsedTime();
+    const scaledDelta = delta * 60;
     leavesRefs.current.forEach((ref, i) => {
       if (ref) {
         const data = leafData[i];
         // 水面の揺れに合わせた浮き沈み
-        ref.position.y = WATER_SURFACE_Y + Math.sin(time * data.floatSpeed + data.phaseOffset) * 0.03;
+        ref.position.y =
+          WATER_SURFACE_Y + Math.sin(time * data.floatSpeed + data.phaseOffset) * 0.03;
 
         // ゆっくりとした横移動（水の流れ）
-        ref.position.x = data.x + Math.sin(time * data.driftSpeed + data.phaseOffset) * 0.8;
-        ref.position.z = data.z + Math.cos(time * data.driftSpeed * 0.7 + data.phaseOffset) * 0.5;
+        ref.position.x =
+          data.x + Math.sin(time * data.driftSpeed + data.phaseOffset) * 0.8 * scaledDelta * 0.016;
+        ref.position.z =
+          data.z +
+          Math.cos(time * data.driftSpeed * 0.7 + data.phaseOffset) * 0.5 * scaledDelta * 0.016;
 
         // 水流による緩やかな回転
         ref.rotation.y = data.rotationY + time * data.rotationSpeed * 0.1;
@@ -79,7 +82,7 @@ const FallenLeaves: React.FC = React.memo(() => {
         ref.rotation.z = Math.cos(time * 0.3 + data.phaseOffset) * 0.06;
       }
     });
-  });
+  }, 30);
 
   if (season !== "autumn" && season !== "winter") {
     return null; // 秋と冬の間だけ葉をレンダリング

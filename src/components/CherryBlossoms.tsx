@@ -1,7 +1,7 @@
 import React, { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   PETAL_COUNT,
   PETAL_SPAWN_X_RANGE,
@@ -94,16 +94,17 @@ const CherryBlossoms: React.FC = React.memo(() => {
     return { positions, velocities, rotations };
   }, []);
 
-  useFrame((state, delta) => {
+  useThrottledFrame((state, delta) => {
     if (!particlesRef.current) return;
 
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const scaledDelta = delta * PETAL_ANIMATION_SPEED;
 
     for (let i = 0; i < positions.length / 3; i++) {
       // 位置の更新
-      positions[i * 3] += particles.velocities[i * 3] * delta * PETAL_ANIMATION_SPEED;
-      positions[i * 3 + 1] += particles.velocities[i * 3 + 1] * delta * PETAL_ANIMATION_SPEED;
-      positions[i * 3 + 2] += particles.velocities[i * 3 + 2] * delta * PETAL_ANIMATION_SPEED;
+      positions[i * 3] += particles.velocities[i * 3] * scaledDelta;
+      positions[i * 3 + 1] += particles.velocities[i * 3 + 1] * scaledDelta;
+      positions[i * 3 + 2] += particles.velocities[i * 3 + 2] * scaledDelta;
 
       // ふわふわとした動きを追加
       positions[i * 3] += Math.sin(state.clock.elapsedTime + i) * PETAL_WAVE_AMPLITUDE;
@@ -121,7 +122,7 @@ const CherryBlossoms: React.FC = React.memo(() => {
 
     // 回転
     particlesRef.current.rotation.y = state.clock.elapsedTime * PETAL_ROTATION_SPEED;
-  });
+  }, 30);
 
   if (season !== "spring") {
     return null;

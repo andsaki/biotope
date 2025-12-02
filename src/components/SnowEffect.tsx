@@ -1,7 +1,7 @@
 import React, { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   SNOW_COUNT,
   SNOW_SPAWN_X_RANGE,
@@ -94,16 +94,17 @@ const SnowEffect: React.FC = React.memo(() => {
     return { positions, velocities };
   }, []);
 
-  useFrame((state, delta) => {
+  useThrottledFrame((state, delta) => {
     if (!snowRef.current) return;
 
     const positions = snowRef.current.geometry.attributes.position.array as Float32Array;
+    const scaledDelta = delta * SNOW_ANIMATION_SPEED;
 
     for (let i = 0; i < positions.length / 3; i++) {
       // 位置の更新
-      positions[i * 3] += snowParticles.velocities[i * 3] * delta * SNOW_ANIMATION_SPEED;
-      positions[i * 3 + 1] += snowParticles.velocities[i * 3 + 1] * delta * SNOW_ANIMATION_SPEED;
-      positions[i * 3 + 2] += snowParticles.velocities[i * 3 + 2] * delta * SNOW_ANIMATION_SPEED;
+      positions[i * 3] += snowParticles.velocities[i * 3] * scaledDelta;
+      positions[i * 3 + 1] += snowParticles.velocities[i * 3 + 1] * scaledDelta;
+      positions[i * 3 + 2] += snowParticles.velocities[i * 3 + 2] * scaledDelta;
 
       // ふわふわとした動き（風の影響）
       positions[i * 3] += Math.sin(state.clock.elapsedTime * SNOW_WAVE_TIME_SCALE + i * SNOW_WAVE_FREQUENCY_X) * SNOW_WAVE_AMPLITUDE;
@@ -118,7 +119,7 @@ const SnowEffect: React.FC = React.memo(() => {
     }
 
     snowRef.current.geometry.attributes.position.needsUpdate = true;
-  });
+  }, 30);
 
   if (season !== "winter") {
     return null;

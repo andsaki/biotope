@@ -1,5 +1,6 @@
 import React from 'react';
 import { tokens } from '@/styles/tokens';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 /** 風向き表示コンポーネントのプロパティ */
 interface WindDirectionDisplayProps {
@@ -22,15 +23,7 @@ const windDirectionMap = {
  */
 const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirection }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
-
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   return (
     <div

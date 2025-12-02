@@ -73,6 +73,11 @@ export const SEASON_COLORS = {
 } as const;
 
 // SceneLights - 基本ライト設定
+export const DIRECTIONAL_SHADOW_MAP_SIZE: Record<"day" | "night", [number, number]> = {
+  day: [1024, 1024],
+  night: [512, 512],
+};
+
 export const SCENE_LIGHTS = {
   ambient: {
     intensity: 0.5,
@@ -86,7 +91,7 @@ export const SCENE_LIGHTS = {
   directional: {
     intensity: 8.0,
     color: "#FFD700",
-    shadowMapSize: [1024, 1024] as [number, number],
+    shadowMapSize: DIRECTIONAL_SHADOW_MAP_SIZE.day,
     shadowCameraNear: 0.5,
     shadowCameraFar: 50,
     shadowCameraLeft: -20,

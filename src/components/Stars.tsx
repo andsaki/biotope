@@ -2,7 +2,7 @@ import React, { useRef, useMemo, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
-import { useTime } from "../contexts/TimeContext";
+import { useDayPeriod } from "../contexts/TimeContext";
 import {
   STAR_COUNT,
   STAR_POSITION_RANGE,
@@ -23,8 +23,7 @@ import {
  * 夜間に表示される星のパーティクルシステム
  */
 const Stars: React.FC = () => {
-  const { isDay } = useTime();
-  const isNight = !isDay;
+  const isNight = !useDayPeriod();
   const meshRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<THREE.PointsMaterial>(null!);
   const [visible, setVisible] = useState(false);

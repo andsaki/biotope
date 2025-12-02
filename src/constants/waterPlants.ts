@@ -2,9 +2,6 @@
  * 水草の定数
  */
 
-// 蓮の葉のモデルURL
-export const LILY_MODEL_URL = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets/cc0__water_lily_nymphaea_cv.glb";
-
 // 蓮の葉のデータ
 export const LILY_DATA = [
   {

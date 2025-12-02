@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 
 /** 季節の種類 */
 type Season = "spring" | "summer" | "autumn" | "winter";
@@ -32,9 +32,10 @@ const getCurrentSeason = (): Season => {
  */
 export const SeasonProvider = ({ children }: { children: ReactNode }) => {
   const [season, setSeason] = useState<Season>(getCurrentSeason());
+  const value = useMemo(() => ({ season, setSeason }), [season]);
 
   return (
-    <SeasonContext.Provider value={{ season, setSeason }}>
+    <SeasonContext.Provider value={value}>
       {children}
     </SeasonContext.Provider>
   );

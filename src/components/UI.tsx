@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSeason } from "../contexts/SeasonContext";
 import SimulationClock from "./SimulationClock";
 import { tokens } from "@/styles/tokens";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 /**
  * メインUIコンポーネント
@@ -9,17 +10,8 @@ import { tokens } from "@/styles/tokens";
  */
 const UI: React.FC = () => {
   const { season, setSeason } = useSeason();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isMobile = useIsMobile();
   const [isSeasonPanelOpen, setIsSeasonPanelOpen] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const handleSeasonChange = (
     newSeason: "spring" | "summer" | "autumn" | "winter"
