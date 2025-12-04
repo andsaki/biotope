@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useDayPeriod } from "../../contexts/TimeContext";
 
 /** 瓶モデルのプロパティ */
 interface BottleModelProps {
@@ -29,18 +30,45 @@ const GLASS_MATERIAL = {
  * @param props - コンポーネントのプロパティ
  */
 export const BottleModel = memo(({ hovered }: BottleModelProps) => {
+  const isDay = useDayPeriod();
+
+  // 夜間の発光強度（0.0～1.0）
+  const glowIntensity = isDay ? 0 : 0.3;
+  const glowColor = "#88ffcc";
+
   return (
     <>
+      {/* 夜間の発光エフェクト（PointLight） */}
+      {!isDay && (
+        <pointLight
+          position={[0, 0, 0]}
+          color={glowColor}
+          intensity={1.5}
+          distance={2}
+          decay={2}
+        />
+      )}
+
       {/* 瓶の本体 */}
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[0.15, 0.12, 0.8, 16]} />
-        <meshPhysicalMaterial color={BOTTLE_COLORS.glass} {...GLASS_MATERIAL} />
+        <meshPhysicalMaterial
+          color={BOTTLE_COLORS.glass}
+          {...GLASS_MATERIAL}
+          emissive={glowColor}
+          emissiveIntensity={glowIntensity}
+        />
       </mesh>
 
       {/* 瓶の首 */}
       <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.08, 0.12, 0.3, 16]} />
-        <meshPhysicalMaterial color={BOTTLE_COLORS.glass} {...GLASS_MATERIAL} />
+        <meshPhysicalMaterial
+          color={BOTTLE_COLORS.glass}
+          {...GLASS_MATERIAL}
+          emissive={glowColor}
+          emissiveIntensity={glowIntensity}
+        />
       </mesh>
 
       {/* コルク栓 */}
