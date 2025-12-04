@@ -7,8 +7,8 @@ pages_build_output_dir = "dist"
 # KV Namespace for caching daily messages
 [[kv_namespaces]]
 binding = "DAILY_MESSAGE_CACHE"
-id = "placeholder"
-preview_id = "placeholder"
+id = "6d357255175a4663aa62a61c3fdd365d"
+preview_id = "83be06ac9d264c69a32e8ef89926649f"
 
 # Environment variables for local development
 [vars]
