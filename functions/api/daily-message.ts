@@ -20,6 +20,45 @@ interface GeminiResponse {
   }>;
 }
 
+interface DailyMessagePayload {
+  date: string;
+  dateDescription: string;
+  message: string;
+  generatedAt: string;
+  source: 'gemini' | 'fallback';
+  cacheTtl: number;
+}
+
+const CACHE_TTL_SECONDS = 86400;
+const FALLBACK_CACHE_TTL_SECONDS = 3600;
+
+const FALLBACK_MESSAGES: Record<string, string[]> = {
+  春: [
+    '{date}は柔らかな風が背中を押してくれる日です。深呼吸して、小さな一歩を楽しんでくださいね。',
+    '{date}の光は芽吹きをそっと照らしています。無理をせず、できるところから心を温めましょう。',
+    '穏やかな{date}、香る花のようにあなたの笑顔も誰かを癒やしていますよ。',
+    '芽吹きの気配が満ちる{date}、休むことも育つことだと空が教えてくれます。'
+  ],
+  夏: [
+    '陽射しの力強さに包まれる{date}、冷たい飲み物でひと息つきながら自分を褒めてあげましょう。',
+    '蝉の声が響く{date}は、立ち止まって空を見上げるだけでも気分が変わりますよ。',
+    '汗ばむ{date}こそ、ゆっくり眠る時間を確保して体をいたわってくださいね。',
+    'まっすぐな夏空が広がる{date}、あなたの努力も同じように澄んだ力を持っています。'
+  ],
+  秋: [
+    '色づく風が頬をなでる{date}、深呼吸して心のノートをそっと整えてみませんか。',
+    '実りの香りが漂う{date}、積み重ねてきたものを静かに確かめる時間にぴったりです。',
+    '澄んだ空気の{date}は、温かい飲み物とともに自分への優しさを増やす日にしましょう。',
+    '夕暮れが美しい{date}、ゆっくり歩くだけで気持ちも柔らかく解けていきます。'
+  ],
+  冬: [
+    '凛とした空気の{date}、温かい湯気に包まれながら心までぬくもりを届けてあげてください。',
+    '静かな{date}、小さな灯りをひとつともすように自分を労う言葉をかけましょう。',
+    '白い息が踊る{date}は、厚手のマフラーのように優しさで身を包む日です。',
+    '星が冴える{date}、今日もここまで来られたことをゆっくり褒めてあげてくださいね。'
+  ],
+};
+
 /**
  * 月から季節を判定
  */
@@ -40,6 +79,16 @@ function getDateDescription(date: Date): string {
   const season = getSeason(month);
 
   return `${month}月${day}日（${dayOfWeek}曜日）、${season}`;
+}
+
+/**
+ * Gemini APIが使えない場合のフォールバックメッセージ生成
+ */
+function buildFallbackMessage(date: Date, dateDescription: string): string {
+  const season = getSeason(date.getMonth() + 1);
+  const messages = FALLBACK_MESSAGES[season] ?? FALLBACK_MESSAGES['春'];
+  const index = (date.getDate() - 1) % messages.length;
+  return messages[index].replace('{date}', dateDescription);
 }
 
 /**
@@ -118,15 +167,18 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
     // KVキャッシュをチェック
     const cached = await context.env.DAILY_MESSAGE_CACHE.get(dateKey);
     if (cached) {
-      const cachedData = JSON.parse(cached);
+      const cachedData: DailyMessagePayload = JSON.parse(cached);
+      const cacheTtl = cachedData.cacheTtl ?? CACHE_TTL_SECONDS;
+      const source = cachedData.source ?? 'gemini';
       return new Response(
         JSON.stringify(cachedData),
         {
           headers: {
             ...corsHeaders,
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=86400',
+            'Cache-Control': `public, max-age=${cacheTtl}`,
             'X-Cache': 'HIT',
+            'X-Message-Source': source,
           },
         }
       );
@@ -134,26 +186,41 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
 
     // Gemini APIキーを取得
     const apiKey = context.env.GEMINI_API_KEY;
+    let message: string;
+    let usedFallback = false;
+
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not configured');
+      console.warn('GEMINI_API_KEY is not configured. Using fallback message.');
+      message = buildFallbackMessage(japanTime, dateDescription);
+      usedFallback = true;
+    } else {
+      try {
+        // メッセージを生成
+        message = await generateDailyMessage(apiKey, dateDescription);
+      } catch (error) {
+        console.warn('Gemini API failed. Using fallback message instead.', error);
+        message = buildFallbackMessage(japanTime, dateDescription);
+        usedFallback = true;
+      }
     }
 
-    // メッセージを生成
-    const message = await generateDailyMessage(apiKey, dateDescription);
+    const cacheTtl = usedFallback ? FALLBACK_CACHE_TTL_SECONDS : CACHE_TTL_SECONDS;
 
     // レスポンスデータを作成
-    const responseData = {
+    const responseData: DailyMessagePayload = {
       date: dateKey,
       dateDescription,
       message,
       generatedAt: new Date().toISOString(),
+      source: usedFallback ? 'fallback' : 'gemini',
+      cacheTtl,
     };
 
-    // KVに保存（24時間のTTL）
+    // KVに保存（フォールバック時は短めのTTL）
     await context.env.DAILY_MESSAGE_CACHE.put(
       dateKey,
       JSON.stringify(responseData),
-      { expirationTtl: 86400 }
+      { expirationTtl: cacheTtl }
     );
 
     // レスポンスを返す
@@ -163,8 +230,9 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=86400',
+          'Cache-Control': `public, max-age=${cacheTtl}`,
           'X-Cache': 'MISS',
+          'X-Message-Source': responseData.source,
         },
       }
     );

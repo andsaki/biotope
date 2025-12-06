@@ -7,6 +7,8 @@ export interface DailyMessageResponse {
   dateDescription: string;
   message: string;
   generatedAt: string;
+  source?: 'gemini' | 'fallback';
+  cacheTtl?: number;
 }
 
 /**
