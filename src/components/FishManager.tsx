@@ -297,6 +297,8 @@ const FishManager: React.FC = () => {
         return (
           <group
             key={fish.id}
+            position={[fish.x, fish.y, fish.z]}
+            rotation={isFlatfish ? [0, fish.directionX, 0] : [0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0]}
             ref={(el) => {
               fishRefs.current[index] = el as THREE.Group;
               // フラットフィッシュの夜間の明るさ調整
