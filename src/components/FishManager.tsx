@@ -150,10 +150,6 @@ const FishManager: React.FC = () => {
   // 各魚の位置を動的に更新するための参照を作成する
   const fishRefs = React.useRef<THREE.Group[]>([]);
 
-  useEffect(() => {
-    fishRefs.current = fishList.map(() => new THREE.Group());
-  }, [fishList.length]);
-
   // useFrameを1つに統合してパフォーマンス向上
   // 状態更新を排除し、refのみを更新することで再レンダリングを削減
   useFrame((_, delta) => {
@@ -297,22 +293,32 @@ const FishManager: React.FC = () => {
         return (
           <group
             key={fish.id}
-            position={[fish.x, fish.y, fish.z]}
-            rotation={isFlatfish ? [0, fish.directionX, 0] : [0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0]}
             ref={(el) => {
-              fishRefs.current[index] = el as THREE.Group;
-              // フラットフィッシュの夜間の明るさ調整
-              if (el && isFlatfish) {
-                el.traverse((child) => {
-                  if ((child as THREE.Mesh).isMesh) {
-                    const mesh = child as THREE.Mesh;
-                    const material = mesh.material as THREE.Material;
-                    if (material) {
-                      material.opacity = opacity;
-                      material.transparent = true;
+              if (el) {
+                fishRefs.current[index] = el as THREE.Group;
+                // 初期位置を設定（一度だけ）
+                if (el.position.x === 0 && el.position.y === 0 && el.position.z === 0) {
+                  el.position.set(fish.x, fish.y, fish.z);
+                  el.rotation.set(
+                    0,
+                    fish.directionX + (isFlatfish ? 0 : FISH_MODEL_ROTATION.DIRECTION_OFFSET),
+                    0
+                  );
+                }
+
+                // フラットフィッシュの夜間の明るさ調整
+                if (isFlatfish) {
+                  el.traverse((child) => {
+                    if ((child as THREE.Mesh).isMesh) {
+                      const mesh = child as THREE.Mesh;
+                      const material = mesh.material as THREE.Material;
+                      if (material) {
+                        material.opacity = opacity;
+                        material.transparent = true;
+                      }
                     }
-                  }
-                });
+                  });
+                }
               }
             }}
           >
