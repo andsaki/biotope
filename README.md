@@ -565,6 +565,7 @@ if (!response) {
 
 ## ドキュメント
 
+- [`docs/ai-guide.md`](docs/ai-guide.md): AI開発ガイド（効果的な開発ワークフロー、プロンプト例）
 - [`docs/drifting-bottle-feature.md`](docs/drifting-bottle-feature.md): 漂流する瓶の機能説明
 - [`docs/realtime-clock-feature.md`](docs/realtime-clock-feature.md): リアルタイム時計の機能説明
 - [`docs/seasonal-effects-feature.md`](docs/seasonal-effects-feature.md): 季節エフェクトの機能説明
