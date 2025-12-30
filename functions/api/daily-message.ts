@@ -190,15 +190,17 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
     let usedFallback = false;
 
     if (!apiKey) {
-      console.warn('GEMINI_API_KEY is not configured. Using fallback message.');
+      console.error('[DAILY_MESSAGE] GEMINI_API_KEY is not configured. Using fallback message.');
       message = buildFallbackMessage(japanTime, dateDescription);
       usedFallback = true;
     } else {
+      console.log('[DAILY_MESSAGE] GEMINI_API_KEY found, calling Gemini API...');
       try {
         // メッセージを生成
         message = await generateDailyMessage(apiKey, dateDescription);
+        console.log('[DAILY_MESSAGE] Gemini API succeeded');
       } catch (error) {
-        console.warn('Gemini API failed. Using fallback message instead.', error);
+        console.error('[DAILY_MESSAGE] Gemini API failed:', error);
         message = buildFallbackMessage(japanTime, dateDescription);
         usedFallback = true;
       }
