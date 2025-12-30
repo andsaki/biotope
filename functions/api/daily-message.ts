@@ -5,11 +5,6 @@
 
 /// <reference types="@cloudflare/workers-types" />
 
-interface Env {
-  GEMINI_API_KEY: string;
-  DAILY_MESSAGE_CACHE: KVNamespace;
-}
-
 interface GeminiResponse {
   candidates: Array<{
     content: {
