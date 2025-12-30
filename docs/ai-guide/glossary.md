@@ -110,6 +110,29 @@ Cloudflare Pages上で動作するサーバーレス関数。`functions/`配下�
 **Biotopeでの使用**:
 - `/api/daily-message`: 日替わりメッセージAPI
 
+**型定義**:
+```typescript
+interface Env {
+  GEMINI_API_KEY: string;
+  DAILY_MESSAGE_CACHE: KVNamespace;
+}
+```
+
+#### Gemini API
+GoogleのAI APIサービス。Biotopeでは日替わりメッセージの生成に使用。
+
+**使用モデル**:
+- `gemini-2.5-flash`: 最新の推奨モデル（高速・高品質）
+
+**重要な特徴**:
+- **思考プロセス（Thoughts）**: gemini-2.5-flashは内部的に思考プロセスを使用
+- **thoughtsTokenCount**: 生成時に500-1000トークンを思考に消費
+- **maxOutputTokens設定**: 思考プロセス分を考慮して大きめに設定（2000推奨）
+
+**注意点**:
+- `gemini-1.5-flash`は存在しない（404エラー）
+- `maxOutputTokens`が小さいとメッセージが途中で切れる（finishReason: "MAX_TOKENS"）
+
 ---
 
 ### TypeScript関連

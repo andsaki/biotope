@@ -475,6 +475,157 @@ npm run lint
    }, [x, y, z]);
    ```
 
+### 問題7: Gemini APIがfallbackメッセージを返す
+
+**症状**:
+
+- レスポンスヘッダーに `x-message-source: fallback` が含まれる
+- レスポンスボディの `source` フィールドが `"fallback"`
+- Gemini APIで生成されたメッセージが返されない
+
+**診断手順**:
+
+1. **APIレスポンスを確認**
+
+   ```bash
+   curl -i https://your-app.pages.dev/api/daily-message
+   # x-message-source ヘッダーを確認
+   ```
+
+2. **利用可能なモデルを確認**
+
+   ```bash
+   curl -s 'https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY' | grep -A 2 '"name"'
+   ```
+
+**原因と解決策**:
+
+#### 原因1: モデル名が間違っている
+
+```typescript
+// ❌ 間違い: gemini-1.5-flash は存在しない
+const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
+);
+
+// ✅ 正しい: gemini-2.5-flash を使用
+const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`
+);
+```
+
+#### 原因2: APIキーが設定されていない
+
+```bash
+# Cloudflare Pages のシークレット確認
+npx wrangler pages secret list --project-name=your-project
+
+# シークレットが存在しない場合は設定
+npx wrangler pages secret put GEMINI_API_KEY --project-name=your-project
+```
+
+#### 原因3: Quota超過
+
+```json
+{
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota..."
+  }
+}
+```
+
+**解決策**: APIキーのプランを確認、または別のモデルを試す
+
+### 問題8: Gemini APIで生成されたメッセージが途中で切れる
+
+**症状**:
+
+- メッセージが途中で終わる（例: "年の瀬の寒さも深まり、きら"）
+- レスポンスの `finishReason` が `"MAX_TOKENS"`
+- `thoughtsTokenCount` が 500-1000 トークン消費されている
+
+**原因**:
+
+gemini-2.5-flashは内部的に「思考プロセス」を使用し、`maxOutputTokens`の大部分を思考に消費してしまう。
+
+**診断**:
+
+```bash
+curl -s -X POST 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{"contents":[{"parts":[{"text":"テストメッセージを生成してください"}]}]}' \
+  | jq '.usageMetadata'
+```
+
+出力例:
+```json
+{
+  "promptTokenCount": 97,
+  "candidatesTokenCount": 17,  // ← 実際の出力が少ない
+  "totalTokenCount": 593,
+  "thoughtsTokenCount": 479    // ← 思考プロセスが大量消費
+}
+```
+
+**解決策**:
+
+`maxOutputTokens`を大きめに設定（2000推奨）:
+
+```typescript
+generationConfig: {
+  temperature: 0.9,
+  maxOutputTokens: 2000,  // 思考プロセス分を考慮
+}
+```
+
+**検証**:
+
+```json
+{
+  "finishReason": "STOP",  // ← MAX_TOKENS から STOP に変わる
+  "thoughtsTokenCount": 1040,
+  "candidatesTokenCount": 72  // ← 完全なメッセージが生成される
+}
+```
+
+### 問題9: Cloudflare Functions で Env 型が見つからない
+
+**症状**:
+
+```
+名前 'Env' が見つかりません。ts(2304)
+```
+
+**原因**:
+
+Cloudflare Functions の環境変数型定義が不足している。
+
+**解決策**:
+
+関数ファイルの先頭に型定義を追加:
+
+```typescript
+/// <reference types="@cloudflare/workers-types" />
+
+interface Env {
+  GEMINI_API_KEY: string;
+  DAILY_MESSAGE_CACHE: KVNamespace;
+}
+
+export const onRequest = async (context: EventContext<Env, string, Record<string, unknown>>) => {
+  const apiKey = context.env.GEMINI_API_KEY;
+  const cache = context.env.DAILY_MESSAGE_CACHE;
+  // ...
+};
+```
+
+**検証**:
+
+```bash
+npm run build  # TypeScriptエラーが解消されることを確認
+```
+
 ---
 
 ## まとめ
