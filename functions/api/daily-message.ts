@@ -100,7 +100,7 @@ async function generateDailyMessage(apiKey: string, dateStr: string): Promise<st
 - メッセージのみを出力（説明や前置きは不要）`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: {
