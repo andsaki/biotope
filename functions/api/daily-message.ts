@@ -95,14 +95,23 @@ function buildFallbackMessage(date: Date, dateDescription: string): string {
  * Gemini APIを呼び出してメッセージを生成
  */
 async function generateDailyMessage(apiKey: string, dateStr: string): Promise<string> {
-  const prompt = `あなたは詩人です。今日は${dateStr}です。
-この日付に関連した、心温まるメッセージを日本語で1つ書いてください。
-以下の条件を守ってください：
+  const prompt = `あなたはマインドフルネスの実践者であり詩人です。今日は${dateStr}です。
+
+「今、ここ」に意識を向け、${dateStr}のこの瞬間の美しさを感じるメッセージを書いてください。
+
+【条件】
 - 200文字以内
-- 指定された季節に合った内容にする（他の季節の話は絶対にしない）
-- 優しく前向きな内容
+- ${dateStr}の「今この瞬間」に存在する季節の要素を描く
+- 呼吸、五感、身体感覚に意識を向ける表現
+- 過去や未来ではなく「今」に集中させる
+- 静けさ、穏やかさを感じさせる
 - です・ます調
-- メッセージのみを出力（説明や前置きは不要）`;
+- メッセージのみを出力（説明や前置きは不要）
+
+【表現例】
+- 「深く息を吸うと、〇〇の香りが...」
+- 「足元の〇〇に目を向けると...」
+- 「今日の空は...」`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
