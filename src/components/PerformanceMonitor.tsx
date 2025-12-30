@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, createContext, useContext } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 
 interface PerformanceStats {
@@ -9,15 +9,18 @@ interface PerformanceStats {
   memory?: number;
 }
 
-interface PerformanceMonitorProps {
-  enabled?: boolean;
-}
+// パフォーマンス統計のコンテキスト
+const PerformanceStatsContext = createContext<PerformanceStats>({
+  fps: 0,
+  frameTime: 0,
+  triangles: 0,
+  calls: 0,
+});
 
 /**
- * パフォーマンス監視コンポーネント
- * FPS、フレーム時間、描画コール数、三角形数などを表示
+ * Canvas内でパフォーマンスデータを収集するコンポーネント
  */
-export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ enabled = true }) => {
+export const PerformanceMonitorCollector: React.FC = () => {
   const { gl } = useThree();
   const [stats, setStats] = useState<PerformanceStats>({
     fps: 0,
@@ -31,8 +34,6 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ enabled 
   const frameTimeAccumulator = useRef(0);
 
   useFrame(() => {
-    if (!enabled) return;
-
     const currentTime = performance.now();
     const deltaTime = currentTime - lastTime.current;
 
@@ -63,12 +64,37 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ enabled 
   });
 
   useEffect(() => {
-    // コンポーネントアンマウント時にクリーンアップ
-    return () => {
-      frameCount.current = 0;
-      frameTimeAccumulator.current = 0;
-    };
-  }, []);
+    // statsをグローバルに保存（ContextではなくWindowオブジェクト経由）
+    (window as any).__performanceStats = stats;
+  }, [stats]);
+
+  return null; // Canvas内では何も描画しない
+};
+
+/**
+ * Canvas外でパフォーマンス統計を表示するコンポーネント
+ */
+export const PerformanceMonitorDisplay: React.FC<{ enabled?: boolean }> = ({ enabled = true }) => {
+  const [stats, setStats] = useState<PerformanceStats>({
+    fps: 0,
+    frameTime: 0,
+    triangles: 0,
+    calls: 0,
+  });
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    // 定期的にwindowから統計を取得
+    const interval = setInterval(() => {
+      const globalStats = (window as any).__performanceStats;
+      if (globalStats) {
+        setStats(globalStats);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [enabled]);
 
   if (!enabled) return null;
 
@@ -76,7 +102,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ enabled 
     <div
       style={{
         position: 'fixed',
-        top: '10px',
+        bottom: '10px',
         right: '10px',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         color: '#00ff00',
@@ -119,5 +145,8 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ enabled 
     </div>
   );
 };
+
+// 後方互換性のため、デフォルトエクスポートはDisplayコンポーネント
+export const PerformanceMonitor = PerformanceMonitorDisplay;
 
 export default PerformanceMonitor;

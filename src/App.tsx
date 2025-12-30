@@ -22,7 +22,7 @@ import { Sun } from "./components/Sun";
 import { SceneLights } from "./components/SceneLights";
 import { SeasonalEffects } from "./components/SeasonalEffects";
 import { DebugHelpers } from "./components/DebugHelpers";
-import { PerformanceMonitor } from "./components/PerformanceMonitor";
+import { PerformanceMonitorCollector, PerformanceMonitorDisplay } from "./components/PerformanceMonitor";
 
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
@@ -46,7 +46,7 @@ preloadModel("flatfish");
 preloadModel("leaf");
 
 const DEBUG_MODE = false; // デバッグヘルパーの表示切替
-const PERFORMANCE_MONITOR = false; // パフォーマンスモニターの表示切替
+const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
 
 // メモ化されたコンポーネント
 const MemoizedGround = memo(Ground);
@@ -175,9 +175,11 @@ const AppContent = () => {
             {/* デバッグヘルパー */}
             <DebugHelpers enabled={DEBUG_MODE} />
           </Suspense>
-          {/* パフォーマンスモニター */}
-          {PERFORMANCE_MONITOR && <PerformanceMonitor enabled={PERFORMANCE_MONITOR} />}
+          {/* パフォーマンスモニター - データ収集（Canvas内） */}
+          {PERFORMANCE_MONITOR && <PerformanceMonitorCollector />}
         </Canvas>
+        {/* パフォーマンスモニター - 表示（Canvas外） */}
+        {PERFORMANCE_MONITOR && <PerformanceMonitorDisplay enabled={PERFORMANCE_MONITOR} />}
         <UI />
         <MemoizedWindDirectionDisplay windDirection={windDirection} />
       </div>

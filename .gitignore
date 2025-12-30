@@ -30,6 +30,3 @@ dist-ssr
 
 # Wrangler
 .wrangler
-
-# AI session files
-tmp/
