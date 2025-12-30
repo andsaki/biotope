@@ -122,8 +122,8 @@ async function generateDailyMessage(apiKey: string, dateStr: string): Promise<st
           },
         ],
         generationConfig: {
-          temperature: 0.9,
-          maxOutputTokens: 2000,
+          temperature: 0.9, // 生成の創造性（0〜1、高いほど多様な表現に）
+          maxOutputTokens: 2000, // 生成されるメッセージの最大長
         },
       }),
     }
