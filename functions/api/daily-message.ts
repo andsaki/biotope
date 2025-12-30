@@ -118,7 +118,7 @@ async function generateDailyMessage(apiKey: string, dateStr: string): Promise<st
         ],
         generationConfig: {
           temperature: 0.9,
-          maxOutputTokens: 300,
+          maxOutputTokens: 500,
         },
       }),
     }
