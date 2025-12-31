@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { Mesh } from "three";
 import { useSeason } from "../contexts/SeasonContext";
 
 /**
@@ -7,7 +8,7 @@ import { useSeason } from "../contexts/SeasonContext";
  */
 const Pond: React.FC = () => {
   const { season } = useSeason();
-  const meshRef = useRef<any>(null!);
+  const meshRef = useRef<Mesh>(null!);
 
   // 季節に基づいて池の色と霧を定義する
   let pondColor: string;

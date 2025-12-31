@@ -24,7 +24,7 @@ import {
 const ReflectedStars: React.FC = () => {
   const isNight = !useDayPeriod();
   const pointsRef = useRef<THREE.Points>(null!);
-  const materialRef = useRef<any>(null!);
+  const materialRef = useRef<THREE.PointsMaterial>(null!);
   const [visible, setVisible] = useState(false);
   const frameCount = useRef(0);
 

@@ -22,8 +22,9 @@ export default tseslint.config([
     rules: {
       '@typescript-eslint/consistent-type-assertions': [
         'error',
-        { assertionStyle: 'never', allowConstAssertion: true },
+        { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' },
       ],
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
 ])

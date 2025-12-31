@@ -1,5 +1,23 @@
-import React, { useEffect, useRef, useState, createContext, useContext } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+
+// Chrome固有のメモリAPI型定義
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+// グローバル型の拡張
+declare global {
+  interface Performance {
+    memory?: PerformanceMemory;
+  }
+
+  interface Window {
+    __performanceStats?: PerformanceStats;
+  }
+}
 
 interface PerformanceStats {
   fps: number;
@@ -8,14 +26,6 @@ interface PerformanceStats {
   calls: number;
   memory?: number;
 }
-
-// パフォーマンス統計のコンテキスト
-const PerformanceStatsContext = createContext<PerformanceStats>({
-  fps: 0,
-  frameTime: 0,
-  triangles: 0,
-  calls: 0,
-});
 
 /**
  * Canvas内でパフォーマンスデータを収集するコンポーネント
@@ -46,7 +56,7 @@ export const PerformanceMonitorCollector: React.FC = () => {
       const avgFrameTime = frameTimeAccumulator.current / frameCount.current;
 
       const info = gl.info;
-      const memory = (performance as any).memory;
+      const memory = performance.memory;
 
       setStats({
         fps,
@@ -65,7 +75,7 @@ export const PerformanceMonitorCollector: React.FC = () => {
 
   useEffect(() => {
     // statsをグローバルに保存（ContextではなくWindowオブジェクト経由）
-    (window as any).__performanceStats = stats;
+    window.__performanceStats = stats;
   }, [stats]);
 
   return null; // Canvas内では何も描画しない
@@ -87,7 +97,7 @@ export const PerformanceMonitorDisplay: React.FC<{ enabled?: boolean }> = ({ ena
 
     // 定期的にwindowから統計を取得
     const interval = setInterval(() => {
-      const globalStats = (window as any).__performanceStats;
+      const globalStats = window.__performanceStats;
       if (globalStats) {
         setStats(globalStats);
       }

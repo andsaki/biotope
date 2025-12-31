@@ -152,7 +152,7 @@ const ParticleLayerInstanced: React.FC = () => {
       });
     }
     particlesRef.current = newParticles;
-  }, [particleConfig]);
+  }, [particleConfig, randomInRange]);
 
   // speedYRangeを定数としてキャッシュしてパフォーマンス向上
   const speedYRange = useMemo(() => particleConfig.speedYRange, [particleConfig.speedYRange]);
