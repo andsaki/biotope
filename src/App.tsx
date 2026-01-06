@@ -1,4 +1,4 @@
-import React, { Suspense, useRef, useMemo, memo } from "react";
+import React, { Suspense, useRef, useMemo, memo, useState, useEffect } from "react";
 
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { TimeProvider, useTime } from "./contexts/TimeContext";
@@ -35,7 +35,6 @@ import UI from "./components/UI";
 import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants";
 import { useWindDirection } from "./hooks/useWindDirection";
-import { useLoader } from "./hooks/useLoader";
 import { calculateSunPosition } from "./utils/sunPosition";
 
 // 3Dモデルのpreload
@@ -70,7 +69,7 @@ const MemoizedWindDirectionDisplay = memo(WindDirectionDisplay);
 const AppContent = () => {
   const { isDay, realTime } = useTime();
   const windDirection = useWindDirection();
-  const showLoader = useLoader();
+  const [isLoading, setIsLoading] = useState(true);
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
@@ -84,6 +83,14 @@ const AppContent = () => {
 
   // 背景色をメモ化
   const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
+
+  // 最低表示時間後にローディングを非表示
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // 2秒間表示
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
       <div
@@ -99,7 +106,7 @@ const AppContent = () => {
           transition: "background-color 2s ease", // 背景色のスムーズな切り替え
         }}
       >
-        {showLoader && <Loader />}
+        {isLoading && <Loader />}
         <Canvas
           style={{
             position: "absolute",

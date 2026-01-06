@@ -672,6 +672,133 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
 npm run build  # TypeScriptエラーが解消されることを確認
 ```
 
+### 問題10: ローディング画面が正しく表示されない
+
+**症状**:
+
+- 初期ロード時に黒い画面が続く
+- ローディングインジケーターが表示されない、または一部のみ表示される
+- 波紋エフェクトは表示されるが、メインカード（タイトルなど）が表示されない
+
+**原因**:
+
+1. **`useProgress`をCanvas外で使用**: `@react-three/drei`の`useProgress`はCanvas内でしか動作しない
+2. **タイマーベースのローディング**: 実際の3Dモデルのロード状態を監視していない
+3. **HTMLタグの閉じ忘れ**: JSX構文エラーでコンポーネントが正しくレンダリングされない
+
+**解決策**:
+
+#### 解決策1: タイマーベースのシンプルなローディング
+
+```typescript
+// App.tsx
+const AppContent = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 最低表示時間（2秒）を設定
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="App">
+      {isLoading && <Loader />}
+      <Canvas>
+        {/* 3Dシーン */}
+      </Canvas>
+    </div>
+  );
+};
+```
+
+```typescript
+// Loader.tsx - Canvas外で使用するシンプルなローディング
+const Loader = () => (
+  <div style={{ /* スタイル */ }}>
+    <div className="loader-card">
+      <h1>Biotope</h1>
+      <div className="loader-dots">
+        <div className="loader-dot" />
+        <div className="loader-dot" />
+        <div className="loader-dot" />
+      </div>
+      <p>ビオトープの世界へようこそ</p>
+    </div>
+  </div>
+);
+```
+
+#### 解決策2: HTMLタグの構文エラーを確認
+
+閉じタグの不足を確認：
+
+```typescript
+// ❌ 悪い例: 閉じタグが不足
+<div>
+  <p>テキスト</p>
+
+</div>  // ← 閉じタグが1つ足りない
+
+// ✅ 良い例: 正しく閉じる
+<div>
+  <p>テキスト</p>
+</div>
+```
+
+#### 解決策3: CSSの外部ファイル化
+
+インラインスタイルを避け、CSSファイルに分離：
+
+```css
+/* Loader.css */
+.loader-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #87CEEB 0%, #4A90E2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.loader-card {
+  background: rgba(245, 230, 211, 0.95);
+  padding: 60px 50px;
+  border-radius: 8px;
+  animation: floatIn 1.5s ease-out;
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+```
+
+**検証手順**:
+
+1. ブラウザの開発者ツール（F12）でコンソールエラーを確認
+2. Elements タブでローディング要素が存在するか確認
+3. Computed スタイルで実際のスタイルが適用されているか確認
+4. ネットワークタブで3Dモデルのロード状況を確認
+
+**注意点**:
+
+- `useProgress`はCanvas内（`<Html>`コンポーネント内）でのみ使用可能
+- タイマーベースのローディングは簡易的だが、確実に表示される
+- 実際のロード進捗を表示したい場合は、Canvas内で実装する必要がある
+
 ---
 
 ## まとめ
