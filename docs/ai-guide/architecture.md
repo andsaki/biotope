@@ -233,6 +233,58 @@ function updatePosition(pos: THREE.Vector3) { ... }
 - [ ] ジオメトリ・マテリアルを共有
 - [ ] useThrottledFrame で更新頻度を下げる（30fps）
 
+**パフォーマンス測定の手順**:
+
+1. **PerformanceMonitorを有効化**
+
+   ```typescript
+   // src/App.tsx
+   const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動有効化
+   ```
+
+2. **ベースライン測定**
+
+   全機能有効時の指標を記録：
+   - FPS（目標: 60）
+   - Draw Calls（目標: <200）
+   - Triangles（目標: <10M）
+   - Memory
+
+3. **ボトルネック特定**
+
+   コンポーネントを段階的に無効化してボトルネックを特定：
+   ```typescript
+   // SeasonalEffects全体を無効化
+   // {season && <SeasonalEffects />}
+
+   // 個別エフェクトを無効化
+   // {season === 'winter' && <SnowEffect />}
+   ```
+
+4. **最適化実施**
+
+   ボトルネックに対して以下の手法を適用：
+   - 高ポリゴンモデルの簡略化（Blenderなど）
+   - パーティクル化（3Dモデル → PlaneGeometry + テクスチャ）
+   - LOD（Level of Detail）の導入
+   - 表示数の削減
+
+5. **視覚品質の確認**
+
+   **重要**: パフォーマンス改善が視覚品質を損なう場合は採用しない
+   - ビオトープはリアリティが重要
+   - ペラペラのテクスチャは没入感を損なう
+   - 視覚品質 > パフォーマンス の優先順位
+
+**実例: 落ち葉の最適化検証（2025-12-31）**
+
+| 手法 | Triangle数 | 視覚品質 | 採用 |
+|------|-----------|---------|------|
+| 元の3Dモデル（leaf.glb） | 11,520,000 | 高品質 | ✅ 採用 |
+| PlaneGeometry + テクスチャ | 30 | 不自然（板状） | ❌ 却下 |
+
+**結論**: Triangle数を99.9997%削減できたが、視覚品質の低下が著しく却下。パフォーマンスより体験を優先。
+
 ### パターン4: Cloudflare KVを使った日次キャッシュ
 
 **ステップ**:

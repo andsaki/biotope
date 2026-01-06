@@ -218,6 +218,28 @@ WaterSurface コンポーネントのパフォーマンスを改善してくだ�
 に従ってください。
 ```
 
+### パフォーマンスチューニング
+
+```
+3Dシーンのパフォーマンスを測定・分析して、ボトルネックを特定してください。
+
+手順:
+1. PERFORMANCE_MONITORを有効化（src/App.tsx）
+2. ベースライン測定（FPS, Draw Calls, Triangles, Memory）
+3. SeasonalEffectsを無効化してボトルネック特定
+4. 個別エフェクトを段階的に無効化して原因を絞り込む
+5. 測定結果を報告
+
+重要:
+- 最適化案を実施する前に必ず相談すること
+- 視覚品質を損なう最適化は採用しない
+- ビオトープは「リアリティ重視」のプロジェクトです
+
+参考:
+- docs/ai-guide/architecture.md の「パターン3: パフォーマンス最適化」
+- tmp/004_performance-tuning/ の調査結果
+```
+
 ### バグ修正
 
 ```
@@ -672,7 +694,96 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
 npm run build  # TypeScriptエラーが解消されることを確認
 ```
 
-### 問題10: ローディング画面が正しく表示されない
+### 問題10: パフォーマンスが低下する（FPSが60未満）
+
+**症状**:
+
+- FPSが60を下回る（特に30-50FPS）
+- 画面がカクつく
+- Triangle数が異常に多い（10M以上）
+- Draw Callsが多い（200以上）
+
+**診断手順**:
+
+1. **PerformanceMonitorを有効化**
+
+   ```typescript
+   // src/App.tsx
+   const PERFORMANCE_MONITOR = import.meta.env.DEV; // または true
+   ```
+
+2. **ベースライン測定**
+
+   すべての機能が有効な状態で測定：
+   ```
+   FPS: ?
+   Draw Calls: ?
+   Triangles: ?
+   Memory: ?
+   ```
+
+3. **ボトルネック特定**
+
+   コンポーネントを段階的に無効化：
+
+   ```typescript
+   // src/App.tsx - SeasonalEffects全体を無効化
+   {/* <MemoizedSeasonalEffects /> */}
+   ```
+
+   改善した場合 → SeasonalEffectsがボトルネック
+
+   さらに個別エフェクトを特定：
+   ```typescript
+   // src/components/SeasonalEffects.tsx
+   {season === 'winter' && (
+     <>
+       {/* <SnowEffect /> */}
+       {/* <FallenLeaves /> */}
+     </>
+   )}
+   ```
+
+4. **原因の特定**
+
+   各コンポーネントのTriangle数を確認：
+   - 3Dモデルのポリゴン数が多すぎる
+   - 表示数が多すぎる
+   - useFrameで重い処理をしている
+
+**実例: FallenLeavesのボトルネック（2025-12-31）**
+
+**調査結果**:
+- leaf.glb: 768,000ポリゴン/個
+- LEAF_COUNT: 15個
+- 合計Triangle数: **11,520,000**
+
+**最適化案の検証**:
+
+| 手法 | Triangle数 | 視覚品質 | 結果 |
+|------|-----------|---------|------|
+| 元の3Dモデル | 11,520,000 | 高品質（リアル） | ✅ 採用 |
+| PlaneGeometry + Canvas APIテクスチャ | 30 | 低品質（板状、不自然） | ❌ 却下 |
+
+**結論**:
+- Triangle数を99.9997%削減できたが、視覚品質が著しく低下
+- ビオトープは「リアリティ」が重要なため、視覚品質を優先
+- **パフォーマンス < 視覚品質** の原則
+
+**今後の改善案**:
+
+1. **LOD（Level of Detail）導入**:
+   - カメラから遠い葉は低ポリゴンモデルを使用
+   - 視覚品質を保ちつつパフォーマンス改善
+
+2. **Blenderでモデル簡略化**:
+   - 768,000ポリゴン → 10,000~50,000ポリゴンに削減
+   - 95%削減しても視覚品質を維持
+
+3. **表示数の動的調整**:
+   - デバイス性能に応じてLEAF_COUNTを調整（15 → 5~10）
+
+### 問題11: ローディング画面が正しく表示されない
 
 **症状**:
 
