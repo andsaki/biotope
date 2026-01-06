@@ -36,8 +36,10 @@
 - 重い計算は `useMemo` でキャッシュ
 
 ### スタイリング
-- インラインスタイルオブジェクトを定数化
-- TypeScript の `as const` で型安全性を確保
+- **原則**: インラインスタイルは避け、CSSファイルに分離
+- **動的な値**: CSS変数（`--custom-property`）を使用
+- **定数化が必要な場合**: インラインスタイルオブジェクトを定数化し、TypeScript の `as const` で型安全性を確保
+- **デザイントークン**: `src/styles/tokens.ts` のトークンを使用
 
 ### ファイル構成
 ```
@@ -75,6 +77,37 @@ MyComponent.displayName = 'MyComponent';
 ```
 
 ### スタイル定義
+
+**推奨: CSSファイルに分離**
+```tsx
+// App.css
+.App-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+// App.tsx
+<div className="App-container" />
+```
+
+**動的な値はCSS変数を使用**
+```tsx
+// App.css
+.App {
+  background-color: var(--app-background-color, #4A90E2);
+}
+
+// App.tsx
+<div
+  className="App"
+  style={{
+    "--app-background-color": backgroundColor,
+  } as React.CSSProperties}
+/>
+```
+
+**定数化が必要な場合（例外的）**
 ```tsx
 const STYLES = {
   container: {

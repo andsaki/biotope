@@ -1,6 +1,22 @@
 .App {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border: none;
+  background-color: var(--app-background-color, #4A90E2);
+  overflow: hidden;
+  transition: background-color 2s ease;
   font-family: sans-serif;
   text-align: center;
+}
+
+.App-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 /* Custom styles for react-clock */

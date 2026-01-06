@@ -1,9 +1,9 @@
-import React, { Suspense, useRef, useMemo, memo, useState, useEffect } from "react";
+import React, { Suspense, useRef, useMemo, memo, useState, useEffect, useCallback } from "react";
 
 import { SeasonProvider } from "./contexts/SeasonContext";
 import { TimeProvider, useTime } from "./contexts/TimeContext";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 import FishManager from "./components/FishManager";
 import ParticleLayerInstanced from "./components/ParticleLayerInstanced";
@@ -63,13 +63,33 @@ const MemoizedSeasonalEffects = memo(SeasonalEffects);
 const MemoizedWindDirectionDisplay = memo(WindDirectionDisplay);
 
 /**
+ * Canvas内でThree.jsの読み込み状況を監視し、完了時に親へ通知
+ */
+const LoadingTracker = ({ onLoaded }: { onLoaded: () => void }) => {
+  const { active } = useProgress();
+
+  useEffect(() => {
+    if (!active) {
+      onLoaded();
+    }
+  }, [active, onLoaded]);
+
+  return null;
+};
+
+const MINIMUM_LOADER_MS = 2000;
+type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
+
+/**
  * アプリケーション内部コンポーネント
  * TimeProviderの中で時間情報を使用
  */
 const AppContent = () => {
   const { isDay, realTime } = useTime();
   const windDirection = useWindDirection();
-  const [isLoading, setIsLoading] = useState(true);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [minDelayElapsed, setMinDelayElapsed] = useState(false);
+  const isLoading = !(assetsLoaded && minDelayElapsed);
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
@@ -84,37 +104,30 @@ const AppContent = () => {
   // 背景色をメモ化
   const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
 
-  // 最低表示時間後にローディングを非表示
+  // 最低表示時間を確保
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // 2秒間表示
+      setMinDelayElapsed(true);
+    }, MINIMUM_LOADER_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleAssetsLoaded = useCallback(() => {
+    setAssetsLoaded(true);
+  }, []);
+
+  const appStyle: AppStyle = {
+    "--app-background-color": backgroundColor,
+  };
 
   return (
       <div
         className="App"
-        style={{
-          position: "relative",
-          width: "100vw",
-          height: "100vh",
-          margin: 0,
-          border: "none",
-          backgroundColor, // 昼と夜の背景の切り替え、夜を明るく
-          overflow: "hidden",
-          transition: "background-color 2s ease", // 背景色のスムーズな切り替え
-        }}
+        style={appStyle}
       >
         {isLoading && <Loader />}
         <Canvas
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-          }}
+          className="App-canvas"
           camera={{ position: [5, 3, 0], fov: 70 }}
           gl={{
             antialias: true,
@@ -126,6 +139,8 @@ const AppContent = () => {
           frameloop="always" // 常にレンダリング
           performance={{ min: 0.5 }} // パフォーマンス低下時の最小品質
         >
+          {/* Three.jsローダーの完了を検知 */}
+          <LoadingTracker onLoaded={handleAssetsLoaded} />
           <Suspense fallback={null}>
             <MemoizedStars />
             <MemoizedReflectedStars />
