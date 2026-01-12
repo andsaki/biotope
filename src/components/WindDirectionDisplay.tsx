@@ -36,28 +36,21 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
         alignItems: 'center',
         gap: tokens.spacing.md,
         padding: tokens.spacing.lg,
-        border: `2px solid ${tokens.colors.paperBorder}`,
-        borderRadius: tokens.radius.md,
-        background: tokens.colors.paperBg,
-        boxShadow: tokens.shadows.lg,
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        borderRadius: '16px',
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06))',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: `
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+        `,
         opacity: isMobile ? 0.95 : 1,
         transform: isMobile ? 'scale(0.75)' : 'none',
         transformOrigin: 'top left',
       }}
     >
-      {/* 装飾的なボーダー */}
-      <div
-        style={{
-          position: 'absolute',
-          top: tokens.spacing.sm,
-          right: tokens.spacing.sm,
-          bottom: tokens.spacing.sm,
-          left: tokens.spacing.sm,
-          border: `1px solid ${tokens.colors.paperBorder}`,
-          borderRadius: tokens.radius.sm,
-          pointerEvents: 'none',
-        }}
-      />
 
       {/* コンパス本体 */}
       <div
@@ -76,10 +69,16 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
             position: 'absolute',
             width: '100%',
             height: '100%',
-            border: `3px solid ${tokens.colors.textSecondary}`,
+            border: '2px solid rgba(255, 255, 255, 0.3)',
             borderRadius: tokens.radius.full,
-            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(245, 230, 211, 0.8) 100%)',
-            boxShadow: `${tokens.shadows.inset}, ${tokens.shadows.sm}`,
+            background: 'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            boxShadow: `
+              inset 0 2px 4px rgba(255, 255, 255, 0.3),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+              0 4px 12px rgba(0, 0, 0, 0.3)
+            `,
           }}
         >
           {/* 方位マーク */}
@@ -91,9 +90,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
               transform: 'translateX(-50%)',
               fontFamily: tokens.typography.fontFamily.serif,
               fontSize: '16px',
-              fontWeight: 'bold',
-              color: tokens.colors.textSecondary,
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+              fontWeight: 600,
+              color: 'rgba(255, 255, 255, 0.95)',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 255, 255, 0.2)',
             }}
           >
             N
@@ -106,9 +105,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
               transform: 'translateY(-50%)',
               fontFamily: tokens.typography.fontFamily.serif,
               fontSize: '14px',
-              fontWeight: 'bold',
-              color: tokens.colors.textSecondary,
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+              fontWeight: 500,
+              color: 'rgba(255, 255, 255, 0.85)',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
             }}
           >
             E
@@ -121,9 +120,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
               transform: 'translateX(-50%)',
               fontFamily: tokens.typography.fontFamily.serif,
               fontSize: '14px',
-              fontWeight: 'bold',
-              color: tokens.colors.textSecondary,
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+              fontWeight: 500,
+              color: 'rgba(255, 255, 255, 0.85)',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
             }}
           >
             S
@@ -136,9 +135,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
               transform: 'translateY(-50%)',
               fontFamily: tokens.typography.fontFamily.serif,
               fontSize: '14px',
-              fontWeight: 'bold',
-              color: tokens.colors.textSecondary,
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+              fontWeight: 500,
+              color: 'rgba(255, 255, 255, 0.85)',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
             }}
           >
             W
@@ -177,11 +176,12 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
           style={{
             position: 'absolute',
             zIndex: tokens.zIndex.dropdown,
-            width: '8px',
-            height: '8px',
+            width: '10px',
+            height: '10px',
             borderRadius: tokens.radius.full,
-            background: tokens.colors.textSecondary,
-            boxShadow: tokens.shadows.sm,
+            background: 'radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.5))',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.5)',
           }}
         />
       </div>
@@ -198,8 +198,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
         <span
           style={{
             fontSize: '22px',
-            fontWeight: 'bold',
-            color: tokens.colors.textPrimary,
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.95)',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
           }}
         >
           {kanji}
@@ -207,8 +208,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
         <span
           style={{
             fontSize: '14px',
-            fontWeight: 500,
-            color: tokens.colors.textSecondary,
+            fontWeight: 300,
+            color: 'rgba(255, 255, 255, 0.8)',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
           }}
         >
           の風

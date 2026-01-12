@@ -33,14 +33,24 @@ const UI: React.FC = () => {
   const getButtonStyle = (isActive: boolean) => ({
     fontFamily: tokens.typography.fontFamily.serif,
     fontSize: '16px',
-    fontWeight: 500,
+    fontWeight: isActive ? 500 : 400,
     padding: `${tokens.spacing.sm} ${tokens.spacing.md}`,
-    border: `2px solid ${isActive ? tokens.colors.accent : tokens.colors.paperBorder}`,
-    borderRadius: tokens.radius.sm,
-    background: isActive ? tokens.colors.accent : 'rgba(255, 255, 255, 0.8)',
-    color: isActive ? tokens.colors.paperBg : tokens.colors.textSecondary,
+    border: isActive
+      ? '1px solid rgba(255, 255, 255, 0.4)'
+      : '1px solid rgba(255, 255, 255, 0.15)',
+    borderRadius: '12px',
+    background: isActive
+      ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))'
+      : 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    color: isActive ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.7)',
     cursor: 'pointer',
-    transition: tokens.transitions.base,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: isActive
+      ? '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+      : '0 2px 6px rgba(0, 0, 0, 0.2)',
+    textShadow: isActive ? '0 1px 2px rgba(0, 0, 0, 0.2)' : 'none',
   });
 
   return (
@@ -77,10 +87,16 @@ const UI: React.FC = () => {
             flexDirection: 'column',
             gap: tokens.spacing.md,
             padding: isMobile ? tokens.spacing.lg : tokens.spacing.lg,
-            border: `2px solid ${tokens.colors.paperBorder}`,
-            borderRadius: tokens.radius.md,
-            background: tokens.colors.paperBg,
-            boxShadow: tokens.shadows.lg,
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06))',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            boxShadow: `
+              0 8px 32px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+            `,
           }}
         >
           {/* 閉じるボタン */}
@@ -98,43 +114,34 @@ const UI: React.FC = () => {
               width: '2rem',
               height: '2rem',
               padding: 0,
-              border: `2px solid ${tokens.colors.paperBorder}`,
-              borderRadius: tokens.radius.sm,
-              fontSize: '16px',
-              fontWeight: 'bold',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '50%',
+              fontSize: '14px',
+              fontWeight: '300',
               lineHeight: 1,
-              color: tokens.colors.textPrimary,
-              background: tokens.colors.paperBg,
+              color: 'rgba(255, 255, 255, 0.9)',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               cursor: 'pointer',
-              transition: tokens.transitions.fast,
-              boxShadow: tokens.shadows.sm,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = tokens.colors.paperBorder;
-              e.currentTarget.style.color = tokens.colors.white;
-              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+              e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = tokens.colors.paperBg;
-              e.currentTarget.style.color = tokens.colors.textPrimary;
-              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
             }}
           >
             ✕
           </button>
-          {/* 装飾的なボーダー */}
-          <div
-            style={{
-              position: 'absolute',
-              top: tokens.spacing.sm,
-              right: tokens.spacing.sm,
-              bottom: tokens.spacing.sm,
-              left: tokens.spacing.sm,
-              border: `1px solid ${tokens.colors.paperBorder}`,
-              borderRadius: tokens.radius.sm,
-              pointerEvents: 'none',
-            }}
-          />
 
           <h3
             style={{
@@ -142,11 +149,12 @@ const UI: React.FC = () => {
               margin: 0,
               marginBottom: isMobile ? tokens.spacing.xs : 0,
               fontFamily: tokens.typography.fontFamily.serif,
-              fontSize: isMobile ? '13px' : '18px',
-              fontWeight: 500,
-              color: tokens.colors.textPrimary,
+              fontSize: isMobile ? '14px' : '20px',
+              fontWeight: 300,
+              color: 'rgba(255, 255, 255, 0.95)',
               textAlign: 'center',
-              letterSpacing: isMobile ? '2px' : '4px',
+              letterSpacing: isMobile ? '4px' : '8px',
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)',
             }}
           >
             四季
@@ -225,16 +233,38 @@ const UI: React.FC = () => {
             width: isMobile ? tokens.componentSizes.mobile.button : tokens.componentSizes.pc.button,
             height: isMobile ? tokens.componentSizes.mobile.button : tokens.componentSizes.pc.button,
             padding: 0,
-            border: `2px solid ${tokens.colors.paperBorder}`,
-            borderRadius: tokens.radius.md,
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '16px',
             fontFamily: tokens.typography.fontFamily.serif,
-            fontSize: '20px',
-            fontWeight: 600,
-            color: tokens.colors.textPrimary,
-            background: tokens.colors.paperBg,
-            boxShadow: isMobile ? tokens.shadows.lg : tokens.shadows.md,
+            fontSize: '22px',
+            fontWeight: 400,
+            color: 'rgba(255, 255, 255, 0.95)',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08))',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            boxShadow: `
+              0 8px 32px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3)
+            `,
             cursor: 'pointer',
-            transition: tokens.transitions.base,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)';
+            e.currentTarget.style.boxShadow = `
+              0 12px 40px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4)
+            `;
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.12))';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1) translateY(0)';
+            e.currentTarget.style.boxShadow = `
+              0 8px 32px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3)
+            `;
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08))';
           }}
         >
           {seasonIcons[season]}
