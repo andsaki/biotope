@@ -19,6 +19,76 @@
 
 ## 技術用語
 
+### CSS/Web関連
+
+#### backgroundClip
+CSSプロパティの一つ。背景の描画領域を制御し、`text`値を使うとテキストの形に背景をマスクできる。
+
+**使用例**:
+```css
+background: linear-gradient(135deg, #ffffff 0%, #8ec6d9 100%);
+background-clip: text;
+-webkit-background-clip: text;
+color: transparent;
+```
+
+**Biotopeでの使用**:
+- ローディング画面のタイトル（グラデーションテキスト）
+- 視覚的に印象的なテキストエフェクト
+
+#### SVG Data URL
+SVGコードをData URLとして埋め込む手法。外部ファイルなしでSVGフィルターやグラフィックを使用可能。
+
+**使用例**:
+```typescript
+backgroundImage: `url("data:image/svg+xml,%3Csvg...%3E")`
+```
+
+**Biotopeでの使用**:
+- グレインテクスチャ（feTurbulence フィルター）
+- ノイズエフェクトの生成
+
+#### feTurbulence
+SVGフィルターの一つ。パーリンノイズを生成し、自然なテクスチャや雲、炎などの効果を作成。
+
+**パラメータ**:
+- `type`: `"fractalNoise"` または `"turbulence"`
+- `baseFrequency`: ノイズの細かさ（0.01-10）
+- `numOctaves`: ノイズのレイヤー数（1-10）
+
+**Biotopeでの使用**:
+- ローディング画面のグレインテクスチャ
+- 深海の質感表現
+
+#### radial-gradient
+CSSの放射状グラデーション。中心から外側に向かって色が変化。
+
+**Biotopeでの使用例**:
+```css
+background: radial-gradient(
+  ellipse at 20% 80%,
+  rgba(8, 51, 71, 0.95) 0%,
+  transparent 45%
+);
+```
+
+複数のradial-gradientを重ねることで、立体的な深海表現を実現。
+
+#### clamp()
+CSSの関数。最小値、推奨値、最大値を指定してレスポンシブな値を定義。
+
+**使用例**:
+```css
+font-size: clamp(56px, 10vw, 110px);
+/* 最小56px、推奨10vw、最大110px */
+```
+
+**Biotopeでの使用**:
+- ローディング画面のレスポンシブタイポグラフィ
+- デバイスサイズに応じた柔軟なサイズ調整
+
+---
+
 ### Three.js関連
 
 #### InstancedMesh
@@ -240,6 +310,42 @@ GPUへの描画命令の回数。少ないほど高速。InstancedMeshで削減�
 
 ### 昼夜サイクル
 ゲーム内時間に応じて変化する照明と環境。リアルタイムで計算され、`isDay`フラグで判定。
+
+### ガラスモーフィズム（Glassmorphism）
+半透明のガラスのような質感を持つUIデザイン手法。Biotopeでは水のコンテキストに合わせた主要なデザイン言語として採用。
+
+**特徴**:
+- `backdrop-filter: blur(20px)` で背景をぼかす
+- 半透明の背景（`rgba(255, 255, 255, 0.12)`）
+- 多層の`box-shadow`（外側 + inset）で深みを表現
+- 繊細なボーダー（`rgba(255, 255, 255, 0.18)`）
+
+**使用箇所**:
+- UIパネル（四季セレクタ、時計）
+- 風向きコンパス
+- ボタン類
+
+**実装例**:
+```css
+background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+backdrop-filter: blur(20px) saturate(180%);
+border: 1px solid rgba(255, 255, 255, 0.18);
+box-shadow:
+  0 8px 32px rgba(0, 0, 0, 0.4),
+  inset 0 1px 0 rgba(255, 255, 255, 0.3),
+  inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+```
+
+### デザインアンチパターン
+Biotopeプロジェクトで**絶対に使用してはいけない**デザインパターン。
+
+**禁止事項**:
+- ジェネリックな青グラデーション（`#87CEEB` → `#4A90E2`）
+- Bouncing dots（`...`）ローディング
+- 便箋風デザイン（不透明なベージュ背景）
+- 単純な円形リップルエフェクト
+
+**理由**: ビオトープは「水辺の生態系」がテーマであり、紙のテクスチャではなく水/ガラスの質感が適切。ジェネリックな「AI生成っぽい」デザインを避け、独自性を重視。
 
 ---
 

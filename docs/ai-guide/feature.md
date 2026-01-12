@@ -303,6 +303,111 @@ BubbleEffect.tsx のマジックナンバーを定数化してください。
 - 初期化タイミングを検証
 ```
 
+### UIコンポーネントのガラスモーフィズム化
+
+```
+UIパネルをガラスモーフィズムスタイルに変更してください。
+
+現状の問題:
+- 便箋風の不透明な背景（コンテキストに合わない）
+- 茶色のボーダー（水のテーマと不一致）
+- 控えめなシャドウ（深みがない）
+
+新しいデザイン要件:
+- 半透明のガラス効果（backdrop-filter: blur(20px) saturate(180%)）
+- 白ベースの半透明背景
+- 多層のbox-shadow（外側 + inset）
+- テキストは白色（rgba(255, 255, 255, 0.95)）
+- text-shadowで夜間の視認性確保
+- hover時の立体的なフィードバック
+
+実装手順:
+1. docs/design-guide.md のガラスモーフィズム仕様を確認
+2. 基本スタイルを適用:
+   ```typescript
+   background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06))',
+   backdropFilter: 'blur(20px) saturate(180%)',
+   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+   border: '1px solid rgba(255, 255, 255, 0.18)',
+   boxShadow: `
+     0 8px 32px rgba(0, 0, 0, 0.4),
+     inset 0 1px 0 rgba(255, 255, 255, 0.3),
+     inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+   `
+   ```
+3. hoverステートを実装:
+   - `transform: 'scale(1.05) translateY(-2px)'`
+   - boxShadowを強化
+4. テキストスタイルを更新:
+   - `color: 'rgba(255, 255, 255, 0.95)'`
+   - `textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)'`
+
+適用対象:
+- UIパネル（src/components/UI.tsx）
+- 風向きコンパス（src/components/WindDirectionDisplay.tsx）
+- 季節ボタン
+- 閉じるボタン
+
+参考実装:
+- src/components/UI.tsx（既存の実装）
+- docs/design-guide.md（詳細仕様）
+- docs/ai-guide/architecture.md（パターン6）
+
+重要な注意事項:
+- 便箋風デザインは**アンチパターン**（絶対使用禁止）
+- `backdrop-filter`はパフォーマンスに影響するため必要最小限に
+- 夜間シーンでの視認性テスト必須
+```
+
+### 没入感のあるローディング画面デザイン
+
+```
+ローディング画面を深海から水面へ浮上する没入感のあるデザインにリニューアルしてください。
+
+要件:
+- 深海→水面への立体的なグラデーション背景
+- SVGフィルターによるグレインテクスチャ
+- 浮遊する気泡アニメーション（12個、ランダムな動き）
+- 魚の影が横切るアニメーション（3種類）
+- 光の屈折レイヤー（動的アニメーション）
+- タイトルにグラデーション + グロー効果 + 反射エフェクト
+- 水滴と波紋によるローディングアニメーション
+
+デザインのポイント:
+- 複数のradial-gradientを重ねて深海の立体感を表現
+- backgroundClip: "text"でグラデーションテキスト
+- SVG Data URLでノイズフィルターを生成（feTurbulence）
+- 複数レイヤーのアニメーションで動きに深みを出す
+
+参考実装:
+- src/components/Loader.tsx
+- インラインスタイル + <style>タグでアニメーション定義
+- clamp()でレスポンシブなフォントサイズ
+```
+
+**AIの実装例**:
+
+主要な技術的要素：
+
+```typescript
+// SVGフィルターによるグレインテクスチャ
+backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E")`
+
+// グラデーションテキストエフェクト
+background: "linear-gradient(135deg, #ffffff 0%, #e8f4f8 30%, #b8dde8 60%, #8ec6d9 100%)",
+backgroundClip: "text",
+WebkitBackgroundClip: "text",
+color: "transparent"
+
+// 複数のradial-gradientを重ねた立体的な背景
+background: `
+  radial-gradient(ellipse at 20% 80%, rgba(8, 51, 71, 0.95) 0%, transparent 45%),
+  radial-gradient(ellipse at 80% 20%, rgba(18, 87, 111, 0.85) 0%, transparent 50%),
+  radial-gradient(ellipse at 50% 50%, rgba(31, 108, 129, 0.7) 0%, transparent 65%),
+  linear-gradient(180deg, #061420 0%, #0f2d3d 30%, #1a4a5e 60%, #2d6a7d 100%)
+`
+```
+
 ### Cloudflare Functions開発
 
 ```
