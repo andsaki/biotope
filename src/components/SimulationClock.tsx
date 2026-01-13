@@ -1,9 +1,9 @@
 import React from 'react';
 import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
-import { tokens } from '@/styles/tokens';
 import { useTime } from '../contexts/TimeContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import styles from './SimulationClock.module.css';
 
 /**
  * シミュレーション時計コンポーネント
@@ -18,77 +18,18 @@ const SimulationClock: React.FC = () => {
   const seconds = realTime.seconds;
 
   const digitalDisplay = (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: tokens.spacing.sm,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: tokens.typography.fontFamily.mono,
-          fontSize: isMobile ? '24px' : '18px',
-          fontWeight: 700,
-          color: 'rgba(255, 255, 255, 0.95)',
-          textAlign: 'center',
-          textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)',
-          letterSpacing: '3px',
-        }}
-      >
+    <div className={styles.digitalDisplayWrapper}>
+      <div className={`${styles.digitalTime} ${isMobile ? styles.mobile : ''}`}>
         {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}
       </div>
     </div>
   );
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: tokens.spacing.md,
-        zIndex: tokens.zIndex.dropdown,
-      }}
-    >
+    <div className={styles.container}>
       {digitalDisplay}
       {!isMobile && (
-        <div
-          style={{
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: tokens.componentSizes.pc.clock,
-            height: tokens.componentSizes.pc.clock,
-            padding: tokens.spacing.lg,
-            border: '1px solid rgba(255, 255, 255, 0.18)',
-            borderRadius: tokens.radius.full,
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06))',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            boxShadow: `
-              0 8px 32px rgba(0, 0, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.3),
-              inset 0 -1px 0 rgba(0, 0, 0, 0.2)
-            `,
-            transition: tokens.transitions.base,
-          }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              bottom: '10px',
-              left: '10px',
-              border: '2px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: tokens.radius.full,
-              opacity: 0.6,
-              pointerEvents: 'none',
-            }}
-          />
+        <div className={styles.clockContainer}>
           <Clock
             value={new Date(2000, 0, 1, hours, minutes, seconds)}
             size={200}
