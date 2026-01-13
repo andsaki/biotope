@@ -31,9 +31,9 @@ const SimulationClock: React.FC = () => {
           fontFamily: tokens.typography.fontFamily.mono,
           fontSize: isMobile ? '24px' : '18px',
           fontWeight: 700,
-          color: tokens.colors.textPrimary,
+          color: 'rgba(255, 255, 255, 0.95)',
           textAlign: 'center',
-          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+          textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)',
           letterSpacing: '3px',
         }}
       >
@@ -63,11 +63,16 @@ const SimulationClock: React.FC = () => {
             width: tokens.componentSizes.pc.clock,
             height: tokens.componentSizes.pc.clock,
             padding: tokens.spacing.lg,
-            border: `3px solid ${tokens.colors.paperBorder}`,
+            border: '1px solid rgba(255, 255, 255, 0.18)',
             borderRadius: tokens.radius.full,
-            background: tokens.colors.paperBg,
-            boxShadow: `${tokens.shadows.lg}, ${tokens.shadows.inset}`,
-            filter: 'drop-shadow(0 8px 24px rgba(139, 115, 85, 0.3))',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06))',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            boxShadow: `
+              0 8px 32px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+            `,
             transition: tokens.transitions.base,
           }}
         >
@@ -78,9 +83,9 @@ const SimulationClock: React.FC = () => {
               right: '10px',
               bottom: '10px',
               left: '10px',
-              border: `2px solid ${tokens.colors.paperBorder}`,
+              border: '2px solid rgba(255, 255, 255, 0.15)',
               borderRadius: tokens.radius.full,
-              opacity: 0.4,
+              opacity: 0.6,
               pointerEvents: 'none',
             }}
           />
