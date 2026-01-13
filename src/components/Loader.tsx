@@ -46,22 +46,34 @@ const Loader = () => (
       }}
     />
 
-    {/* 浮遊する気泡 */}
-    {[...Array(12)].map((_, i) => (
+    {/* 浮遊する気泡 - 洗練された動き */}
+    {[
+      { size: 18, left: 15, delay: 0, duration: 8 },
+      { size: 12, left: 35, delay: 1.5, duration: 10 },
+      { size: 22, left: 55, delay: 3, duration: 9 },
+      { size: 14, left: 75, delay: 2, duration: 11 },
+      { size: 16, left: 25, delay: 4, duration: 10.5 },
+      { size: 20, left: 65, delay: 5.5, duration: 9.5 },
+    ].map((bubble, i) => (
       <div
         key={i}
         style={{
           position: "absolute",
-          width: `${Math.random() * 20 + 5}px`,
-          height: `${Math.random() * 20 + 5}px`,
+          width: `${bubble.size}px`,
+          height: `${bubble.size}px`,
           borderRadius: "50%",
-          background: "radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1))",
-          border: "1px solid rgba(255, 255, 255, 0.3)",
-          left: `${Math.random() * 100}%`,
+          background: "radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3) 40%, rgba(142, 202, 230, 0.1))",
+          border: "1px solid rgba(255, 255, 255, 0.4)",
+          boxShadow: `
+            inset -2px -2px 4px rgba(0, 0, 0, 0.1),
+            inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+            0 0 ${bubble.size}px rgba(142, 202, 230, 0.3)
+          `,
+          left: `${bubble.left}%`,
           bottom: "-50px",
-          animation: `bubble ${Math.random() * 6 + 4}s ease-in infinite`,
-          animationDelay: `${Math.random() * 3}s`,
-          filter: "blur(0.5px)",
+          animation: `bubbleFloat ${bubble.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite`,
+          animationDelay: `${bubble.delay}s`,
+          filter: "blur(0.3px)",
         }}
       />
     ))}
@@ -244,17 +256,30 @@ const Loader = () => (
           50% { filter: hue-rotate(10deg) brightness(1.1); }
         }
 
-        @keyframes bubble {
+        @keyframes bubbleFloat {
           0% {
-            transform: translateY(0) translateX(0) scale(0);
+            transform: translateY(0) translateX(0) scale(0) rotate(0deg);
             opacity: 0;
           }
-          10% {
+          5% {
             opacity: 0.8;
-            transform: translateY(-10vh) translateX(0) scale(1);
+            transform: translateY(-5vh) translateX(0) scale(1) rotate(10deg);
+          }
+          25% {
+            transform: translateY(-30vh) translateX(-15px) scale(1.05) rotate(-15deg);
+          }
+          50% {
+            transform: translateY(-60vh) translateX(20px) scale(0.95) rotate(20deg);
+          }
+          75% {
+            transform: translateY(-90vh) translateX(-10px) scale(1.02) rotate(-10deg);
+          }
+          95% {
+            opacity: 0.6;
+            transform: translateY(-115vh) translateX(5px) scale(0.85) rotate(5deg);
           }
           100% {
-            transform: translateY(-120vh) translateX(${Math.random() * 100 - 50}px) scale(0.8);
+            transform: translateY(-120vh) translateX(0) scale(0.7) rotate(0deg);
             opacity: 0;
           }
         }
