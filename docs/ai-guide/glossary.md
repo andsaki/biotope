@@ -21,6 +21,48 @@
 
 ### CSS/Web関連
 
+#### CSS Modules
+CSSのスコープをコンポーネント単位で管理する手法。クラス名の衝突を防ぎ、保守性を向上させる。
+
+**ファイル命名**: `Component.module.css`
+
+**使用例**:
+```typescript
+// Loader.module.css
+.container {
+  display: flex;
+  background: #0a1f2e;
+}
+
+.title {
+  font-size: clamp(56px, 10vw, 110px);
+  color: transparent;
+  background: linear-gradient(135deg, #ffffff 0%, #8ec6d9 100%);
+  background-clip: text;
+}
+```
+
+```typescript
+// Loader.tsx
+import styles from './Loader.module.css';
+
+const Loader = () => (
+  <div className={styles.container}>
+    <h1 className={styles.title}>Biotope</h1>
+  </div>
+);
+```
+
+**メリット**:
+- クラス名が自動的にハッシュ化され、衝突を防ぐ
+- インラインスタイルより可読性が高い
+- ホットリロード対応
+- TypeScriptの型補完が効く
+
+**Biotopeでの使用**:
+- SimulationClock.module.css（時計コンポーネント）
+- Loader.module.css（ローディング画面、420行以上）
+
 #### backgroundClip
 CSSプロパティの一つ。背景の描画領域を制御し、`text`値を使うとテキストの形に背景をマスクできる。
 
@@ -113,6 +155,47 @@ useThrottledFrame((delta) => {
   // 30fpsで実行される処理
 }, 1000 / 30); // 約33ms間隔
 ```
+
+#### useProgress
+`@react-three/drei`のフック。Three.jsのアセット読み込み進捗を追跡し、ローディング画面に進捗を表示できる。
+
+**返り値**:
+```typescript
+{
+  active: boolean;     // 読み込み中かどうか
+  progress: number;    // 進捗率（0-100）
+  loaded: number;      // 読み込み済みアイテム数
+  total: number;       // 総アイテム数
+}
+```
+
+**重要な制約**:
+- Canvas内でのみ使用可能（Canvas外で使用するとエラー）
+- GLTFモデルなどのアセット読み込みを自動追跡
+
+**使用例**:
+```typescript
+// LoadingTrackerコンポーネント（Canvas内に配置）
+const LoadingTracker = ({ onLoaded, onProgress }) => {
+  const { active, loaded, total } = useProgress();
+
+  useEffect(() => {
+    if (active) {
+      const percentComplete = (loaded / total) * 100;
+      onProgress(percentComplete, `読み込み中... (${loaded}/${total})`);
+    } else {
+      onProgress(100, "完了");
+      onLoaded();
+    }
+  }, [active, loaded, total]);
+
+  return null;
+};
+```
+
+**Biotopeでの使用**:
+- ローディング画面のパーセンテージ表示
+- 3Dモデルの読み込み進捗追跡
 
 #### GLTF / GLB
 3Dモデルのファイル形式。GLTFはJSON + 外部ファイル、GLBはバイナリ形式（単一ファイル）。Biotopeでは主にGLBを使用。

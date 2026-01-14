@@ -381,8 +381,158 @@ UIパネルをガラスモーフィズムスタイルに変更してください
 
 参考実装:
 - src/components/Loader.tsx
-- インラインスタイル + <style>タグでアニメーション定義
+- src/components/Loader.module.css（CSS Modules化）
 - clamp()でレスポンシブなフォントサイズ
+```
+
+### ローディングインジケーター（進捗表示）の実装
+
+```
+ローディング画面にパーセンテージインジケーターを追加してください。
+
+要件:
+- リアルタイムで0-100%の進捗を表示
+- 読み込み中のアイテム数を表示（例: 11/15）
+- プログレスバーで視覚的に進捗を確認
+- @react-three/dreiのuseProgressフックを活用
+- Three.jsのDefaultLoadingManagerも併用
+
+実装手順:
+1. **LoadingTrackerコンポーネントを拡張**
+
+   App.tsx内でThree.jsの読み込み状況を監視：
+
+   ```typescript
+   const LoadingTracker = ({
+     onLoaded,
+     onProgress
+   }: {
+     onLoaded: () => void;
+     onProgress: (progress: number, loadingText: string) => void;
+   }) => {
+     const { active, progress, loaded, total } = useProgress();
+
+     useEffect(() => {
+       if (active) {
+         const percentComplete = (loaded / total) * 100;
+         const text = `3Dモデルを読み込み中... (${loaded}/${total})`;
+         onProgress(percentComplete, text);
+       } else {
+         onProgress(100, "完了");
+         onLoaded();
+       }
+     }, [active, progress, loaded, total, onLoaded, onProgress]);
+
+     return null;
+   };
+   ```
+
+2. **App.tsxで進捗状態を管理**
+
+   ```typescript
+   const [loadingProgress, setLoadingProgress] = useState(0);
+   const [loadingText, setLoadingText] = useState("初期化中...");
+
+   const handleProgress = useCallback((progress: number, text: string) => {
+     setLoadingProgress(progress);
+     setLoadingText(text);
+   }, []);
+
+   return (
+     <div className="App">
+       {isLoading && <Loader progress={loadingProgress} loadingText={loadingText} />}
+       <Canvas>
+         <LoadingTracker onLoaded={handleAssetsLoaded} onProgress={handleProgress} />
+         {/* ... */}
+       </Canvas>
+     </div>
+   );
+   ```
+
+3. **Loaderコンポーネントにprops追加**
+
+   ```typescript
+   interface LoaderProps {
+     progress?: number; // 0-100
+     loadingText?: string;
+   }
+
+   const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProps) => (
+     <div className={styles.container}>
+       {/* パーセンテージ表示 */}
+       <div className={styles.progressContainer}>
+         <div className={styles.percentage}>
+           {Math.round(progress)}%
+         </div>
+         <div className={styles.loadingText}>
+           {loadingText}
+         </div>
+         <div className={styles.progressBar}>
+           <div
+             className={styles.progressBarFill}
+             style={{ width: `${progress}%` }}
+           />
+         </div>
+       </div>
+     </div>
+   );
+   ```
+
+4. **CSS Modulesでスタイル管理**
+
+   Loader.module.cssに420行以上のスタイルを整理：
+
+   ```css
+   .progressContainer {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 12px;
+     opacity: 0;
+     animation: fadeInUp 1s ease-out 0.3s forwards;
+   }
+
+   .percentage {
+     font-size: clamp(32px, 5vw, 48px);
+     font-weight: 300;
+     color: transparent;
+     background: linear-gradient(135deg, #ffffff 0%, #b8dde8 50%, #8ec6d9 100%);
+     background-clip: text;
+     -webkit-background-clip: text;
+     letter-spacing: 0.1em;
+     text-shadow: 0 0 40px rgba(142, 202, 230, 0.8);
+   }
+
+   .progressBar {
+     width: 200px;
+     height: 3px;
+     background: rgba(142, 202, 230, 0.2);
+     border-radius: 2px;
+     overflow: hidden;
+   }
+
+   .progressBarFill {
+     height: 100%;
+     background: linear-gradient(90deg, #8ec6d9, #b8dde8, #ffffff);
+     transition: width 0.3s ease-out;
+   }
+   ```
+
+技術的なポイント:
+- `useProgress`はCanvas内でしか使えない（LoadingTrackerをCanvas内に配置）
+- GLTFモデルの読み込み状況をリアルタイム追跡
+- 完了後800ms待ってからフェードアウト
+- CSS Modulesで他のコンポーネントと設計を統一
+
+デザインのポイント:
+- 深海テーマと調和したグラデーション
+- グロー効果で視認性確保
+- スムーズなプログレスバーアニメーション
+
+参考実装:
+- src/App.tsx（LoadingTracker）
+- src/components/Loader.tsx（パーセンテージ表示）
+- src/components/Loader.module.css（CSS Modules）
 ```
 
 **AIの実装例**:

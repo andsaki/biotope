@@ -458,6 +458,104 @@ function updatePosition(pos: THREE.Vector3) { ... }
 **参考**:
 - `docs/design-guide.md`: ガラスモーフィズムの詳細仕様
 
+### パターン7: ローディング進捗の追跡
+
+**目的**: Three.jsのアセット読み込み状況をリアルタイムで表示
+
+**実装手順**:
+
+1. **LoadingTrackerコンポーネントをCanvas内に配置**
+
+   ```typescript
+   // src/App.tsx
+   const LoadingTracker = ({
+     onLoaded,
+     onProgress
+   }: {
+     onLoaded: () => void;
+     onProgress: (progress: number, loadingText: string) => void;
+   }) => {
+     const { active, progress, loaded, total } = useProgress();
+
+     useEffect(() => {
+       if (active) {
+         const percentComplete = (loaded / total) * 100;
+         const text = `3Dモデルを読み込み中... (${loaded}/${total})`;
+         onProgress(percentComplete, text);
+       } else {
+         onProgress(100, "完了");
+         onLoaded();
+       }
+     }, [active, progress, loaded, total, onLoaded, onProgress]);
+
+     return null;
+   };
+   ```
+
+2. **親コンポーネントで進捗状態を管理**
+
+   ```typescript
+   const [loadingProgress, setLoadingProgress] = useState(0);
+   const [loadingText, setLoadingText] = useState("初期化中...");
+
+   const handleProgress = useCallback((progress: number, text: string) => {
+     setLoadingProgress(progress);
+     setLoadingText(text);
+   }, []);
+   ```
+
+3. **Loaderコンポーネントにpropsを渡す**
+
+   ```typescript
+   {isLoading && <Loader progress={loadingProgress} loadingText={loadingText} />}
+   ```
+
+4. **CSS Modulesでスタイル管理**
+
+   ```css
+   /* Loader.module.css */
+   .progressContainer {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 12px;
+   }
+
+   .percentage {
+     font-size: clamp(32px, 5vw, 48px);
+     background: linear-gradient(135deg, #ffffff 0%, #8ec6d9 100%);
+     background-clip: text;
+     -webkit-background-clip: text;
+     color: transparent;
+   }
+
+   .progressBar {
+     width: 200px;
+     height: 3px;
+     background: rgba(142, 202, 230, 0.2);
+   }
+
+   .progressBarFill {
+     height: 100%;
+     background: linear-gradient(90deg, #8ec6d9, #b8dde8, #ffffff);
+     transition: width 0.3s ease-out;
+   }
+   ```
+
+**重要な注意点**:
+- `useProgress`はCanvas内でのみ使用可能
+- Canvas外で使用するとエラーが発生
+- LoadingTrackerをCanvas内に配置する必要がある
+- 進捗状態はCanvas外の親コンポーネントで管理
+
+**適用箇所**:
+- src/App.tsx（LoadingTracker）
+- src/components/Loader.tsx（パーセンテージ表示）
+- src/components/Loader.module.css（スタイル）
+
+**参考**:
+- docs/ai-guide/feature.md の「ローディングインジケーター（進捗表示）の実装」
+
 ---
 
 ## Cloudflare統合パターン
