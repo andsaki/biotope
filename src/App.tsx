@@ -65,14 +65,25 @@ const MemoizedWindDirectionDisplay = memo(WindDirectionDisplay);
 /**
  * Canvas内でThree.jsの読み込み状況を監視し、完了時に親へ通知
  */
-const LoadingTracker = ({ onLoaded }: { onLoaded: () => void }) => {
-  const { active } = useProgress();
+const LoadingTracker = ({
+  onLoaded,
+  onProgress
+}: {
+  onLoaded: () => void;
+  onProgress: (progress: number, loadingText: string) => void;
+}) => {
+  const { active, progress, loaded, total } = useProgress();
 
   useEffect(() => {
-    if (!active) {
+    if (active) {
+      const percentComplete = (loaded / total) * 100;
+      const text = `3Dモデルを読み込み中... (${loaded}/${total})`;
+      onProgress(percentComplete, text);
+    } else {
+      onProgress(100, "完了");
       onLoaded();
     }
-  }, [active, onLoaded]);
+  }, [active, progress, loaded, total, onLoaded, onProgress]);
 
   return null;
 };
@@ -89,6 +100,8 @@ const AppContent = () => {
   const windDirection = useWindDirection();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [minDelayElapsed, setMinDelayElapsed] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState("初期化中...");
   const isLoading = !(assetsLoaded && minDelayElapsed);
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
@@ -116,6 +129,11 @@ const AppContent = () => {
     setAssetsLoaded(true);
   }, []);
 
+  const handleProgress = useCallback((progress: number, text: string) => {
+    setLoadingProgress(progress);
+    setLoadingText(text);
+  }, []);
+
   const appStyle: AppStyle = {
     "--app-background-color": backgroundColor,
   };
@@ -125,7 +143,7 @@ const AppContent = () => {
         className="App"
         style={appStyle}
       >
-        {isLoading && <Loader />}
+        {isLoading && <Loader progress={loadingProgress} loadingText={loadingText} />}
         <Canvas
           className="App-canvas"
           camera={{ position: [5, 3, 0], fov: 70 }}
@@ -140,7 +158,7 @@ const AppContent = () => {
           performance={{ min: 0.5 }} // パフォーマンス低下時の最小品質
         >
           {/* Three.jsローダーの完了を検知 */}
-          <LoadingTracker onLoaded={handleAssetsLoaded} />
+          <LoadingTracker onLoaded={handleAssetsLoaded} onProgress={handleProgress} />
           <Suspense fallback={null}>
             <MemoizedStars />
             <MemoizedReflectedStars />
