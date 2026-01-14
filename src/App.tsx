@@ -21,7 +21,7 @@ import { DriftingBottle } from "./components/DriftingBottle";
 import { Sun } from "./components/Sun";
 import { SceneLights } from "./components/SceneLights";
 import { SeasonalEffects } from "./components/SeasonalEffects";
-import { DebugHelpers } from "./components/DebugHelpers";
+// import { DebugHelpers } from "./components/DebugHelpers"; // デバッグヘルパーは削除
 import { PerformanceMonitorCollector, PerformanceMonitorDisplay } from "./components/PerformanceMonitor";
 
 const WaterPlantsLarge = React.lazy(
@@ -44,7 +44,7 @@ preloadModel("normalFish");
 preloadModel("flatfish");
 preloadModel("leaf");
 
-const DEBUG_MODE = false; // デバッグヘルパーの表示切替
+// const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
 const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
 
 // メモ化されたコンポーネント
@@ -212,8 +212,8 @@ const AppContent = () => {
             {/* 季節エフェクト */}
             <MemoizedSeasonalEffects />
 
-            {/* デバッグヘルパー */}
-            <DebugHelpers enabled={DEBUG_MODE} />
+            {/* デバッグヘルパー - 削除 */}
+            {/* <DebugHelpers enabled={DEBUG_MODE} /> */}
           </Suspense>
           {/* パフォーマンスモニター - データ収集（Canvas内） */}
           {PERFORMANCE_MONITOR && <PerformanceMonitorCollector />}
