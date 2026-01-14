@@ -1,11 +1,13 @@
-import React, { useMemo } from "react";
+import React, { useMemo, Suspense, lazy } from "react";
 import { useSeason } from "../contexts/SeasonContext";
-import LilyPads from "./LilyPads";
 import {
   WATER_PLANTS,
   WATER_PLANT_CYLINDER,
   PLANT_COLORS,
 } from "../constants/waterPlants";
+
+// 遅延ロード: 夏に切り替わるまで読み込まない
+const LilyPads = lazy(() => import("./LilyPads"));
 
 /**
  * 大型水草コンポーネント
@@ -39,8 +41,12 @@ const WaterPlantsLarge: React.FC = () => {
         </mesh>
       ))}
 
-      {/* 蓮の葉 - 夏だけ水面付近に配置 */}
-      {season === "summer" && <LilyPads />}
+      {/* 蓮の葉 - 夏だけ水面付近に配置（遅延ロード） */}
+      {season === "summer" && (
+        <Suspense fallback={null}>
+          <LilyPads />
+        </Suspense>
+      )}
     </group>
   );
 };
