@@ -32,31 +32,79 @@ interface DailyMessagePayload {
 const CACHE_TTL_SECONDS = 86400;
 const FALLBACK_CACHE_TTL_SECONDS = 3600;
 
-const FALLBACK_MESSAGES: Record<string, string[]> = {
-  春: [
-    '{date}、春の風が優しく背中を押してくれます。今日も一歩ずつ。',
-    '{date}の光、柔らかな温もりに包まれて。小さな幸せを見つけましょう。',
-    '{date}、花のつぼみのように。ゆっくり、あなたのペースで咲いてください。',
-    '{date}の朝、新しい芽吹きを感じませんか。今日も素敵な1日を。'
-  ],
-  夏: [
-    '{date}、夏の日差しが応援してくれています。水分補給も忘れずに。',
-    '{date}の青空、まっすぐで気持ちいいですね。深呼吸して前へ。',
-    '{date}、暑さの中にも小さな風。あなたの笑顔が誰かの涼になります。',
-    '{date}の朝、冷たい飲み物でひと息。今日も無理せず、自分らしく。'
-  ],
-  秋: [
-    '{date}、秋の空が澄んでいます。深呼吸して、穏やかな1日を。',
-    '{date}の風、少しひんやり。温かい飲み物とともに優しい時間を。',
-    '{date}、色づく葉のように。あなたの努力も美しく実っています。',
-    '{date}の朝、静かな秋の気配。今日も自分のペースで大丈夫。'
-  ],
-  冬: [
-    '{date}、冬の朝は冷たいけれど、温かさも見つかります。ゆっくりと。',
-    '{date}の空気、凛として清々しい。温かいものでほっとひと息を。',
-    '{date}、白い息も素敵でしょ。小さな幸せを集める1日に。',
-    '{date}の朝、温もりを大切に。今日もあなたらしく輝いてください。'
-  ],
+const FALLBACK_MESSAGES: Record<string, Record<string, string[]>> = {
+  春: {
+    朝: [
+      '{date}、春の朝。優しい光に包まれて、今日も一歩ずつ。',
+      '{date}の朝、新しい芽吹きを感じませんか。素敵な1日を。'
+    ],
+    昼: [
+      '{date}、春の陽気が心地いいですね。小さな幸せを見つけましょう。',
+      '{date}の午後、花のつぼみのように。あなたのペースで咲いてください。'
+    ],
+    夕方: [
+      '{date}の夕暮れ、春の風が優しく吹いています。ゆっくり休んで。',
+      '{date}の夕方、柔らかな光に包まれて。お疲れさまでした。'
+    ],
+    夜: [
+      '{date}の夜、春の静けさが心を落ち着かせます。ゆっくりと。',
+      '{date}、春の夜は穏やか。明日も良い日になりますように。'
+    ]
+  },
+  夏: {
+    朝: [
+      '{date}の朝、夏の日差しが応援してくれています。今日も元気に。',
+      '{date}、夏の朝。冷たい飲み物でひと息、今日も自分らしく。'
+    ],
+    昼: [
+      '{date}の青空、まっすぐで気持ちいいですね。水分補給も忘れずに。',
+      '{date}、暑さの中にも小さな風。あなたの笑顔が誰かの涼になります。'
+    ],
+    夕方: [
+      '{date}の夕暮れ、夏の暑さも和らぎます。ゆっくり休んでください。',
+      '{date}の夕方、涼しい風が心地よい。お疲れさまでした。'
+    ],
+    夜: [
+      '{date}の夜、夏の星が輝いています。ゆっくりお休みください。',
+      '{date}、夏の夜は静か。明日も素敵な1日になりますように。'
+    ]
+  },
+  秋: {
+    朝: [
+      '{date}の朝、秋の空が澄んでいます。深呼吸して、穏やかな1日を。',
+      '{date}、秋の朝。静かな気配、今日も自分のペースで大丈夫。'
+    ],
+    昼: [
+      '{date}の午後、秋の風が少しひんやり。温かい飲み物とともに。',
+      '{date}、色づく葉のように。あなたの努力も美しく実っています。'
+    ],
+    夕方: [
+      '{date}の夕暮れ、秋の空が美しい。ゆっくり優しい時間を。',
+      '{date}の夕方、秋の風に吹かれて。今日もお疲れさまでした。'
+    ],
+    夜: [
+      '{date}の夜、秋の静けさに包まれて。ゆっくりお休みください。',
+      '{date}、秋の夜長。明日も良い日になりますように。'
+    ]
+  },
+  冬: {
+    朝: [
+      '{date}の冬の朝。凍える空気も、温かな光が優しく包み込みます。',
+      '{date}、冬の朝は冷たいけれど、温かさも見つかります。ゆっくりと。'
+    ],
+    昼: [
+      '{date}の午後、冬の空気が凛として清々しい。温かいものでひと息を。',
+      '{date}、冬の日差しが優しい。小さな幸せを集める1日に。'
+    ],
+    夕方: [
+      '{date}の夕暮れ、冬の寒さが身に染みます。温もりを大切に。',
+      '{date}の夕方、冬の空が美しい。今日もお疲れさまでした。'
+    ],
+    夜: [
+      '{date}の冬の夜、静かで穏やか。ゆっくりお休みください。',
+      '{date}、冬の夜。温かくして、明日も良い日になりますように。'
+    ]
+  },
 };
 
 /**
@@ -70,6 +118,16 @@ function getSeason(month: number): string {
 }
 
 /**
+ * 時刻から時間帯を判定
+ */
+function getTimeOfDay(hour: number): '朝' | '昼' | '夕方' | '夜' {
+  if (hour >= 5 && hour < 11) return '朝';
+  if (hour >= 11 && hour < 17) return '昼';
+  if (hour >= 17 && hour < 21) return '夕方';
+  return '夜';
+}
+
+/**
  * 日付から日本語の表現を生成
  */
 function getDateDescription(date: Date): string {
@@ -77,8 +135,9 @@ function getDateDescription(date: Date): string {
   const day = date.getDate();
   const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
   const season = getSeason(month);
+  const timeOfDay = getTimeOfDay(date.getHours());
 
-  return `${month}月${day}日（${dayOfWeek}曜日）、${season}`;
+  return `${month}月${day}日（${dayOfWeek}曜日）、${season}の${timeOfDay}`;
 }
 
 /**
@@ -86,7 +145,9 @@ function getDateDescription(date: Date): string {
  */
 function buildFallbackMessage(date: Date, dateDescription: string): string {
   const season = getSeason(date.getMonth() + 1);
-  const messages = FALLBACK_MESSAGES[season] ?? FALLBACK_MESSAGES['春'];
+  const timeOfDay = getTimeOfDay(date.getHours());
+  const seasonMessages = FALLBACK_MESSAGES[season] ?? FALLBACK_MESSAGES['春'];
+  const messages = seasonMessages[timeOfDay] ?? seasonMessages['朝'];
   const index = (date.getDate() - 1) % messages.length;
   return messages[index].replace('{date}', dateDescription);
 }
@@ -97,25 +158,28 @@ function buildFallbackMessage(date: Date, dateDescription: string): string {
 async function generateDailyMessage(apiKey: string, dateStr: string): Promise<string> {
   const prompt = `あなたは優しい言葉で人々を励ます詩人です。今日は${dateStr}です。
 
-朝の始まりに心がほっと温まり、1日に少し彩を添えるような短いメッセージを書いてください。
+この時間帯に心がほっと温まり、1日に少し彩を添えるような短いメッセージを書いてください。
 
 【条件】
 - 60-80文字以内（2行程度）
-- ${dateStr}の季節の美しさを優しく描く
+- ${dateStr}の季節と時間帯（朝・昼・夕方・夜）の美しさを優しく描く
+- 時間帯に合った表現を使う（朝なら始まり、夜なら休息など）
 - 前向きで軽やかな表現
 - 心が温まる、ほっとする言葉選び
 - です・ます調
 - メッセージのみを出力（説明や前置きは不要）
 
 【良い例】
-- 「冬の朝、温かい飲み物で一息つきませんか。小さな幸せが、あなたを待っていますよ。」（45文字）
-- 「春の風が背中を押してくれます。今日も一歩ずつ、自分のペースで。」（36文字）
-- 「夏の光が窓から差し込む朝。深呼吸して、新しい1日を迎えましょう。」（36文字）
+- 朝：「冬の朝、温かい飲み物で一息つきませんか。小さな幸せが、あなたを待っていますよ。」（45文字）
+- 昼：「春の風が背中を押してくれます。今日も一歩ずつ、自分のペースで。」（36文字）
+- 夕方：「夏の夕暮れ、少し涼しくなってきましたね。今日もお疲れさまでした。」（37文字）
+- 夜：「秋の夜、静かで穏やか。ゆっくりお休みください。明日も良い日に。」（35文字）
 
 【避けるべき表現】
 - 長い描写や説明
 - 重厚で瞑想的な表現
-- 指示的・説教的な内容`;
+- 指示的・説教的な内容
+- 時間帯に合わない表現（夜なのに「朝」と言うなど）`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
