@@ -27,6 +27,8 @@ import { PerformanceMonitorCollector, PerformanceMonitorDisplay } from "./compon
 const WaterPlantsLarge = React.lazy(
   () => import("./components/WaterPlantsLarge")
 );
+const PottedPlant = React.lazy(() => import("./components/PottedPlant"));
+const Rocks = React.lazy(() => import("./components/Rocks"));
 const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 
 import UI from "./components/UI";
@@ -197,6 +199,8 @@ const AppContent = () => {
             <MemoizedGround />
             <MemoizedFishManager />
             <WaterPlantsLarge />
+            <PottedPlant />
+            <Rocks />
             <BubbleEffect />
             <MemoizedWaterSurface />
             <MemoizedSundialGnomon sunPosition={sunPosition} />
