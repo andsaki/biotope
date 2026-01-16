@@ -1105,7 +1105,142 @@ npm run build  # TypeScriptエラーが解消されることを確認
 3. **表示数の動的調整**:
    - デバイス性能に応じてLEAF_COUNTを調整（15 → 5~10）
 
-### 問題11: ローディング画面が正しく表示されない
+### 問題11: 日替わりメッセージの時間帯が正しく反映されない
+
+**症状**:
+
+- 夜なのに「朝」のメッセージが表示される
+- 時間帯に関係なく同じ内容のメッセージが生成される
+- フォールバックメッセージも時間帯を考慮していない
+
+**原因**:
+
+1. **Geminiプロンプトに時間帯情報が含まれていない**: プロンプトに「朝の始まりに」などの固定表現があり、時間帯の判定がない
+2. **フォールバックメッセージが季節のみで分類**: 時間帯による分類がなく、季節だけで選択されている
+3. **日付表記に時間帯が含まれていない**: 「1月16日（金曜日）、冬」のように時間帯情報がない
+
+**解決策**:
+
+#### 解決策1: 時間帯判定関数を追加
+
+```typescript
+// functions/api/daily-message.ts
+
+/**
+ * 時刻から時間帯を判定
+ */
+function getTimeOfDay(hour: number): '朝' | '昼' | '夕方' | '夜' {
+  if (hour >= 5 && hour < 11) return '朝';
+  if (hour >= 11 && hour < 17) return '昼';
+  if (hour >= 17 && hour < 21) return '夕方';
+  return '夜';
+}
+```
+
+#### 解決策2: 日付表記に時間帯を追加
+
+```typescript
+/**
+ * 日付から日本語の表現を生成
+ */
+function getDateDescription(date: Date): string {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
+  const season = getSeason(month);
+  const timeOfDay = getTimeOfDay(date.getHours()); // 追加
+
+  return `${month}月${day}日（${dayOfWeek}曜日）、${season}の${timeOfDay}`;
+  // 例: 「1月16日（金曜日）、冬の夜」
+}
+```
+
+#### 解決策3: フォールバックメッセージを時間帯別に分類
+
+```typescript
+const FALLBACK_MESSAGES: Record<string, Record<string, string[]>> = {
+  冬: {
+    朝: [
+      '{date}の冬の朝。凍える空気も、温かな光が優しく包み込みます。',
+      '{date}、冬の朝は冷たいけれど、温かさも見つかります。ゆっくりと。'
+    ],
+    昼: [
+      '{date}の午後、冬の空気が凛として清々しい。温かいものでひと息を。',
+      '{date}、冬の日差しが優しい。小さな幸せを集める1日に。'
+    ],
+    夕方: [
+      '{date}の夕暮れ、冬の寒さが身に染みます。温もりを大切に。',
+      '{date}の夕方、冬の空が美しい。今日もお疲れさまでした。'
+    ],
+    夜: [
+      '{date}の冬の夜、静かで穏やか。ゆっくりお休みください。',
+      '{date}、冬の夜。温かくして、明日も良い日になりますように。'
+    ]
+  },
+  // 他の季節も同様...
+};
+
+function buildFallbackMessage(date: Date, dateDescription: string): string {
+  const season = getSeason(date.getMonth() + 1);
+  const timeOfDay = getTimeOfDay(date.getHours());
+  const seasonMessages = FALLBACK_MESSAGES[season] ?? FALLBACK_MESSAGES['春'];
+  const messages = seasonMessages[timeOfDay] ?? seasonMessages['朝'];
+  const index = (date.getDate() - 1) % messages.length;
+  return messages[index].replace('{date}', dateDescription);
+}
+```
+
+#### 解決策4: Geminiプロンプトに時間帯を明示
+
+```typescript
+async function generateDailyMessage(apiKey: string, dateStr: string): Promise<string> {
+  const prompt = `あなたは優しい言葉で人々を励ます詩人です。今日は${dateStr}です。
+
+この時間帯に心がほっと温まり、1日に少し彩を添えるような短いメッセージを書いてください。
+
+【条件】
+- 60-80文字以内（2行程度）
+- ${dateStr}の季節と時間帯（朝・昼・夕方・夜）の美しさを優しく描く
+- 時間帯に合った表現を使う（朝なら始まり、夜なら休息など）
+- 前向きで軽やかな表現
+- 心が温まる、ほっとする言葉選び
+- です・ます調
+- メッセージのみを出力（説明や前置きは不要）
+
+【良い例】
+- 朝：「冬の朝、温かい飲み物で一息つきませんか。小さな幸せが、あなたを待っていますよ。」（45文字）
+- 昼：「春の風が背中を押してくれます。今日も一歩ずつ、自分のペースで。」（36文字）
+- 夕方：「夏の夕暮れ、少し涼しくなってきましたね。今日もお疲れさまでした。」（37文字）
+- 夜：「秋の夜、静かで穏やか。ゆっくりお休みください。明日も良い日に。」（35文字）
+
+【避けるべき表現】
+- 長い描写や説明
+- 重厚で瞑想的な表現
+- 指示的・説教的な内容
+- 時間帯に合わない表現（夜なのに「朝」と言うなど）`;
+
+  // API呼び出し...
+}
+```
+
+**検証**:
+
+```bash
+# APIをテスト（現在の時間帯に応じたメッセージが返されるか確認）
+curl -s https://your-app.pages.dev/api/daily-message | jq '.dateDescription, .message'
+
+# 期待される出力例（夜の場合）:
+# "1月16日（金曜日）、冬の夜"
+# "冬の夜、静かで穏やか。ゆっくりお休みください。明日も良い日に。"
+```
+
+**重要な注意点**:
+
+- 時間帯判定の基準は `src/utils/time.ts` の `getTimeOfDay()` と同じにする
+- 日本時間（JST）で判定することを確認（`toLocaleString('en-US', { timeZone: 'Asia/Tokyo' })`）
+- キャッシュは日付単位なので、同じ日の時間帯変化には対応しない（仕様）
+
+### 問題12: ローディング画面が正しく表示されない
 
 **症状**:
 
