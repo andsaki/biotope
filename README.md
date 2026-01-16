@@ -1,10 +1,10 @@
-# Biotope プロジェクト
+# Mizube no Shiki 水辺の四季
 
-React、TypeScript、Three.jsを使用したビオトープ環境シミュレーションWebアプリケーション。
+React、TypeScript、Three.jsを使用した、季節の移り変わりを静かに眺める水辺の3D空間。
 
 ## 主な機能
 
-- **3Dビオトープ環境**: Three.js + React Three Fiberによる没入型3D環境
+- **3D水辺環境**: Three.js + React Three Fiberによる没入型3D空間
 - **リアルタイム時計**: 日本時間（UTC+9）と連動した昼夜サイクル
 - **動的照明**: 実時間に応じた太陽の位置と照明変化
 - **季節エフェクト**:
@@ -44,7 +44,7 @@ Cloudflare 上での各サービスの役割とシーケンス図は `docs/cloud
 1. リポジトリをクローン:
    ```bash
    git clone git@github.com:andsaki/biotope.git
-   cd biotope-project
+   cd mizube-no-shiki
    ```
 
 2. 依存関係をインストール:

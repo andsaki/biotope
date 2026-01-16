@@ -55,10 +55,10 @@ const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProp
       <div className={styles.content}>
         {/* タイトル - 大胆で印象的に */}
         <h1 className={styles.title}>
-          Biotope
+          水辺の四季
           {/* テキストの反射効果 */}
           <span className={styles.titleReflection}>
-            Biotope
+            水辺の四季
           </span>
         </h1>
 
