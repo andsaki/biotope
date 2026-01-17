@@ -92,7 +92,7 @@ const ParticleLayerInstanced: React.FC = () => {
         speedYRange = PARTICLE_SPEED_Y.SUMMER;
         particleSizeModifier = PARTICLE_SIZE_MODIFIER.SUMMER;
         geometry = new THREE.SphereGeometry(
-          0.5,
+          0.05,
           PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS,
           PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS
         );
@@ -114,7 +114,7 @@ const ParticleLayerInstanced: React.FC = () => {
         speedYRange = PARTICLE_SPEED_Y.WINTER;
         particleSizeModifier = PARTICLE_SIZE_MODIFIER.WINTER;
         geometry = new THREE.SphereGeometry(
-          0.5,
+          0.05,
           PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS,
           PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS
         );
@@ -124,7 +124,7 @@ const ParticleLayerInstanced: React.FC = () => {
         particleCount = PARTICLE_COUNT.DEFAULT;
         speedYRange = PARTICLE_SPEED_Y.DEFAULT;
         particleSizeModifier = PARTICLE_SIZE_MODIFIER.DEFAULT;
-        geometry = new THREE.SphereGeometry(0.5, 8, 8);
+        geometry = new THREE.SphereGeometry(0.05, 8, 8);
     }
 
     return { particleColor, particleCount, speedYRange, particleSizeModifier, geometry };

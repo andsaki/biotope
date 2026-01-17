@@ -75,10 +75,10 @@ export const PARTICLE_OPACITY = 0.8;
 
 // 季節ごとのジオメトリサイズ倍率
 export const PARTICLE_GEOMETRY_SIZE = {
-  SPRING_WIDTH: 1.5,  // 桜の花びら (幅)
-  SPRING_HEIGHT: 1.0, // 桜の花びら (高さ)
-  AUTUMN_WIDTH: 1.2,  // 落ち葉 (幅)
-  AUTUMN_HEIGHT: 1.8, // 落ち葉 (高さ)
+  SPRING_WIDTH: 0.15,  // 桜の花びら (幅)
+  SPRING_HEIGHT: 0.10, // 桜の花びら (高さ)
+  AUTUMN_WIDTH: 0.12,  // 落ち葉 (幅)
+  AUTUMN_HEIGHT: 0.18, // 落ち葉 (高さ)
   WINTER_SEGMENTS: 8, // 雪の球体の分割数
   SUMMER_SEGMENTS: 6, // 夏の球体の分割数
 } as const;

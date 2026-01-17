@@ -1240,7 +1240,115 @@ curl -s https://your-app.pages.dev/api/daily-message | jq '.dateDescription, .me
 - 日本時間（JST）で判定することを確認（`toLocaleString('en-US', { timeZone: 'Asia/Tokyo' })`）
 - キャッシュは日付単位なので、同じ日の時間帯変化には対応しない（仕様）
 
-### 問題12: ローディング画面が正しく表示されない
+### 問題12: ParticleLayerInstancedが巨大な板や球体として表示される
+
+**症状**:
+
+- 季節のパーティクル（桜の花びら、雪、落ち葉）が巨大な板や球体として表示される
+- 春: ピンク色の巨大な板
+- 夏: 緑色の巨大な球体
+- 秋: 茶色い巨大な板
+- 冬: 白い巨大な球体
+
+**原因**:
+
+`src/constants/particle.ts` の `PARTICLE_GEOMETRY_SIZE` が大きすぎる：
+
+```typescript
+// ❌ 問題のあるサイズ
+export const PARTICLE_GEOMETRY_SIZE = {
+  SPRING_WIDTH: 1.5,  // 桜の花びら (幅) - 巨大な板
+  SPRING_HEIGHT: 1.0, // 桜の花びら (高さ)
+  AUTUMN_WIDTH: 1.2,  // 落ち葉 (幅) - 巨大な板
+  AUTUMN_HEIGHT: 1.8, // 落ち葉 (高さ)
+  WINTER_SEGMENTS: 8,
+  SUMMER_SEGMENTS: 6,
+} as const;
+
+// ParticleLayerInstanced.tsx での球体サイズ
+geometry = new THREE.SphereGeometry(0.5, ...) // 半径0.5 - 巨大な球体
+```
+
+**解決策**:
+
+パーティクルのジオメトリサイズを1/10に縮小：
+
+```typescript
+// ✅ 修正後のサイズ
+export const PARTICLE_GEOMETRY_SIZE = {
+  SPRING_WIDTH: 0.15,  // 桜の花びら (幅) - 1/10に縮小
+  SPRING_HEIGHT: 0.10, // 桜の花びら (高さ)
+  AUTUMN_WIDTH: 0.12,  // 落ち葉 (幅)
+  AUTUMN_HEIGHT: 0.18, // 落ち葉 (高さ)
+  WINTER_SEGMENTS: 8,
+  SUMMER_SEGMENTS: 6,
+} as const;
+```
+
+`src/components/ParticleLayerInstanced.tsx` の球体サイズも修正：
+
+```typescript
+// 夏の球体
+case "summer":
+  geometry = new THREE.SphereGeometry(
+    0.05,  // 半径を0.5から0.05に縮小
+    PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS,
+    PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS
+  );
+  break;
+
+// 冬の球体
+case "winter":
+  geometry = new THREE.SphereGeometry(
+    0.05,  // 半径を0.5から0.05に縮小
+    PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS,
+    PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS
+  );
+  break;
+
+// デフォルト
+default:
+  geometry = new THREE.SphereGeometry(0.05, 8, 8); // 0.5から0.05に縮小
+```
+
+**デバッグ手順**:
+
+1. **問題の特定**: コンポーネントを段階的にコメントアウトして原因を特定
+   ```typescript
+   // src/App.tsx
+   {/* <MemoizedParticleLayerInstanced /> */}
+   ```
+
+2. **サイズの確認**: 定数ファイルのサイズが適切か確認
+   ```bash
+   grep -A 10 "PARTICLE_GEOMETRY_SIZE" src/constants/particle.ts
+   ```
+
+3. **修正の適用**: 定数とコンポーネントの両方を修正
+
+4. **視覚確認**: ブラウザで小さなパーティクルとして表示されることを確認
+
+**重要なポイント**:
+
+- PlaneGeometry のサイズは `args={[width, height, 1]}` で指定
+- SphereGeometry のサイズは `args={[radius, segments, segments]}` で指定
+- 適切なサイズは `0.05〜0.2` 程度（視覚的に自然なパーティクルサイズ）
+- 季節ごとにサイズを微調整可能（`PARTICLE_SIZE_MODIFIER`）
+
+**検証**:
+
+```bash
+# 開発サーバーで確認
+npm run dev
+
+# ブラウザで季節を切り替えて視覚確認
+# - 春: 小さなピンクの花びらが舞う
+# - 夏: 小さな緑の粒子が浮遊
+# - 秋: 小さな落ち葉が舞う
+# - 冬: 小さな雪の結晶が降る
+```
+
+### 問題13: ローディング画面が正しく表示されない
 
 **症状**:
 
