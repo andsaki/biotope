@@ -38,6 +38,10 @@ const LightingController: React.FC<LightingControllerProps> = ({
   const { season } = useSeason();
   const shadowQualityRef = React.useRef<"day" | "night">(isDay ? "day" : "night");
 
+  // Color オブジェクトを再利用してGC負荷を削減
+  const directionalColorRef = React.useRef(new THREE.Color());
+  const ambientColorRef = React.useRef(new THREE.Color());
+
   useFrame((_, delta) => {
     if (
       directionalLightRef.current &&
@@ -77,13 +81,13 @@ const LightingController: React.FC<LightingControllerProps> = ({
       // スムーズな切り替え
       directionalLightRef.current.intensity +=
         (targetIntensity - directionalLightRef.current.intensity) * delta * LIGHTING_TRANSITION_SPEED;
-      directionalLightRef.current.color.lerp(new THREE.Color(targetColor), delta * LIGHTING_TRANSITION_SPEED);
+      directionalLightRef.current.color.lerp(directionalColorRef.current.set(targetColor), delta * LIGHTING_TRANSITION_SPEED);
 
       ambientLightRef.current.intensity +=
         (targetAmbientIntensity - ambientLightRef.current.intensity) *
         delta *
         LIGHTING_TRANSITION_SPEED;
-      ambientLightRef.current.color.lerp(new THREE.Color(targetAmbientColor), delta * LIGHTING_TRANSITION_SPEED);
+      ambientLightRef.current.color.lerp(ambientColorRef.current.set(targetAmbientColor), delta * LIGHTING_TRANSITION_SPEED);
 
       pointLightRef.current.intensity +=
         (targetPointIntensity - pointLightRef.current.intensity) * delta * LIGHTING_TRANSITION_SPEED;

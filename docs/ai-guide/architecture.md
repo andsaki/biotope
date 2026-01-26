@@ -247,6 +247,7 @@ function updatePosition(pos: THREE.Vector3) { ... }
 - [ ] InstancedMesh で描画コール削減
 - [ ] ジオメトリ・マテリアルを共有
 - [ ] useThrottledFrame で更新頻度を下げる（30fps）
+- [ ] Three.jsオブジェクトの再利用（Color、Vector3など）
 
 **パフォーマンス測定の手順**:
 
@@ -299,6 +300,69 @@ function updatePosition(pos: THREE.Vector3) { ... }
 | PlaneGeometry + テクスチャ | 30 | 不自然（板状） | ❌ 却下 |
 
 **結論**: Triangle数を99.9997%削減できたが、視覚品質の低下が著しく却下。パフォーマンスより体験を優先。
+
+### パターン8: Three.jsオブジェクトの再利用でGC負荷削減
+
+**目的**: 毎フレーム新しいオブジェクトを作成するとGCが頻繁に発生し、パフォーマンスが低下する
+
+**実装手順**:
+
+1. **Color オブジェクトの再利用**
+
+   ```typescript
+   // ❌ 悪い例: 毎フレーム新しいColorを作成
+   useFrame(() => {
+     light.color = new THREE.Color(0xffffff); // GCの原因
+   });
+
+   // ✅ 良い例: useRefで保持して.set()で再利用
+   const colorRef = useRef(new THREE.Color());
+   useFrame(() => {
+     light.color = colorRef.current.set(0xffffff); // オブジェクト再利用
+   });
+   ```
+
+2. **Vector3 オブジェクトの再利用**
+
+   ```typescript
+   // ❌ 悪い例: 毎フレーム新しいVector3を作成
+   useFrame(() => {
+     mesh.position.copy(new THREE.Vector3(x, y, z));
+   });
+
+   // ✅ 良い例: useRefで保持して.set()で再利用
+   const positionRef = useRef(new THREE.Vector3());
+   useFrame(() => {
+     mesh.position.copy(positionRef.current.set(x, y, z));
+   });
+   ```
+
+3. **ジオメトリの共有**
+
+   ```typescript
+   // ❌ 悪い例: 同じジオメトリを複数回作成
+   <mesh><circleGeometry args={[5, 32]} /></mesh>
+   <mesh><circleGeometry args={[5, 32]} /></mesh>
+
+   // ✅ 良い例: useMemoで1つだけ作成して共有
+   const geometry = useMemo(() => new THREE.CircleGeometry(5, 32), []);
+   <mesh geometry={geometry} />
+   <mesh geometry={geometry} />
+   ```
+
+**期待効果**:
+- GC負荷削減: 毎フレームのオブジェクト生成がなくなる
+- CPU使用率: 5-10%削減
+- フレームレート安定性: GCによるスパイクが減少
+
+**適用箇所**:
+- LightingController.tsx: Color オブジェクト再利用
+- Pond.tsx: CircleGeometry 共有
+- WaterPlantsLarge.tsx: CylinderGeometry 共有
+
+**参考実装**:
+- tmp/008_performance-improvement/plan.md
+- src/components/LightingController.tsx:39-42
 
 ### パターン4: Cloudflare KVを使った日次キャッシュ
 

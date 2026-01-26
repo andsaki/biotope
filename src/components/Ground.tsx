@@ -25,4 +25,4 @@ const Ground: React.FC = () => {
   );
 };
 
-export default Ground;
+export default React.memo(Ground);

@@ -47,7 +47,7 @@ interface CloudInstance {
   parts: Array<{ position: [number, number, number]; scale: number }>;
 }
 
-const Clouds: React.FC<{ timeScale: number }> = ({ timeScale }) => {
+const CloudsComponent: React.FC<{ timeScale: number }> = ({ timeScale }) => {
   const cloudRefs = useRef<Array<THREE.Group | null>>([]);
   const sharedGeometry = useMemo(
     () => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS),
@@ -148,4 +148,5 @@ const Clouds: React.FC<{ timeScale: number }> = ({ timeScale }) => {
   );
 };
 
+const Clouds = React.memo(CloudsComponent);
 export default Clouds;

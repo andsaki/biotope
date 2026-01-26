@@ -334,4 +334,4 @@ const FishManager: React.FC = () => {
   );
 };
 
-export default FishManager;
+export default React.memo(FishManager);

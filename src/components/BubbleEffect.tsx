@@ -93,4 +93,4 @@ const BubbleEffect: React.FC = () => {
   );
 };
 
-export default BubbleEffect;
+export default React.memo(BubbleEffect);

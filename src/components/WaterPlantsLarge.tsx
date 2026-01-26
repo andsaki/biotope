@@ -1,4 +1,5 @@
 import React, { useMemo, Suspense, lazy } from "react";
+import * as THREE from "three";
 import { useSeason } from "../contexts/SeasonContext";
 import {
   WATER_PLANTS,
@@ -21,6 +22,16 @@ const WaterPlantsLarge: React.FC = () => {
     return PLANT_COLORS[season] || PLANT_COLORS.winter;
   }, [season]);
 
+  // cylinderGeometry を共有してメモリ使用量を削減
+  const sharedCylinderGeometry = useMemo(() => {
+    return new THREE.CylinderGeometry(
+      WATER_PLANT_CYLINDER.radiusTop,
+      WATER_PLANT_CYLINDER.radiusBottom,
+      WATER_PLANT_CYLINDER.height,
+      WATER_PLANT_CYLINDER.radialSegments
+    );
+  }, []);
+
   return (
     <group>
       {/* 水草 - 地面に配置する */}
@@ -30,13 +41,8 @@ const WaterPlantsLarge: React.FC = () => {
           position={plant.position}
           rotation={plant.rotation}
           scale={plant.scale}
+          geometry={sharedCylinderGeometry}
         >
-          <cylinderGeometry args={[
-            WATER_PLANT_CYLINDER.radiusTop,
-            WATER_PLANT_CYLINDER.radiusBottom,
-            WATER_PLANT_CYLINDER.height,
-            WATER_PLANT_CYLINDER.radialSegments
-          ]} />
           <meshStandardMaterial color={plantColor} />
         </mesh>
       ))}
@@ -51,4 +57,4 @@ const WaterPlantsLarge: React.FC = () => {
   );
 };
 
-export default WaterPlantsLarge;
+export default React.memo(WaterPlantsLarge);

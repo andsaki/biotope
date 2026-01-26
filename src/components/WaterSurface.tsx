@@ -83,4 +83,4 @@ const WaterSurface: React.FC = () => {
   );
 };
 
-export default WaterSurface;
+export default React.memo(WaterSurface);

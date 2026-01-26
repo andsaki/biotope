@@ -22,7 +22,7 @@ interface SceneLightsProps {
  * 環境光、ポイントライト、太陽光（指向性ライト）、スポットライトを管理
  * @param props - コンポーネントのプロパティ
  */
-export const SceneLights: React.FC<SceneLightsProps> = ({
+const SceneLightsComponent: React.FC<SceneLightsProps> = ({
   sunPosition,
   directionalLightRef,
   ambientLightRef,
@@ -75,3 +75,5 @@ export const SceneLights: React.FC<SceneLightsProps> = ({
     </>
   );
 };
+
+export const SceneLights = React.memo(SceneLightsComponent);
