@@ -128,6 +128,16 @@ function getTimeOfDay(hour: number): '朝' | '昼' | '夕方' | '夜' {
 }
 
 /**
+ * 時刻から時間帯を判定（英語）
+ */
+function getTimeOfDayEnglish(hour: number): 'morning' | 'afternoon' | 'evening' | 'night' {
+  if (hour >= 5 && hour < 11) return 'morning';
+  if (hour >= 11 && hour < 17) return 'afternoon';
+  if (hour >= 17 && hour < 21) return 'evening';
+  return 'night';
+}
+
+/**
  * 日付から日本語の表現を生成
  */
 function getDateDescription(date: Date): string {
@@ -239,7 +249,8 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
     const japanTime = new Date(
       now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' })
     );
-    const dateKey = `${japanTime.getFullYear()}-${String(japanTime.getMonth() + 1).padStart(2, '0')}-${String(japanTime.getDate()).padStart(2, '0')}`;
+    const timeOfDay = getTimeOfDayEnglish(japanTime.getHours());
+    const dateKey = `${japanTime.getFullYear()}-${String(japanTime.getMonth() + 1).padStart(2, '0')}-${String(japanTime.getDate()).padStart(2, '0')}-${timeOfDay}`;
     const dateDescription = getDateDescription(japanTime);
 
     // KVキャッシュをチェック
