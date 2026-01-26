@@ -103,7 +103,7 @@ const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProp
 
         {/* サブタイトル */}
         <p className={styles.subtitle}>
-          ビオトープの世界へ
+          Mizube no Shiki
         </p>
       </div>
 
