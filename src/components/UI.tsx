@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 import SimulationClock from "./SimulationClock";
 import { tokens } from "@/styles/tokens";
 import { useIsMobile } from "@/hooks/useIsMobile";

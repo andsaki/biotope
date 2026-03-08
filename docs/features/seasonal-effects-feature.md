@@ -193,7 +193,7 @@ switch (season) {
 すべてのエフェクトコンポーネントは自動的に季節を検知します：
 
 ```tsx
-import { SeasonProvider } from "./contexts/SeasonContext";
+import { SeasonProvider } from "./contexts";
 import CherryBlossoms from "./components/CherryBlossoms";
 import SummerEffects from "./components/SummerEffects";
 import SnowEffect from "./components/SnowEffect";

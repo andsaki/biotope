@@ -2,7 +2,7 @@ import React, { useRef, useMemo, useEffect, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
-import { useDayPeriod } from "../contexts/TimeContext";
+import { useDayPeriod } from "../contexts";
 import {
   REFLECTED_STAR_COUNT,
   STAR_DISPLAY_DELAY,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { DefaultLoadingManager } from "three";
-import { LOADER_DISPLAY_DURATION } from "../constants";
+import { LOADER_DISPLAY_DURATION } from "../constants/core";
 
 /**
  * ローディング画面の表示を管理するカスタムフック

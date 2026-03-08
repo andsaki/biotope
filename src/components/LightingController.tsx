@@ -1,8 +1,7 @@
 import React from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { useSeason } from "../contexts/SeasonContext";
-import { useDayPeriod } from "../contexts/TimeContext";
+import { useSeason, useDayPeriod } from "../contexts";
 import {
   LIGHTING_TRANSITION_SPEED,
   DAY_INTENSITY,

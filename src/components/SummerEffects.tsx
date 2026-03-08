@@ -1,5 +1,5 @@
 import React from "react";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 
 /**
  * 夏の追加エフェクト

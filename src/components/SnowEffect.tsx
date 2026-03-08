@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   SNOW_COUNT,

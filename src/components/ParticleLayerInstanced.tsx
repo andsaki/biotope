@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {

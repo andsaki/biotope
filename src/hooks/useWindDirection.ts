@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { WIND_CHANGE_INTERVAL } from "../constants";
+import { WIND_CHANGE_INTERVAL } from "../constants/core";
 
 /** 風向きの種類 */
 type WindDirection = "North" | "East" | "South" | "West";

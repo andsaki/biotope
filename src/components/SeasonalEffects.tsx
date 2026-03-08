@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSeason } from '../contexts/SeasonContext';
+import { useSeason } from "../contexts";
 import CherryBlossoms from './CherryBlossoms';
 import SummerEffects from './SummerEffects';
 import FallenLeaves from './FallenLeaves';

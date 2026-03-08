@@ -114,7 +114,7 @@ src/
 │   ├── rocks.ts                 # 岩の配置定数
 │   ├── stars.ts                 # 星空の定数
 │   └── sundial.ts               # 日時計の定数
-├── constants.ts             # アプリケーション定数
+│   └── core/                 # アプリ全体の基礎定数（時間・システム色など）
 └── assets/                  # 静的資産（R2アップロード対象）
     ├── cc0____yellow_striped_flounder.glb       # カレイ3Dモデル
     ├── cc0__deep_autumn__5k_followers_milestone.glb  # 落ち葉3Dモデル

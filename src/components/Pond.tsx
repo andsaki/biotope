@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import { Mesh, CircleGeometry } from "three";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 
 /**
  * 池コンポーネント
