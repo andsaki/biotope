@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { useDayPeriod } from "../../contexts/TimeContext";
+import { useDayPeriod } from "../../contexts";
 
 /** 瓶モデルのプロパティ */
 interface BottleModelProps {

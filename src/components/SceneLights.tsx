@@ -1,12 +1,10 @@
 import React from 'react';
 import * as THREE from 'three';
-import type { SunPosition } from '../utils/sunPosition';
 import { SCENE_LIGHTS } from '../constants/lighting';
+import { useSunPosition } from '../hooks/useSunPosition';
 
 /** ライティングコンポーネントのプロパティ */
 interface SceneLightsProps {
-  /** 太陽の位置 */
-  sunPosition: SunPosition;
   /** 指向性ライトへの参照 */
   directionalLightRef: React.RefObject<THREE.DirectionalLight>;
   /** 環境光への参照 */
@@ -23,12 +21,13 @@ interface SceneLightsProps {
  * @param props - コンポーネントのプロパティ
  */
 const SceneLightsComponent: React.FC<SceneLightsProps> = ({
-  sunPosition,
   directionalLightRef,
   ambientLightRef,
   pointLightRef,
   spotLightRef,
 }) => {
+  const sunPosition = useSunPosition();
+
   return (
     <>
       {/* 環境光 */}

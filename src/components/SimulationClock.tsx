@@ -1,7 +1,7 @@
 import React from 'react';
 import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
-import { useTime } from '../contexts/TimeContext';
+import { useTime } from "../contexts";
 import { useIsMobile } from '@/hooks/useIsMobile';
 import styles from './SimulationClock.module.css';
 

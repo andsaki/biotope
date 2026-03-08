@@ -34,7 +34,7 @@ setIsDay(
 );
 ```
 
-定数は `src/constants.ts` で定義：
+定数は `src/constants/core/time.ts` で定義：
 ```typescript
 export const DAY_START_MINUTES = 6 * 60;  // 6:00 = 360分
 export const DAY_END_MINUTES = 18 * 60;   // 18:00 = 1080分
@@ -176,7 +176,7 @@ const z = radius * Math.sin(hourAngle);
 
 ### 昼夜の時間帯を変更
 
-`src/constants.ts` を編集：
+`src/constants/core/time.ts` を編集：
 
 ```typescript
 export const DAY_START_MINUTES = 5 * 60;  // 5:00から昼間
@@ -252,7 +252,7 @@ now.toLocaleString("en-US", { timeZone: "Europe/London" })    // ロンドン時
 
 ### 昼夜が切り替わらない
 
-`src/constants.ts` の `DAY_START_MINUTES` と `DAY_END_MINUTES` が正しく設定されているか確認してください。
+`src/constants/core/time.ts` の `DAY_START_MINUTES` と `DAY_END_MINUTES` が正しく設定されているか確認してください。
 
 ## 今後の改善案
 

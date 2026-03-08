@@ -1,7 +1,6 @@
 import React, { Suspense, useRef, useMemo, memo, useState, useEffect, useCallback } from "react";
 
-import { SeasonProvider } from "./contexts/SeasonContext";
-import { TimeProvider, useTime } from "./contexts/TimeContext";
+import { SeasonProvider, TimeProvider, useDayPeriod } from "./contexts";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useProgress } from "@react-three/drei";
 import * as THREE from "three";
@@ -33,9 +32,8 @@ const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 
 import UI from "./components/UI";
 import "./App.css";
-import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants";
+import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants/core";
 import { useWindDirection } from "./hooks/useWindDirection";
-import { calculateSunPosition } from "./utils/sunPosition";
 
 // 3Dモデルのpreload
 import { preloadModel } from "./hooks/useModelScene";
@@ -55,7 +53,7 @@ const MemoizedClouds = memo(Clouds);
 const MemoizedStars = memo(Stars);
 const MemoizedReflectedStars = memo(ReflectedStars);
 const MemoizedWaterSurface = memo(WaterSurface);
-// SundialGnomonはsunPositionを受け取るのでメモ化の条件を調整
+// SundialGnomonは内部で太陽位置を参照するのでメモ化のみ行う
 const MemoizedSundialGnomon = memo(SundialGnomon);
 const MemoizedSundialBase = memo(SundialBase);
 const MemoizedDriftingBottle = memo(DriftingBottle);
@@ -96,7 +94,7 @@ type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
  * TimeProviderの中で時間情報を使用
  */
 const AppContent = () => {
-  const { isDay, realTime } = useTime();
+  const isDay = useDayPeriod();
   const windDirection = useWindDirection();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [minDelayElapsed, setMinDelayElapsed] = useState(false);
@@ -107,12 +105,6 @@ const AppContent = () => {
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
   const spotLightRef = useRef<THREE.SpotLight>(null!);
-
-  // 太陽の位置を計算
-  const sunPosition = useMemo(
-    () => calculateSunPosition(realTime.hours, realTime.minutes),
-    [realTime.hours, realTime.minutes]
-  );
 
   // 背景色をメモ化
   const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
@@ -169,7 +161,6 @@ const AppContent = () => {
 
             {/* ライティング */}
             <SceneLights
-              sunPosition={sunPosition}
               directionalLightRef={directionalLightRef}
               ambientLightRef={ambientLightRef}
               pointLightRef={pointLightRef}
@@ -183,7 +174,7 @@ const AppContent = () => {
             />
 
             {/* 太陽 */}
-            <Sun position={sunPosition} />
+            <Sun />
             {/* カメラコントロール */}
             <OrbitControls
               enableZoom={true}
@@ -203,7 +194,7 @@ const AppContent = () => {
             <Rocks />
             <BubbleEffect />
             <MemoizedWaterSurface />
-            <MemoizedSundialGnomon sunPosition={sunPosition} />
+            <MemoizedSundialGnomon />
             <MemoizedSundialBase />
             <MemoizedDriftingBottle position={[-3, 8.2, 2]} />
             <MemoizedParticleLayerInstanced />

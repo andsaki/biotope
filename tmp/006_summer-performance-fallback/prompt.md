@@ -68,7 +68,7 @@
 
 ```typescript
 import React, { useMemo } from "react";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 import LilyPads from "./LilyPads";
 import {
   WATER_PLANTS,
@@ -86,7 +86,7 @@ import {
 
 ```typescript
 import React, { useMemo, Suspense, lazy } from "react";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 import {
   WATER_PLANTS,
   WATER_PLANT_CYLINDER,

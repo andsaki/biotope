@@ -1,6 +1,6 @@
 import React, { useMemo, Suspense, lazy } from "react";
 import * as THREE from "three";
-import { useSeason } from "../contexts/SeasonContext";
+import { useSeason } from "../contexts";
 import {
   WATER_PLANTS,
   WATER_PLANT_CYLINDER,

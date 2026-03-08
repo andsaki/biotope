@@ -4,7 +4,7 @@ import {
   DAY_START_MINUTES,
   DAY_END_MINUTES,
   INITIAL_TIME_MINUTES,
-} from "../constants";
+} from "../constants/core";
 
 export const useSimulatedTime = () => {
   const [isDay, setIsDay] = useState(true);

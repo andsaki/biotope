@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DAY_START_MINUTES, DAY_END_MINUTES } from "../constants";
+import { DAY_START_MINUTES, DAY_END_MINUTES } from "../constants/core";
 
 /**
  * リアルタイムの日本時間を管理するカスタムフック
