@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSeason } from "../contexts";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { usePerformanceProfile } from "../hooks/usePerformanceProfile";
 import {
   PARTICLE_COUNT,
   PARTICLE_COLOR,
@@ -54,6 +55,7 @@ interface Particle {
  */
 const ParticleLayerInstanced: React.FC = () => {
   const { season } = useSeason();
+  const performanceProfile = usePerformanceProfile();
   const particlesRef = useRef<Particle[]>([]);
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const frameCount = useRef(0);
@@ -67,7 +69,7 @@ const ParticleLayerInstanced: React.FC = () => {
   const positionMatrix = useMemo(() => new THREE.Matrix4(), []);
 
   // 季節に応じたパーティクル設定
-  const particleConfig = useMemo(() => {
+  const baseParticleConfig = useMemo(() => {
     let particleColor: string;
     let particleCount: number;
     let speedYRange: [number, number];
@@ -130,6 +132,25 @@ const ParticleLayerInstanced: React.FC = () => {
     return { particleColor, particleCount, speedYRange, particleSizeModifier, geometry };
   }, [season]);
 
+  const scaledParticleCount = useMemo(
+    () =>
+      Math.max(
+        5,
+        Math.round(
+          baseParticleConfig.particleCount * performanceProfile.particleCountMultiplier
+        )
+      ),
+    [baseParticleConfig.particleCount, performanceProfile]
+  );
+
+  const particleConfig = useMemo(
+    () => ({
+      ...baseParticleConfig,
+      particleCount: scaledParticleCount,
+    }),
+    [baseParticleConfig, scaledParticleCount]
+  );
+
   // パーティクルの初期化
   useEffect(() => {
     const newParticles: Particle[] = [];
@@ -153,6 +174,10 @@ const ParticleLayerInstanced: React.FC = () => {
     }
     particlesRef.current = newParticles;
   }, [particleConfig, randomInRange]);
+
+  useEffect(() => {
+    matrixArrayRef.current = null;
+  }, [particleConfig.particleCount]);
 
   // speedYRangeを定数としてキャッシュしてパフォーマンス向上
   const speedYRange = useMemo(() => particleConfig.speedYRange, [particleConfig.speedYRange]);

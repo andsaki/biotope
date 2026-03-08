@@ -1,6 +1,7 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useCallback, useEffect } from "react";
 import * as THREE from "three";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { usePerformanceProfile } from "../hooks/usePerformanceProfile";
 import {
   BUBBLE_COUNT,
   BUBBLE_SIZE_MIN,
@@ -27,8 +28,13 @@ interface BubbleData {
 const BubbleEffect: React.FC = () => {
   const bubbleRefs = useRef<THREE.Mesh[]>([]);
   const bubbleDataRef = useRef<BubbleData[]>([]);
+  const performanceProfile = usePerformanceProfile();
+  const bubbleCount = Math.max(
+    10,
+    Math.round(BUBBLE_COUNT * performanceProfile.bubbleCountMultiplier)
+  );
 
-  const createBubble = (): BubbleData => {
+  const createBubble = useCallback((): BubbleData => {
     const size = Math.random() * (BUBBLE_SIZE_MAX - BUBBLE_SIZE_MIN) + BUBBLE_SIZE_MIN;
     const speed = Math.random() * (BUBBLE_SPEED_MAX - BUBBLE_SPEED_MIN) + BUBBLE_SPEED_MIN;
     const location = BUBBLE_LOCATIONS[Math.floor(Math.random() * BUBBLE_LOCATIONS.length)];
@@ -40,11 +46,12 @@ const BubbleEffect: React.FC = () => {
       size,
       speed,
     };
-  };
-
-  useMemo(() => {
-    bubbleDataRef.current = Array.from({ length: BUBBLE_COUNT }, createBubble);
   }, []);
+
+  useEffect(() => {
+    bubbleDataRef.current = Array.from({ length: bubbleCount }, createBubble);
+    bubbleRefs.current = bubbleRefs.current.slice(0, bubbleCount);
+  }, [bubbleCount, createBubble]);
 
   useThrottledFrame((_, delta) => {
     bubbleRefs.current.forEach((mesh, index) => {

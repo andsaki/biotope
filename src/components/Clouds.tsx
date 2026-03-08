@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThrottledFrame } from '../hooks/useThrottledFrame';
+import { usePerformanceProfile } from '../hooks/usePerformanceProfile';
 import {
   CLOUD_COUNT,
   CLOUD_POSITION_X_RANGE,
@@ -49,6 +50,8 @@ interface CloudInstance {
 
 const CloudsComponent: React.FC<{ timeScale: number }> = ({ timeScale }) => {
   const cloudRefs = useRef<Array<THREE.Group | null>>([]);
+  const performanceProfile = usePerformanceProfile();
+  const cloudCount = Math.max(5, Math.round(CLOUD_COUNT * performanceProfile.cloudCountMultiplier));
   const sharedGeometry = useMemo(
     () => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS),
     []
@@ -67,13 +70,20 @@ const CloudsComponent: React.FC<{ timeScale: number }> = ({ timeScale }) => {
 
   const clouds = useMemo<CloudInstance[]>(() => {
     const instances: CloudInstance[] = [];
-    for (let i = 0; i < CLOUD_COUNT; i++) {
+    for (let i = 0; i < cloudCount; i++) {
       const x = Math.random() * CLOUD_POSITION_X_RANGE + CLOUD_POSITION_X_OFFSET;
       const y = CLOUD_POSITION_Y_BASE + Math.random() * CLOUD_POSITION_Y_RANGE;
       const z = Math.random() * CLOUD_POSITION_Z_RANGE + CLOUD_POSITION_Z_OFFSET;
       const scale = CLOUD_SCALE_BASE + Math.random() * CLOUD_SCALE_RANGE;
       const speed = CLOUD_SPEED_BASE + Math.random() * CLOUD_SPEED_RANGE;
-      const numParts = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
+      const basePartCount = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
+      const numParts = Math.max(
+        CLOUD_PARTS_MIN,
+        Math.min(
+          CLOUD_PARTS_MAX,
+          Math.round(basePartCount * performanceProfile.cloudPartMultiplier)
+        )
+      );
       const parts: Array<{ position: [number, number, number]; scale: number }> = [];
       for (let j = 0; j < numParts; j++) {
         parts.push({
@@ -95,7 +105,7 @@ const CloudsComponent: React.FC<{ timeScale: number }> = ({ timeScale }) => {
       });
     }
     return instances;
-  }, []);
+  }, [cloudCount, performanceProfile.cloudPartMultiplier]);
 
   useThrottledFrame(
     (state, accumulatedDelta) => {

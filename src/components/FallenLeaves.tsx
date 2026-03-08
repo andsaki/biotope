@@ -1,8 +1,9 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import * as THREE from "three";
 import { useSeason } from "../contexts";
 import { useModelScene } from "../hooks/useModelScene";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { usePerformanceProfile } from "../hooks/usePerformanceProfile";
 import {
   LEAF_COUNT,
   LEAF_SPREAD_X,
@@ -29,32 +30,44 @@ import {
 const FallenLeaves: React.FC = React.memo(() => {
   const { season } = useSeason();
   const leavesRefs = useRef<THREE.Group[]>([]);
+  const performanceProfile = usePerformanceProfile();
+  const leafCount = Math.max(
+    5,
+    Math.round(LEAF_COUNT * performanceProfile.leafCountMultiplier)
+  );
 
   // R2から直接読み込み（ファイルサイズが大きいため）
   const leafScene = useModelScene("leaf");
 
   const isWinter = season === "winter";
 
+  useEffect(() => {
+    leavesRefs.current = leavesRefs.current.slice(0, leafCount);
+  }, [leafCount]);
+
   // 落ち葉の初期位置データ（コンポーネント再レンダリング時に位置が変わらないようにuseMemoで固定）
-  const leafData = useMemo(() =>
-    Array.from({ length: LEAF_COUNT }, () => ({
-      x: (Math.random() - 0.5) * LEAF_SPREAD_X,
-      z: (Math.random() - 0.5) * LEAF_SPREAD_Z,
-      rotationY: Math.random() * Math.PI * 2,
+  const leafData = useMemo(
+    () =>
+      Array.from({ length: leafCount }, () => ({
+        x: (Math.random() - 0.5) * LEAF_SPREAD_X,
+        z: (Math.random() - 0.5) * LEAF_SPREAD_Z,
+        rotationY: Math.random() * Math.PI * 2,
       rotationX: Math.random() * LEAF_GROUND_TILT - LEAF_GROUND_TILT / 2, // 地面での傾き
       rotationZ: Math.random() * LEAF_GROUND_TILT - LEAF_GROUND_TILT / 2, // 地面での傾き
       scale: LEAF_BASE_SCALE + Math.random() * LEAF_SCALE_VARIATION,
       floatSpeed: LEAF_FLOAT_SPEED_BASE + Math.random() * LEAF_FLOAT_SPEED_VARIATION, // 浮き沈みの速度
       driftSpeed: LEAF_DRIFT_SPEED_BASE + Math.random() * LEAF_DRIFT_SPEED_VARIATION, // 横移動の速度
       rotationSpeed: LEAF_ROTATION_SPEED_BASE + Math.random() * LEAF_ROTATION_SPEED_VARIATION, // 回転速度
-      phaseOffset: Math.random() * Math.PI * 2, // 位相オフセット
-    }))
-  , []);
+        phaseOffset: Math.random() * Math.PI * 2, // 位相オフセット
+      })),
+    [leafCount]
+  );
 
   // 3Dモデルのcloneを事前に作成してパフォーマンス向上
-  const leafClones = useMemo(() =>
-    Array.from({ length: LEAF_COUNT }, () => leafScene.clone())
-  , [leafScene]);
+  const leafClones = useMemo(
+    () => Array.from({ length: leafCount }, () => leafScene.clone()),
+    [leafScene, leafCount]
+  );
 
   useThrottledFrame((state, delta) => {
     if (isWinter) return; // 冬は静止

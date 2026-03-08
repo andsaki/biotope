@@ -200,6 +200,7 @@ export const FISH_SPEED = {
 - `WaterSurface`: `useThrottledFrame` で 30fps 単位の更新に切り替え、120fps 環境でも頂点更新の CPU 負荷が暴発しないように調整
 - `BubbleEffect` / `FallenLeaves`: `useThrottledFrame` で泡・落ち葉の更新を 30fps に間引き、`leavesRefs` などの再計算コストを削減
 - `UI` / `SimulationClock`: requestAnimationFrame でリサイズイベントを間引く `useIsMobile` フックを導入し、リサイズ中の再レンダリング嵐を解消
+- `usePerformanceProfile`: 画面幅とCPUコア数から `high / balanced / low` プロファイルを自動判定し、パーティクル・雲・落ち葉・泡の数を段階的に削減。モバイル端末では最大50%のドローコール削減を実現
 - `SimulationClock`: デジタル表示を共通DOMにまとめ、PCではアナログ時計を追 加する構成に再編
 - `CherryBlossoms` / `SnowEffect`: `useThrottledFrame` を共有利用し、パーティクルの頂点更新を 30fps に抑えて CPU スパイクを削減
 - `ParticleLayerInstanced`: 疑似乱数生成器（Mulberry32）で初期化＆リセットの乱数を管理し、`Math.random` の大量呼び出しと GC を抑制
