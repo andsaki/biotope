@@ -11,6 +11,7 @@
 - [x] prompt.md を初期化
 - [x] Vite+ 調査ドキュメントの移動とREADME更新
 - [x] 差分確認とコミット/プッシュ
+- [x] ユーザー指示に従って `vite-plus.md` を削除し README からリンク除去
 
 ### 🔄 進行中
 - [ ] （任意）lint / type-check 実行の要否確認
