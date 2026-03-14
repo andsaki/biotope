@@ -564,6 +564,18 @@ if (!response) {
 - すべてのリクエストに適切なCORSヘッダーを付与
 - プリフライトリクエスト（OPTIONS）にも対応
 
+## 開発プロセス（start-impl）
+
+Codex / Claude どちらであっても、新機能実装を開始するときは `.claude/commands/start-impl.md` に定義された手順を必ず踏むこと:
+
+1. `tmp/` 直下の最新番号を確認し、`tmp/{連番}_<feature>/` を新規作成して `plan.md` / `prompt.md` を初期化。
+2. `plan.md` には目的 / スコープ / 手順 / 技術詳細 / テスト計画 / 完了条件 / 見積もりをテンプレートどおりに記述。
+3. `prompt.md` に開始日時・タスク概要・進捗・ユーザー指示を記録。
+4. `plan.md` の全文をユーザーへ提示し、承認を得るまでコード変更禁止。
+5. 承認後に `prompt.md` を更新し、計画に沿って作業・テストを進める。
+
+※ Codex は `.claude/commands/start-impl.md` を自動読込しないため、README のこの節を参照し、常に start-impl の要件を満たすこと。
+
 ## ドキュメント
 
 - [`docs/ai-guide.md`](docs/ai-guide.md): AI開発ガイド（効果的な開発ワークフロー、プロンプト例）
