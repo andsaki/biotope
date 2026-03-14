@@ -3,6 +3,10 @@ import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 
+const reactVendors = ["react", "react-dom"];
+const threeVendors = ["three", "@react-three/fiber", "@react-three/drei", "@react-three/rapier"];
+const matchesPackage = (id: string, pkg: string) => id.includes(`/node_modules/${pkg}/`);
+
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
@@ -21,9 +25,16 @@ export default defineConfig({
     minify: 'esbuild',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/rapier'],
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return;
+          }
+          if (reactVendors.some((pkg) => matchesPackage(id, pkg))) {
+            return "react-vendor";
+          }
+          if (threeVendors.some((pkg) => matchesPackage(id, pkg))) {
+            return "three-vendor";
+          }
         },
       },
     },
@@ -32,12 +43,6 @@ export default defineConfig({
     cssCodeSplit: true,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
-    esbuildOptions: {
-      target: 'esnext',
-    },
-  },
-  esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    include: ["react", "react-dom", "three", "@react-three/fiber", "@react-three/drei"],
   },
 });
