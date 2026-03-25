@@ -35,13 +35,6 @@ import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants/core";
 import { useWindDirection } from "./hooks/useWindDirection";
 
-// 3Dモデルのpreload
-import { preloadModel } from "./hooks/useModelScene";
-
-preloadModel("normalFish");
-preloadModel("flatfish");
-preloadModel("leaf");
-
 // const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
 const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
 
