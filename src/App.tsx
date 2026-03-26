@@ -35,6 +35,13 @@ import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants/core";
 import { useWindDirection } from "./hooks/useWindDirection";
 
+// 3Dモデルのpreload
+import { preloadModel } from "./hooks/useModelScene";
+
+preloadModel("normalFish");
+preloadModel("flatfish");
+preloadModel("leaf");
+
 // const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
 const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
 
@@ -202,10 +209,11 @@ const AppContent = () => {
           {/* パフォーマンスモニター - データ収集（Canvas内） */}
           {PERFORMANCE_MONITOR && <PerformanceMonitorCollector />}
         </Canvas>
-        {/* パフォーマンスモニター - 表示（Canvas外） */}
-        {PERFORMANCE_MONITOR && <PerformanceMonitorDisplay enabled={PERFORMANCE_MONITOR} />}
+        {/* パフォーマンスモニター - 表示（Canvas外） - ローディング完了後のみ表示 */}
+        {PERFORMANCE_MONITOR && !isLoading && <PerformanceMonitorDisplay enabled={PERFORMANCE_MONITOR} />}
         <UI />
-        <MemoizedWindDirectionDisplay windDirection={windDirection} />
+        {/* 風向きコンパス - ローディング完了後のみ表示 */}
+        {!isLoading && <MemoizedWindDirectionDisplay windDirection={windDirection} />}
       </div>
   );
 };
