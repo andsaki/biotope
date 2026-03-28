@@ -11,14 +11,13 @@ const SPAWN_AREA = {
   X_MIN: -8,
   X_MAX: 8,
   Y_MIN: 1,
-  Y_MAX: 4,
+  Y_MAX: 5,
   Z_MIN: -8,
   Z_MAX: 8,
 };
 const SPEED = {
-  X: 0.002,
-  Y: 0.001,
-  Z: 0.002,
+  BASE: 0.015,
+  VARIATION: 0.01,
 };
 
 /** ホタルの状態データ */
@@ -27,9 +26,16 @@ interface Firefly {
   x: number;
   y: number;
   z: number;
-  speedX: number;
-  speedY: number;
-  speedZ: number;
+  baseX: number; // 基準位置X
+  baseY: number; // 基準位置Y
+  baseZ: number; // 基準位置Z
+  time: number; // 経過時間（動きの計算用）
+  frequencyX: number; // X方向の振動周波数
+  frequencyY: number; // Y方向の振動周波数
+  frequencyZ: number; // Z方向の振動周波数
+  amplitudeX: number; // X方向の振幅
+  amplitudeY: number; // Y方向の振幅
+  amplitudeZ: number; // Z方向の振幅
   phase: number; // 点滅のフェーズ（0-2π）
   phaseSpeed: number; // 点滅速度
 }
@@ -57,14 +63,24 @@ export const Fireflies: React.FC = () => {
   useMemo(() => {
     const newFireflies: Firefly[] = [];
     for (let i = 0; i < FIREFLY_COUNT; i++) {
+      const baseX = randomInRange(SPAWN_AREA.X_MIN, SPAWN_AREA.X_MAX);
+      const baseY = randomInRange(SPAWN_AREA.Y_MIN, SPAWN_AREA.Y_MAX);
+      const baseZ = randomInRange(SPAWN_AREA.Z_MIN, SPAWN_AREA.Z_MAX);
       newFireflies.push({
         id: i,
-        x: randomInRange(SPAWN_AREA.X_MIN, SPAWN_AREA.X_MAX),
-        y: randomInRange(SPAWN_AREA.Y_MIN, SPAWN_AREA.Y_MAX),
-        z: randomInRange(SPAWN_AREA.Z_MIN, SPAWN_AREA.Z_MAX),
-        speedX: randomInRange(-SPEED.X, SPEED.X),
-        speedY: randomInRange(-SPEED.Y, SPEED.Y),
-        speedZ: randomInRange(-SPEED.Z, SPEED.Z),
+        x: baseX,
+        y: baseY,
+        z: baseZ,
+        baseX,
+        baseY,
+        baseZ,
+        time: randomInRange(0, 100), // ランダムな開始時刻
+        frequencyX: randomInRange(0.3, 0.8),
+        frequencyY: randomInRange(0.4, 1.0),
+        frequencyZ: randomInRange(0.3, 0.8),
+        amplitudeX: randomInRange(0.8, 2.0),
+        amplitudeY: randomInRange(0.5, 1.5),
+        amplitudeZ: randomInRange(0.8, 2.0),
         phase: randomInRange(0, Math.PI * 2),
         phaseSpeed: randomInRange(0.02, 0.05),
       });
@@ -96,21 +112,28 @@ export const Fireflies: React.FC = () => {
     for (let i = 0; i < fireflies.length; i++) {
       const firefly = fireflies[i];
 
-      // ゆっくり浮遊
-      firefly.x += firefly.speedX;
-      firefly.y += firefly.speedY;
-      firefly.z += firefly.speedZ;
+      // 時間を進める
+      firefly.time += SPEED.BASE + Math.sin(firefly.time * 0.1) * SPEED.VARIATION;
 
-      // 範囲外に出たら反転
-      if (firefly.x < SPAWN_AREA.X_MIN || firefly.x > SPAWN_AREA.X_MAX) {
-        firefly.speedX *= -1;
-      }
-      if (firefly.y < SPAWN_AREA.Y_MIN || firefly.y > SPAWN_AREA.Y_MAX) {
-        firefly.speedY *= -1;
-      }
-      if (firefly.z < SPAWN_AREA.Z_MIN || firefly.z > SPAWN_AREA.Z_MAX) {
-        firefly.speedZ *= -1;
-      }
+      // sin波による自然な浮遊動作（8の字や円を描くような動き）
+      const offsetX = Math.sin(firefly.time * firefly.frequencyX) * firefly.amplitudeX;
+      const offsetY = Math.sin(firefly.time * firefly.frequencyY) * firefly.amplitudeY;
+      const offsetZ = Math.cos(firefly.time * firefly.frequencyZ) * firefly.amplitudeZ;
+
+      // 基準位置 + オフセット
+      firefly.x = firefly.baseX + offsetX;
+      firefly.y = firefly.baseY + offsetY;
+      firefly.z = firefly.baseZ + offsetZ;
+
+      // 基準位置をゆっくり移動（範囲内でドリフト）
+      firefly.baseX += Math.sin(firefly.time * 0.05) * 0.01;
+      firefly.baseY += Math.cos(firefly.time * 0.03) * 0.008;
+      firefly.baseZ += Math.sin(firefly.time * 0.04) * 0.01;
+
+      // 範囲外に出ないように基準位置を制限
+      firefly.baseX = Math.max(SPAWN_AREA.X_MIN + 1, Math.min(SPAWN_AREA.X_MAX - 1, firefly.baseX));
+      firefly.baseY = Math.max(SPAWN_AREA.Y_MIN + 0.5, Math.min(SPAWN_AREA.Y_MAX - 0.5, firefly.baseY));
+      firefly.baseZ = Math.max(SPAWN_AREA.Z_MIN + 1, Math.min(SPAWN_AREA.Z_MAX - 1, firefly.baseZ));
 
       // 点滅アニメーション（sin波）
       firefly.phase += firefly.phaseSpeed;
