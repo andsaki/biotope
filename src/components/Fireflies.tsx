@@ -4,20 +4,20 @@ import * as THREE from "three";
 import { createRng, randomBetween } from "../utils/random";
 
 /** ホタルの設定 */
-const FIREFLY_COUNT = 25;
-const FIREFLY_COLOR = "#AAFF00";
-const FIREFLY_SIZE = 0.08;
+const FIREFLY_COUNT = 30;
+const FIREFLY_COLOR = "#CDFF00";
+const FIREFLY_SIZE = 0.12;
 const SPAWN_AREA = {
   X_MIN: -8,
   X_MAX: 8,
-  Y_MIN: 1,
-  Y_MAX: 5,
+  Y_MIN: 9, // 水面(Y=8)より上
+  Y_MAX: 12,
   Z_MIN: -8,
   Z_MAX: 8,
 };
 const SPEED = {
-  BASE: 0.015,
-  VARIATION: 0.01,
+  BASE: 0.025, // ゆっくり優雅に
+  VARIATION: 0.015,
 };
 
 /** ホタルの状態データ */
@@ -75,14 +75,14 @@ export const Fireflies: React.FC = () => {
         baseY,
         baseZ,
         time: randomInRange(0, 100), // ランダムな開始時刻
-        frequencyX: randomInRange(0.3, 0.8),
-        frequencyY: randomInRange(0.4, 1.0),
-        frequencyZ: randomInRange(0.3, 0.8),
-        amplitudeX: randomInRange(0.8, 2.0),
-        amplitudeY: randomInRange(0.5, 1.5),
-        amplitudeZ: randomInRange(0.8, 2.0),
+        frequencyX: randomInRange(0.4, 0.8),
+        frequencyY: randomInRange(0.5, 0.9),
+        frequencyZ: randomInRange(0.4, 0.8),
+        amplitudeX: randomInRange(1.2, 2.5),
+        amplitudeY: randomInRange(0.8, 1.8),
+        amplitudeZ: randomInRange(1.2, 2.5),
         phase: randomInRange(0, Math.PI * 2),
-        phaseSpeed: randomInRange(0.02, 0.05),
+        phaseSpeed: randomInRange(0.08, 0.15), // 点滅速度は維持
       });
     }
     firefliesRef.current = newFireflies;
@@ -125,24 +125,27 @@ export const Fireflies: React.FC = () => {
       firefly.y = firefly.baseY + offsetY;
       firefly.z = firefly.baseZ + offsetZ;
 
-      // 基準位置をゆっくり移動（範囲内でドリフト）
-      firefly.baseX += Math.sin(firefly.time * 0.05) * 0.01;
-      firefly.baseY += Math.cos(firefly.time * 0.03) * 0.008;
-      firefly.baseZ += Math.sin(firefly.time * 0.04) * 0.01;
+      // 基準位置を移動（範囲内でドリフト、ゆっくりと）
+      firefly.baseX += Math.sin(firefly.time * 0.04) * 0.015;
+      firefly.baseY += Math.cos(firefly.time * 0.03) * 0.012;
+      firefly.baseZ += Math.sin(firefly.time * 0.035) * 0.015;
 
       // 範囲外に出ないように基準位置を制限
-      firefly.baseX = Math.max(SPAWN_AREA.X_MIN + 1, Math.min(SPAWN_AREA.X_MAX - 1, firefly.baseX));
-      firefly.baseY = Math.max(SPAWN_AREA.Y_MIN + 0.5, Math.min(SPAWN_AREA.Y_MAX - 0.5, firefly.baseY));
-      firefly.baseZ = Math.max(SPAWN_AREA.Z_MIN + 1, Math.min(SPAWN_AREA.Z_MAX - 1, firefly.baseZ));
+      firefly.baseX = Math.max(SPAWN_AREA.X_MIN + 2, Math.min(SPAWN_AREA.X_MAX - 2, firefly.baseX));
+      firefly.baseY = Math.max(SPAWN_AREA.Y_MIN + 0.3, Math.min(SPAWN_AREA.Y_MAX - 0.3, firefly.baseY));
+      firefly.baseZ = Math.max(SPAWN_AREA.Z_MIN + 2, Math.min(SPAWN_AREA.Z_MAX - 2, firefly.baseZ));
 
-      // 点滅アニメーション（sin波）
+      // 点滅アニメーション（sin波の累乗で一瞬だけ強く光る）
       firefly.phase += firefly.phaseSpeed;
       if (firefly.phase > Math.PI * 2) {
         firefly.phase -= Math.PI * 2;
       }
 
-      // 明るさ（0.2〜1.0で変動）
-      const brightness = 0.2 + Math.sin(firefly.phase) * 0.4 + 0.4;
+      // 明るさ（0.05〜1.5で大きく変動、ピークで強く光る）
+      const sinValue = Math.sin(firefly.phase);
+      const brightness = sinValue > 0
+        ? Math.pow(sinValue, 2) * 1.5 // 光る時は強く
+        : 0.05; // 消える時はほぼ見えない
 
       // 位置行列を更新
       positionMatrix.makeTranslation(firefly.x, firefly.y, firefly.z);
@@ -178,6 +181,7 @@ export const Fireflies: React.FC = () => {
         color: FIREFLY_COLOR,
         transparent: true,
         opacity: 1.0,
+        toneMapped: false, // ブルーム効果のため
       }),
     []
   );
