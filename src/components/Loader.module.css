@@ -26,20 +26,17 @@
   animation: gradientShift 15s ease-in-out infinite;
 }
 
-/* 睡蓮の葉 */
+/* 睡蓮の葉（背景装飾） */
 .lilyPad {
   position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(60, 100, 60, 0.15),
-    rgba(40, 70, 50, 0.1) 50%,
-    rgba(20, 40, 30, 0.05)
-  );
-  border: 2px solid rgba(50, 90, 60, 0.2);
-  animation: lilyFloat 8s ease-in-out infinite;
-  filter: blur(1px);
-  opacity: 0.6;
+  bottom: -40px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50% 50% 50% 0;
+  background: radial-gradient(circle at 30% 30%, rgba(0, 245, 212, 0.15), rgba(0, 150, 100, 0.1));
+  transform: rotate(-45deg);
+  opacity: 0.4;
+  animation: lilyFloat 3s ease-in-out infinite;
 }
 
 /* メインコンテンツ */
@@ -73,20 +70,32 @@
 /* 蛍のコンテナ */
 .fireflyContainer {
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: 120px;
+  height: 120px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+@media (min-width: 640px) {
+  .fireflyContainer {
+    width: 150px;
+    height: 150px;
+  }
+}
+
 /* 蛍 */
 .firefly {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  animation: fireflyPath 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite,
-             fireflyBlink 2.5s ease-in-out infinite;
+  width: 8px;
+  height: 8px;
+}
+
+@media (min-width: 640px) {
+  .firefly {
+    width: 10px;
+    height: 10px;
+  }
 }
 
 /* 蛍の発光体 */
@@ -94,31 +103,33 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(
-    circle at center,
-    #ffff00 0%,
-    #ffd700 30%,
-    #ffb347 60%,
-    transparent 100%
-  );
+  background: radial-gradient(circle, #ffeb3b, #ffc107);
   box-shadow:
-    0 0 20px rgba(255, 255, 0, 0.9),
-    0 0 40px rgba(255, 215, 0, 0.6),
-    0 0 60px rgba(255, 179, 71, 0.3);
-  filter: blur(2px);
+    0 0 15px rgba(255, 235, 59, 0.8),
+    0 0 30px rgba(255, 193, 7, 0.6);
+  filter: blur(1px);
+  position: relative;
 }
 
-/* モバイル対応 */
-@media (max-width: 640px) {
-  .fireflyContainer {
-    width: 200px;
-    height: 200px;
+@media (min-width: 640px) {
+  .fireflyGlow {
+    box-shadow:
+      0 0 20px rgba(255, 235, 59, 0.9),
+      0 0 40px rgba(255, 193, 7, 0.7);
   }
+}
 
-  .firefly {
-    width: 10px;
-    height: 10px;
-  }
+.fireflyGlow::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  border-radius: 50%;
+  background: rgba(255, 235, 59, 0.2);
+  box-shadow: 0 0 10px rgba(255, 235, 59, 0.4);
 }
 
 /* パーセンテージ表示コンテナ */
@@ -129,6 +140,13 @@
   gap: 12px;
   opacity: 0;
   animation: fadeInUp 1s ease-out 0.3s forwards;
+  margin-top: 16px;
+}
+
+@media (min-width: 640px) {
+  .progressContainer {
+    margin-top: 24px;
+  }
 }
 
 /* 進捗パーセンテージ */
@@ -136,12 +154,12 @@
   font-size: clamp(32px, 5vw, 48px);
   font-weight: 300;
   color: transparent;
-  background: linear-gradient(135deg, #ffff00 0%, #ffd700 50%, #ffb347 100%);
+  background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 50%, #ff9800 100%);
   background-clip: text;
   -webkit-background-clip: text;
   font-family: 'Noto Sans JP', sans-serif;
   letter-spacing: 0.1em;
-  text-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+  text-shadow: 0 0 40px rgba(255, 235, 59, 0.6);
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
 }
 
@@ -149,10 +167,10 @@
 .loadingText {
   font-size: clamp(12px, 1.5vw, 16px);
   font-weight: 300;
-  color: #ffd700;
+  color: #ffeb3b;
   letter-spacing: 0.2em;
   font-family: 'Noto Sans JP', sans-serif;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
   opacity: 0.9;
 }
 
@@ -160,7 +178,7 @@
 .progressBar {
   width: 200px;
   height: 3px;
-  background: rgba(255, 215, 0, 0.2);
+  background: rgba(255, 235, 59, 0.2);
   border-radius: 2px;
   overflow: hidden;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -168,9 +186,9 @@
 
 .progressBarFill {
   height: 100%;
-  background: linear-gradient(90deg, #ffb347, #ffd700, #ffff00);
+  background: linear-gradient(90deg, #ff9800, #ffc107, #ffeb3b);
   border-radius: 2px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+  box-shadow: 0 0 10px rgba(255, 235, 59, 0.8);
   transition: width 0.3s ease-out;
 }
 
@@ -179,12 +197,12 @@
   font-size: clamp(14px, 2vw, 20px);
   font-weight: 300;
   margin: 0;
-  color: #ffd700;
+  color: #ffeb3b;
   letter-spacing: 0.3em;
   font-family: 'Noto Serif JP', serif;
   opacity: 0;
   animation: fadeInUp 1.5s ease-out 0.5s forwards;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
 }
 
 /* アニメーション */
@@ -200,12 +218,10 @@
 
 @keyframes lilyFloat {
   0%, 100% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0.6;
+    transform: rotate(-45deg) translateY(0px);
   }
   50% {
-    transform: translateY(-10px) rotate(2deg);
-    opacity: 0.7;
+    transform: rotate(-45deg) translateY(-5px);
   }
 }
 
@@ -241,33 +257,6 @@
       0 0 30px rgba(255, 215, 0, 0.4),
       0 0 50px rgba(255, 215, 0, 0.2),
       0 0 70px rgba(255, 179, 71, 0.1);
-  }
-}
-
-@keyframes fireflyPath {
-  0% {
-    transform: translate(var(--path-x-0), var(--path-y-0));
-  }
-  25% {
-    transform: translate(var(--path-x-1), var(--path-y-1));
-  }
-  50% {
-    transform: translate(var(--path-x-2), var(--path-y-2));
-  }
-  75% {
-    transform: translate(var(--path-x-3), var(--path-y-3));
-  }
-  100% {
-    transform: translate(var(--path-x-0), var(--path-y-0));
-  }
-}
-
-@keyframes fireflyBlink {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
   }
 }
 

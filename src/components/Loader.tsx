@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import styles from './Loader.module.css';
 
 /**
@@ -12,41 +13,10 @@ interface LoaderProps {
 const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProps) => {
   // 4匹の蛍 - それぞれ独立した経路を持つ
   const fireflies = [
-    {
-      id: 1,
-      pathX: [-30, 20, -10, 30],
-      pathY: [-20, 30, -25, 15],
-      delay: 0,
-      duration: 12
-    },
-    {
-      id: 2,
-      pathX: [40, -20, 35, -15],
-      pathY: [10, -30, 20, -15],
-      delay: 1.5,
-      duration: 14
-    },
-    {
-      id: 3,
-      pathX: [-35, 25, -25, 35],
-      pathY: [25, -20, 30, -25],
-      delay: 3,
-      duration: 13
-    },
-    {
-      id: 4,
-      pathX: [30, -30, 20, -20],
-      pathY: [-15, 25, -30, 20],
-      delay: 4.5,
-      duration: 15
-    },
-  ];
-
-  // 睡蓮の葉 - 背景装飾
-  const lilyPads = [
-    { size: 60, left: 15, top: 20, delay: 0 },
-    { size: 45, left: 75, top: 65, delay: 1 },
-    { size: 50, left: 40, top: 80, delay: 2 },
+    { delay: 0, x: [0, 30, -20, 10, 0], y: [0, -25, -15, -30, 0], duration: 4 },
+    { delay: 0.5, x: [0, -25, 15, -10, 0], y: [0, -20, -35, -15, 0], duration: 4.5 },
+    { delay: 1, x: [0, 20, -30, 5, 0], y: [0, -30, -10, -25, 0], duration: 5 },
+    { delay: 1.5, x: [0, -15, 25, -5, 0], y: [0, -15, -25, -35, 0], duration: 4.2 },
   ];
 
   return (
@@ -54,20 +24,8 @@ const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProp
       {/* グラデーション背景 - 夏の夜 */}
       <div className={styles.backgroundGradient} />
 
-      {/* 睡蓮の葉 */}
-      {lilyPads.map((lily, i) => (
-        <div
-          key={i}
-          className={styles.lilyPad}
-          style={{
-            width: `${lily.size}px`,
-            height: `${lily.size}px`,
-            left: `${lily.left}%`,
-            top: `${lily.top}%`,
-            animationDelay: `${lily.delay}s`,
-          }}
-        />
-      ))}
+      {/* 睡蓮の葉（背景装飾） */}
+      <div className={styles.lilyPad} />
 
       {/* メインコンテンツ */}
       <div className={styles.content}>
@@ -78,27 +36,39 @@ const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProp
 
         {/* 蛍のアニメーション */}
         <div className={styles.fireflyContainer}>
-          {fireflies.map((firefly) => (
-            <div
-              key={firefly.id}
+          {fireflies.map((firefly, index) => (
+            <motion.div
+              key={index}
               className={styles.firefly}
-              style={{
-                animationDuration: `${firefly.duration}s`,
-                animationDelay: `${firefly.delay}s`,
-                // @ts-expect-error CSS変数
-                '--path-x-0': `${firefly.pathX[0]}%`,
-                '--path-x-1': `${firefly.pathX[1]}%`,
-                '--path-x-2': `${firefly.pathX[2]}%`,
-                '--path-x-3': `${firefly.pathX[3]}%`,
-                '--path-y-0': `${firefly.pathY[0]}%`,
-                '--path-y-1': `${firefly.pathY[1]}%`,
-                '--path-y-2': `${firefly.pathY[2]}%`,
-                '--path-y-3': `${firefly.pathY[3]}%`,
+              animate={{
+                x: firefly.x,
+                y: firefly.y,
+                opacity: [0.3, 1, 0.3, 1, 0.3], // 点滅効果
+              }}
+              transition={{
+                x: {
+                  duration: firefly.duration,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: firefly.delay,
+                },
+                y: {
+                  duration: firefly.duration,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: firefly.delay,
+                },
+                opacity: {
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: firefly.delay,
+                },
               }}
             >
               {/* 蛍の発光体 */}
               <div className={styles.fireflyGlow} />
-            </div>
+            </motion.div>
           ))}
         </div>
 
