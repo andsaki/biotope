@@ -2,7 +2,7 @@ import styles from './Loader.module.css';
 
 /**
  * ローディング画面コンポーネント
- * 水中から水面へ浮上する没入感のあるデザイン
+ * 穏やかに飛び回る蛍と睡蓮の葉の装飾
  */
 interface LoaderProps {
   progress?: number; // 0-100
@@ -10,73 +10,95 @@ interface LoaderProps {
 }
 
 const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProps) => {
-  // バブルデータ
-  const bubbles = [
-    { size: 18, left: 15, delay: 0, duration: 8 },
-    { size: 12, left: 35, delay: 1.5, duration: 10 },
-    { size: 22, left: 55, delay: 3, duration: 9 },
-    { size: 14, left: 75, delay: 2, duration: 11 },
-    { size: 16, left: 25, delay: 4, duration: 10.5 },
-    { size: 20, left: 65, delay: 5.5, duration: 9.5 },
+  // 4匹の蛍 - それぞれ独立した経路を持つ
+  const fireflies = [
+    {
+      id: 1,
+      pathX: [-30, 20, -10, 30],
+      pathY: [-20, 30, -25, 15],
+      delay: 0,
+      duration: 12
+    },
+    {
+      id: 2,
+      pathX: [40, -20, 35, -15],
+      pathY: [10, -30, 20, -15],
+      delay: 1.5,
+      duration: 14
+    },
+    {
+      id: 3,
+      pathX: [-35, 25, -25, 35],
+      pathY: [25, -20, 30, -25],
+      delay: 3,
+      duration: 13
+    },
+    {
+      id: 4,
+      pathX: [30, -30, 20, -20],
+      pathY: [-15, 25, -30, 20],
+      delay: 4.5,
+      duration: 15
+    },
+  ];
+
+  // 睡蓮の葉 - 背景装飾
+  const lilyPads = [
+    { size: 60, left: 15, top: 20, delay: 0 },
+    { size: 45, left: 75, top: 65, delay: 1 },
+    { size: 50, left: 40, top: 80, delay: 2 },
   ];
 
   return (
     <div className={styles.container}>
-      {/* グラデーションメッシュ背景 - 深海から水面へ */}
+      {/* グラデーション背景 - 夏の夜 */}
       <div className={styles.backgroundGradient} />
 
-      {/* グレインテクスチャオーバーレイ */}
-      <div className={styles.grainOverlay} />
-
-      {/* 浮遊する気泡 - 洗練された動き */}
-      {bubbles.map((bubble, i) => (
+      {/* 睡蓮の葉 */}
+      {lilyPads.map((lily, i) => (
         <div
           key={i}
-          className={styles.bubble}
+          className={styles.lilyPad}
           style={{
-            width: `${bubble.size}px`,
-            height: `${bubble.size}px`,
-            boxShadow: `
-              inset -2px -2px 4px rgba(0, 0, 0, 0.1),
-              inset 2px 2px 4px rgba(255, 255, 255, 0.5),
-              0 0 ${bubble.size}px rgba(142, 202, 230, 0.3)
-            `,
-            left: `${bubble.left}%`,
-            animation: `${styles.bubbleFloat} ${bubble.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite`,
-            animationDelay: `${bubble.delay}s`,
+            width: `${lily.size}px`,
+            height: `${lily.size}px`,
+            left: `${lily.left}%`,
+            top: `${lily.top}%`,
+            animationDelay: `${lily.delay}s`,
           }}
         />
       ))}
 
-      {/* 光の屈折レイヤー */}
-      <div className={styles.lightRefraction} />
-
       {/* メインコンテンツ */}
       <div className={styles.content}>
-        {/* タイトル - 大胆で印象的に */}
+        {/* タイトル */}
         <h1 className={styles.title}>
           水辺の四季
-          {/* テキストの反射効果 */}
-          <span className={styles.titleReflection}>
-            水辺の四季
-          </span>
         </h1>
 
-        {/* カスタムローディングアニメーション - 波紋 */}
-        <div className={styles.rippleContainer}>
-          {/* 中心の水滴 */}
-          <div className={styles.droplet} />
-          {/* 波紋エフェクト - 複数レイヤー */}
-          {[0, 1, 2, 3].map((i) => (
+        {/* 蛍のアニメーション */}
+        <div className={styles.fireflyContainer}>
+          {fireflies.map((firefly) => (
             <div
-              key={i}
-              className={styles.ripple}
+              key={firefly.id}
+              className={styles.firefly}
               style={{
-                border: `${3 - i * 0.5}px solid rgba(142, 202, 230, ${0.7 - i * 0.1})`,
-                animationDelay: `${i * 0.8}s`,
-                boxShadow: `0 0 ${20 - i * 3}px rgba(142, 202, 230, ${0.5 - i * 0.1})`,
+                animationDuration: `${firefly.duration}s`,
+                animationDelay: `${firefly.delay}s`,
+                // @ts-expect-error CSS変数
+                '--path-x-0': `${firefly.pathX[0]}%`,
+                '--path-x-1': `${firefly.pathX[1]}%`,
+                '--path-x-2': `${firefly.pathX[2]}%`,
+                '--path-x-3': `${firefly.pathX[3]}%`,
+                '--path-y-0': `${firefly.pathY[0]}%`,
+                '--path-y-1': `${firefly.pathY[1]}%`,
+                '--path-y-2': `${firefly.pathY[2]}%`,
+                '--path-y-3': `${firefly.pathY[3]}%`,
               }}
-            />
+            >
+              {/* 蛍の発光体 */}
+              <div className={styles.fireflyGlow} />
+            </div>
           ))}
         </div>
 
@@ -106,11 +128,6 @@ const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProp
           Mizube no Shiki
         </p>
       </div>
-
-      {/* 魚の影 - 複数の魚が泳ぐ */}
-      <div className={`${styles.fishShadow} ${styles.fishShadow1}`} />
-      <div className={`${styles.fishShadow} ${styles.fishShadow2}`} />
-      <div className={`${styles.fishShadow} ${styles.fishShadow3}`} />
     </div>
   );
 };
