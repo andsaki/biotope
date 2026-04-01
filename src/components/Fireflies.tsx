@@ -1,5 +1,6 @@
-import React, { useRef, useMemo, useCallback } from "react";
+import React, { useRef, useMemo, useState, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
+import { animated, useSpring } from "@react-spring/three";
 import * as THREE from "three";
 import { createRng, randomBetween } from "../utils/random";
 import {
@@ -48,10 +49,6 @@ const SPAWN_AREA = {
   Z_MIN: -8,
   Z_MAX: 8,
 };
-const SPEED = {
-  BASE: 0.025, // ゆっくり優雅に
-  VARIATION: 0.015,
-};
 
 const BLINK_PATTERNS = ["single", "double", "breather"] as const;
 type BlinkPattern = (typeof BLINK_PATTERNS)[number];
@@ -62,16 +59,7 @@ interface Firefly {
   x: number;
   y: number;
   z: number;
-  baseX: number;
-  baseY: number;
-  baseZ: number;
   time: number;
-  frequencyX: number;
-  frequencyY: number;
-  frequencyZ: number;
-  amplitudeX: number;
-  amplitudeY: number;
-  amplitudeZ: number;
   phase: number;
   phaseSpeed: number;
   isResting: boolean;
@@ -115,27 +103,159 @@ const computeBlinkBrightness = (phase: number, type: BlinkPattern, offset: numbe
 };
 
 /**
+ * 個別のホタルコンポーネント（Spring-basedアニメーション）
+ */
+interface FireflyInstanceProps {
+  firefly: Firefly;
+  cameraPosition: THREE.Vector3;
+  time: number;
+  onUpdate: (id: number, updates: Partial<Firefly>) => void;
+}
+
+const FireflyInstance: React.FC<FireflyInstanceProps> = ({ firefly, cameraPosition, time, onUpdate }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [targetPosition, setTargetPosition] = useState<[number, number, number]>([firefly.x, firefly.y, firefly.z]);
+
+  // Spring-basedアニメーション（framer-motionスタイル）
+  const { position } = useSpring({
+    position: targetPosition,
+    config: {
+      mass: 1,
+      tension: 80,
+      friction: 26,
+    },
+  });
+
+  // 定期的に新しいターゲット位置を設定
+  useFrame((_, delta) => {
+    firefly.phase += firefly.phaseSpeed * (delta / IDEAL_FRAME_TIME);
+    if (firefly.phase > Math.PI * 2) {
+      firefly.phase -= Math.PI * 2;
+    }
+
+    if (firefly.isResting) {
+      firefly.restingTime += delta;
+      if (firefly.targetSpotIndex !== null) {
+        const spot = RESTING_SPOTS[firefly.targetSpotIndex];
+        if (spot.type === "lily") {
+          const lily = LILY_DATA[spot.index];
+          const waterHeight = WATER_HEIGHT_BASE + Math.sin(time * WATER_HEIGHT_FREQUENCY) * WATER_HEIGHT_AMPLITUDE;
+          const localWave =
+            Math.sin(lily.position[0] * LILY_WAVE_FREQUENCY + time * LILY_WAVE_TIME_SCALE) *
+            Math.cos(lily.position[2] * LILY_WAVE_FREQUENCY + time * LILY_WAVE_TIME_SCALE) *
+            LILY_WAVE_AMPLITUDE;
+          const newX = lily.position[0] + Math.sin(firefly.time * 0.5) * 0.02;
+          const newY = waterHeight + localWave + 0.1;
+          const newZ = lily.position[2] + Math.cos(firefly.time * 0.5) * 0.02;
+          setTargetPosition([newX, newY, newZ]);
+          onUpdate(firefly.id, { x: newX, y: newY, z: newZ, time: firefly.time + 0.01 });
+        } else {
+          const plantRotation = Math.sin(time * 0.5) * 0.05;
+          const plantPos = spot.position;
+          const leafOffsetX = Math.sin(plantRotation) * 0.3;
+          const leafOffsetZ = Math.cos(plantRotation) * 0.3;
+          const newX = plantPos[0] + leafOffsetX + Math.sin(firefly.time * 0.5) * 0.02;
+          const newY = plantPos[1] + 0.1;
+          const newZ = plantPos[2] + leafOffsetZ + Math.cos(firefly.time * 0.5) * 0.02;
+          setTargetPosition([newX, newY, newZ]);
+          onUpdate(firefly.id, { x: newX, y: newY, z: newZ, time: firefly.time + 0.01 });
+        }
+      }
+      if (firefly.restingTime >= firefly.targetRestDuration) {
+        // 飛行開始
+        const newX = firefly.x + (Math.random() - 0.5) * 4;
+        const newY = firefly.y + (Math.random() - 0.5) * 2;
+        const newZ = firefly.z + (Math.random() - 0.5) * 4;
+        setTargetPosition([
+          Math.max(SPAWN_AREA.X_MIN + 2, Math.min(SPAWN_AREA.X_MAX - 2, newX)),
+          Math.max(SPAWN_AREA.Y_MIN + 0.3, Math.min(SPAWN_AREA.Y_MAX - 0.3, newY)),
+          Math.max(SPAWN_AREA.Z_MIN + 2, Math.min(SPAWN_AREA.Z_MAX - 2, newZ)),
+        ]);
+        onUpdate(firefly.id, { isResting: false, restingTime: 0, flyingTime: 0, targetSpotIndex: null });
+      }
+    } else {
+      firefly.flyingTime += delta;
+      // 飛行中は定期的に方向を変える
+      if (Math.random() < 0.02) {
+        const globalBreeze = Math.sin(time * 0.12) * GLOBAL_BREEZE_STRENGTH * 100;
+        const newX = firefly.x + (Math.random() - 0.5) * 3 + globalBreeze;
+        const newY = firefly.y + (Math.random() - 0.5) * 2;
+        const newZ = firefly.z + (Math.random() - 0.5) * 3;
+        setTargetPosition([
+          Math.max(SPAWN_AREA.X_MIN + 2, Math.min(SPAWN_AREA.X_MAX - 2, newX)),
+          Math.max(SPAWN_AREA.Y_MIN + 0.3, Math.min(SPAWN_AREA.Y_MAX - 0.3, newY)),
+          Math.max(SPAWN_AREA.Z_MIN + 2, Math.min(SPAWN_AREA.Z_MAX - 2, newZ)),
+        ]);
+      }
+
+      if (firefly.flyingTime >= firefly.targetFlyDuration) {
+        // 休憩場所に移動
+        const spotIndex = Math.floor(Math.random() * RESTING_SPOTS.length);
+        const targetSpot = RESTING_SPOTS[spotIndex];
+        setTargetPosition([targetSpot.position[0], targetSpot.position[1] + 0.1, targetSpot.position[2]]);
+        onUpdate(firefly.id, {
+          isResting: true,
+          restingTime: 0,
+          flyingTime: 0,
+          targetSpotIndex: spotIndex,
+          targetRestDuration: RESTING_DURATION_MIN + Math.random() * (RESTING_DURATION_MAX - RESTING_DURATION_MIN),
+        });
+      }
+    }
+  });
+
+  // 輝度計算
+  const distance = useMemo(() => {
+    return Math.sqrt(
+      Math.pow(firefly.x - cameraPosition.x, 2) +
+      Math.pow(firefly.y - cameraPosition.y, 2) +
+      Math.pow(firefly.z - cameraPosition.z, 2)
+    );
+  }, [firefly.x, firefly.y, firefly.z, cameraPosition]);
+
+  const distanceFactor = THREE.MathUtils.clamp(
+    1 - distance / CAMERA_DISTANCE_FALLOFF,
+    DISTANCE_BRIGHTNESS_MIN,
+    DISTANCE_BRIGHTNESS_MAX
+  );
+
+  const brightness = Math.min(
+    1.8,
+    computeBlinkBrightness(firefly.phase, firefly.blinkType, firefly.blinkOffset) * distanceFactor
+  );
+
+  const color = useMemo(() => {
+    return [
+      firefly.colorComponents[0] * brightness,
+      firefly.colorComponents[1] * brightness,
+      firefly.colorComponents[2] * brightness,
+    ] as [number, number, number];
+  }, [firefly.colorComponents, brightness]);
+
+  return (
+    <animated.mesh ref={meshRef} position={position as any} scale={FIREFLY_SIZE * distanceFactor}>
+      <sphereGeometry args={[1, 8, 8]} />
+      <meshBasicMaterial color={color} transparent opacity={1.0} toneMapped={false} />
+    </animated.mesh>
+  );
+};
+
+/**
  * ホタルエフェクトコンポーネント
- * 夏の夜に発光しながら浮遊するホタルを表示
+ * Spring-basedアニメーション（framer-motionスタイル）を使用
  */
 export const Fireflies: React.FC = () => {
-  const firefliesRef = useRef<Firefly[]>([]);
-  const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
+  const [fireflies, setFireflies] = useState<Firefly[]>([]);
   const trailMeshRef = useRef<THREE.InstancedMesh>(null);
-  const matrixArrayRef = useRef<Float32Array | null>(null);
-  const colorArrayRef = useRef<Float32Array | null>(null);
   const trailMatrixArrayRef = useRef<Float32Array | null>(null);
   const trailColorArrayRef = useRef<Float32Array | null>(null);
+  const cameraPositionRef = useRef<THREE.Vector3>(new THREE.Vector3());
 
   const rng = useMemo(() => createRng(0x9876), []);
   const randomInRange = useCallback(
     (min: number, max: number) => randomBetween(rng, min, max),
     [rng]
   );
-
-  const scaleMatrix = useMemo(() => new THREE.Matrix4(), []);
-  const positionMatrix = useMemo(() => new THREE.Matrix4(), []);
-  const tempVector = useMemo(() => new THREE.Vector3(), []);
 
   // ホタルの初期化
   useMemo(() => {
@@ -171,16 +291,7 @@ export const Fireflies: React.FC = () => {
         x: startX,
         y: startY,
         z: startZ,
-        baseX: startX,
-        baseY: startY,
-        baseZ: startZ,
         time: randomInRange(0, 100),
-        frequencyX: randomInRange(0.4, 0.8),
-        frequencyY: randomInRange(0.5, 0.9),
-        frequencyZ: randomInRange(0.4, 0.8),
-        amplitudeX: randomInRange(1.2, 2.5),
-        amplitudeY: randomInRange(0.8, 1.8),
-        amplitudeZ: randomInRange(1.2, 2.5),
         phase: randomInRange(0, Math.PI * 2),
         phaseSpeed: randomInRange(0.08, 0.15),
         isResting: startResting,
@@ -195,35 +306,21 @@ export const Fireflies: React.FC = () => {
         trail,
       });
     }
-    firefliesRef.current = newFireflies;
+    setFireflies(newFireflies);
   }, [randomInRange, rng]);
 
-  // アニメーションループ
-  useFrame((state, delta) => {
-    if (!instancedMeshRef.current) return;
+  // ホタルの状態を更新
+  const handleFireflyUpdate = useCallback((id: number, updates: Partial<Firefly>) => {
+    setFireflies((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
+    );
+  }, []);
 
-    const fireflies = firefliesRef.current;
-    const mesh = instancedMeshRef.current;
+  // トレイルの更新
+  useFrame((state) => {
+    cameraPositionRef.current.copy(state.camera.position);
     const trailMesh = trailMeshRef.current;
-    const time = state.clock.getElapsedTime();
-    const deltaTime = delta;
-    const deltaFactor = deltaTime / IDEAL_FRAME_TIME;
-    const cameraPosition = state.camera.position;
-    const globalBreeze = Math.sin(time * 0.12) * GLOBAL_BREEZE_STRENGTH;
-
-    const matrixArray =
-      matrixArrayRef.current ??
-      (() => {
-        matrixArrayRef.current = new Float32Array(fireflies.length * 16);
-        return matrixArrayRef.current;
-      })();
-
-    const colorArray =
-      colorArrayRef.current ??
-      (() => {
-        colorArrayRef.current = new Float32Array(fireflies.length * 3);
-        return colorArrayRef.current;
-      })();
+    if (!trailMesh) return;
 
     const trailMatrixArray =
       trailMatrixArrayRef.current ??
@@ -239,83 +336,24 @@ export const Fireflies: React.FC = () => {
         return trailColorArrayRef.current;
       })();
 
+    const positionMatrix = new THREE.Matrix4();
+    const scaleMatrix = new THREE.Matrix4();
+    const tempVector = new THREE.Vector3();
+
     for (let i = 0; i < fireflies.length; i++) {
       const firefly = fireflies[i];
 
-      firefly.time += (SPEED.BASE + Math.sin(firefly.time * 0.1) * SPEED.VARIATION) * deltaFactor;
-      firefly.phase += firefly.phaseSpeed * deltaFactor;
-      if (firefly.phase > Math.PI * 2) {
-        firefly.phase -= Math.PI * 2;
+      // トレイルを更新
+      firefly.trail.unshift(firefly.x, firefly.y, firefly.z);
+      if (firefly.trail.length > TRAIL_SEGMENTS * 3) {
+        firefly.trail.length = TRAIL_SEGMENTS * 3;
       }
-
-      // さざ波に合わせたゆるい集団ドリフト
-      const driftWeight = firefly.isResting ? 0.2 : 1;
-      firefly.baseX += globalBreeze * driftWeight;
-      firefly.baseZ += Math.cos(time * 0.07 + firefly.id) * 0.002 * deltaFactor;
-
-      if (firefly.isResting) {
-        firefly.restingTime += deltaTime;
-        if (firefly.targetSpotIndex !== null) {
-          const spot = RESTING_SPOTS[firefly.targetSpotIndex];
-          if (spot.type === "lily") {
-            const lily = LILY_DATA[spot.index];
-            const waterHeight = WATER_HEIGHT_BASE + Math.sin(time * WATER_HEIGHT_FREQUENCY) * WATER_HEIGHT_AMPLITUDE;
-            const localWave =
-              Math.sin(lily.position[0] * LILY_WAVE_FREQUENCY + time * LILY_WAVE_TIME_SCALE) *
-              Math.cos(lily.position[2] * LILY_WAVE_FREQUENCY + time * LILY_WAVE_TIME_SCALE) *
-              LILY_WAVE_AMPLITUDE;
-            firefly.x = lily.position[0] + Math.sin(firefly.time * 0.5) * 0.02;
-            firefly.y = waterHeight + localWave + 0.1;
-            firefly.z = lily.position[2] + Math.cos(firefly.time * 0.5) * 0.02;
-          } else {
-            const plantRotation = Math.sin(time * 0.5) * 0.05;
-            const plantPos = spot.position;
-            const leafOffsetX = Math.sin(plantRotation) * 0.3;
-            const leafOffsetZ = Math.cos(plantRotation) * 0.3;
-            firefly.x = plantPos[0] + leafOffsetX + Math.sin(firefly.time * 0.5) * 0.02;
-            firefly.y = plantPos[1] + 0.1;
-            firefly.z = plantPos[2] + leafOffsetZ + Math.cos(firefly.time * 0.5) * 0.02;
-          }
-        }
-        if (firefly.restingTime >= firefly.targetRestDuration) {
-          firefly.isResting = false;
-          firefly.restingTime = 0;
-          firefly.flyingTime = 0;
-          firefly.targetFlyDuration = randomInRange(FLYING_DURATION_MIN, FLYING_DURATION_MAX);
-          firefly.targetSpotIndex = null;
-          firefly.baseX = firefly.x;
-          firefly.baseY = firefly.y;
-          firefly.baseZ = firefly.z;
-        }
-      } else {
-        firefly.flyingTime += deltaTime;
-        const offsetX = Math.sin(firefly.time * firefly.frequencyX) * firefly.amplitudeX;
-        const offsetY = Math.sin(firefly.time * firefly.frequencyY) * firefly.amplitudeY;
-        const offsetZ = Math.cos(firefly.time * firefly.frequencyZ) * firefly.amplitudeZ;
-        firefly.x = firefly.baseX + offsetX;
-        firefly.y = firefly.baseY + offsetY;
-        firefly.z = firefly.baseZ + offsetZ;
-        firefly.baseX += Math.sin(firefly.time * 0.04) * 0.015;
-        firefly.baseY += Math.cos(firefly.time * 0.03) * 0.012;
-        firefly.baseZ += Math.sin(firefly.time * 0.035) * 0.015;
-        firefly.baseX = Math.max(SPAWN_AREA.X_MIN + 2, Math.min(SPAWN_AREA.X_MAX - 2, firefly.baseX));
-        firefly.baseY = Math.max(SPAWN_AREA.Y_MIN + 0.3, Math.min(SPAWN_AREA.Y_MAX - 0.3, firefly.baseY));
-        firefly.baseZ = Math.max(SPAWN_AREA.Z_MIN + 2, Math.min(SPAWN_AREA.Z_MAX - 2, firefly.baseZ));
-        if (firefly.flyingTime >= firefly.targetFlyDuration) {
-          firefly.targetSpotIndex = Math.floor(randomInRange(0, RESTING_SPOTS.length));
-          const targetSpot = RESTING_SPOTS[firefly.targetSpotIndex];
-          firefly.baseX = targetSpot.position[0];
-          firefly.baseY = targetSpot.position[1] + 0.1;
-          firefly.baseZ = targetSpot.position[2];
-          firefly.isResting = true;
-          firefly.restingTime = 0;
-          firefly.flyingTime = 0;
-          firefly.targetRestDuration = randomInRange(RESTING_DURATION_MIN, RESTING_DURATION_MAX);
-        }
+      while (firefly.trail.length < TRAIL_SEGMENTS * 3) {
+        firefly.trail.push(firefly.x, firefly.y, firefly.z);
       }
 
       tempVector.set(firefly.x, firefly.y, firefly.z);
-      const distance = tempVector.distanceTo(cameraPosition);
+      const distance = tempVector.distanceTo(state.camera.position);
       const distanceFactor = THREE.MathUtils.clamp(
         1 - distance / CAMERA_DISTANCE_FALLOFF,
         DISTANCE_BRIGHTNESS_MIN,
@@ -326,73 +364,33 @@ export const Fireflies: React.FC = () => {
         computeBlinkBrightness(firefly.phase, firefly.blinkType, firefly.blinkOffset) * distanceFactor
       );
 
-      firefly.trail.unshift(firefly.x, firefly.y, firefly.z);
-      if (firefly.trail.length > TRAIL_SEGMENTS * 3) {
-        firefly.trail.length = TRAIL_SEGMENTS * 3;
-      }
-      while (firefly.trail.length < TRAIL_SEGMENTS * 3) {
-        firefly.trail.push(firefly.x, firefly.y, firefly.z);
-      }
-
-      positionMatrix.makeTranslation(firefly.x, firefly.y, firefly.z);
-      const fireflyScale = FIREFLY_SIZE * distanceFactor;
-      scaleMatrix.makeScale(fireflyScale, fireflyScale, fireflyScale);
-      positionMatrix.multiply(scaleMatrix);
-      positionMatrix.toArray(matrixArray, i * 16);
-
-      colorArray[i * 3] = firefly.colorComponents[0] * brightness;
-      colorArray[i * 3 + 1] = firefly.colorComponents[1] * brightness;
-      colorArray[i * 3 + 2] = firefly.colorComponents[2] * brightness;
-
-      if (trailMesh) {
-        for (let t = 0; t < TRAIL_SEGMENTS; t++) {
-          const index = i * TRAIL_SEGMENTS + t;
-          const tx = firefly.trail[t * 3];
-          const ty = firefly.trail[t * 3 + 1];
-          const tz = firefly.trail[t * 3 + 2];
-          positionMatrix.makeTranslation(tx, ty, tz);
-          const fade = Math.pow(TRAIL_FADE, t + 1);
-          const trailScale = FIREFLY_SIZE * fade * distanceFactor * 0.9;
-          scaleMatrix.makeScale(trailScale, trailScale, trailScale);
-          positionMatrix.multiply(scaleMatrix);
-          positionMatrix.toArray(trailMatrixArray, index * 16);
-          const trailBrightness = brightness * fade;
-          trailColorArray[index * 3] = firefly.colorComponents[0] * trailBrightness;
-          trailColorArray[index * 3 + 1] = firefly.colorComponents[1] * trailBrightness;
-          trailColorArray[index * 3 + 2] = firefly.colorComponents[2] * trailBrightness;
-        }
+      for (let t = 0; t < TRAIL_SEGMENTS; t++) {
+        const index = i * TRAIL_SEGMENTS + t;
+        const tx = firefly.trail[t * 3];
+        const ty = firefly.trail[t * 3 + 1];
+        const tz = firefly.trail[t * 3 + 2];
+        positionMatrix.makeTranslation(tx, ty, tz);
+        const fade = Math.pow(TRAIL_FADE, t + 1);
+        const trailScale = FIREFLY_SIZE * fade * distanceFactor * 0.9;
+        scaleMatrix.makeScale(trailScale, trailScale, trailScale);
+        positionMatrix.multiply(scaleMatrix);
+        positionMatrix.toArray(trailMatrixArray, index * 16);
+        const trailBrightness = brightness * fade;
+        trailColorArray[index * 3] = firefly.colorComponents[0] * trailBrightness;
+        trailColorArray[index * 3 + 1] = firefly.colorComponents[1] * trailBrightness;
+        trailColorArray[index * 3 + 2] = firefly.colorComponents[2] * trailBrightness;
       }
     }
 
-    mesh.instanceMatrix.array.set(matrixArray);
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) {
-      mesh.instanceColor.array.set(colorArray);
-      mesh.instanceColor.needsUpdate = true;
-    }
-
-    if (trailMesh) {
-      trailMesh.instanceMatrix.array.set(trailMatrixArray);
-      trailMesh.instanceMatrix.needsUpdate = true;
-      if (trailMesh.instanceColor) {
-        trailMesh.instanceColor.array.set(trailColorArray);
-        trailMesh.instanceColor.needsUpdate = true;
-      }
+    trailMesh.instanceMatrix.array.set(trailMatrixArray);
+    trailMesh.instanceMatrix.needsUpdate = true;
+    if (trailMesh.instanceColor) {
+      trailMesh.instanceColor.array.set(trailColorArray);
+      trailMesh.instanceColor.needsUpdate = true;
     }
   });
 
-  const geometry = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
-  const material = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: FIREFLY_COLOR,
-        transparent: true,
-        opacity: 1.0,
-        toneMapped: false,
-      }),
-    []
-  );
-
+  const trailGeometry = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
   const trailMaterial = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -407,10 +405,16 @@ export const Fireflies: React.FC = () => {
 
   return (
     <>
-      <instancedMesh ref={instancedMeshRef} args={[geometry, material, FIREFLY_COUNT]}>
-        <instancedBufferAttribute attach="instanceColor" args={[new Float32Array(FIREFLY_COUNT * 3), 3]} />
-      </instancedMesh>
-      <instancedMesh ref={trailMeshRef} args={[geometry, trailMaterial, TRAIL_INSTANCE_COUNT]}>
+      {fireflies.map((firefly) => (
+        <FireflyInstance
+          key={firefly.id}
+          firefly={firefly}
+          cameraPosition={cameraPositionRef.current}
+          time={0}
+          onUpdate={handleFireflyUpdate}
+        />
+      ))}
+      <instancedMesh ref={trailMeshRef} args={[trailGeometry, trailMaterial, TRAIL_INSTANCE_COUNT]}>
         <instancedBufferAttribute attach="instanceColor" args={[new Float32Array(TRAIL_INSTANCE_COUNT * 3), 3]} />
       </instancedMesh>
     </>
