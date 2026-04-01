@@ -24,21 +24,23 @@ const RESTING_SPOTS = [
 ];
 
 /** ホタルの設定 */
-const FIREFLY_COUNT = 12;
+const FIREFLY_COUNT = 25; // より幻想的に
 const FIREFLY_COLOR = "#CDFF00";
 const FIREFLY_SIZE = 0.08;
+const FIREFLY_SIZE_VARIATION = 0.04; // サイズのバリエーション
 const RESTING_DURATION_MIN = 3; // 止まる時間（秒）
 const RESTING_DURATION_MAX = 6;
 const FLYING_DURATION_MIN = 8; // 飛ぶ時間（秒）
 const FLYING_DURATION_MAX = 15;
 const IDEAL_FRAME_TIME = 1 / 60; // 60fps を基準
-const TRAIL_SEGMENTS = 6;
-const TRAIL_FADE = 0.7;
+const TRAIL_SEGMENTS = 12; // トレイルを長く
+const TRAIL_FADE = 0.75; // よりなめらかに
 const CAMERA_DISTANCE_FALLOFF = 28;
-const DISTANCE_BRIGHTNESS_MIN = 0.55;
-const DISTANCE_BRIGHTNESS_MAX = 1.35;
+const DISTANCE_BRIGHTNESS_MIN = 0.7; // 最小輝度を上げる
+const DISTANCE_BRIGHTNESS_MAX = 2.0; // より明るく
 const GLOBAL_BREEZE_STRENGTH = 0.0025;
 const TRAIL_INSTANCE_COUNT = FIREFLY_COUNT * TRAIL_SEGMENTS;
+const GLOW_SIZE_MULTIPLIER = 2.5; // グロー効果を強化
 
 const SPAWN_AREA = {
   X_MIN: -8,
@@ -84,6 +86,7 @@ interface Firefly {
   blinkOffset: number;
   colorComponents: [number, number, number];
   trail: number[];
+  size: number; // 個体ごとのサイズ
 }
 
 const wrapPhase = (phase: number) => {
@@ -97,19 +100,19 @@ const computeBlinkBrightness = (phase: number, type: BlinkPattern, offset: numbe
   switch (type) {
     case "double": {
       const primary = Math.sin(normalizedPhase);
-      const baseGlow = primary > 0 ? Math.pow(primary, 1.5) : 0;
+      const baseGlow = primary > 0 ? Math.pow(primary, 1.8) : 0; // よりなめらかに
       const echo = Math.sin(normalizedPhase * 2.1 + 0.9);
-      const echoGlow = echo > 0 ? Math.pow(echo, 1.3) * 0.6 : 0;
-      return 0.05 + (baseGlow + echoGlow) * 1.3;
+      const echoGlow = echo > 0 ? Math.pow(echo, 1.5) * 0.7 : 0;
+      return 0.15 + (baseGlow + echoGlow) * 1.5; // 明るさを強化
     }
     case "breather": {
       const slowWave = (Math.sin(normalizedPhase * 0.5) + 1) / 2;
-      return 0.2 + Math.pow(slowWave, 3) * 0.9;
+      return 0.3 + Math.pow(slowWave, 2.5) * 1.2; // よりなめらかで明るく
     }
     case "single":
     default: {
       const sinValue = Math.sin(normalizedPhase);
-      return sinValue > 0 ? Math.pow(sinValue, 2) * 1.3 + 0.05 : 0.05;
+      return sinValue > 0 ? Math.pow(sinValue, 1.8) * 1.5 + 0.15 : 0.15; // なめらかで明るく
     }
   }
 };
@@ -151,15 +154,29 @@ export const Fireflies: React.FC = () => {
       const startY = spot ? spot.position[1] + 0.1 : baseY;
       const startZ = spot ? spot.position[2] : baseZ;
 
-      const color = new THREE.Color(FIREFLY_COLOR);
-      const hsl = { h: 0, s: 0, l: 0 };
-      color.getHSL(hsl);
+      // 幻想的な色のバリエーション: 黄緑〜青緑〜薄紫
+      const colorVariation = randomInRange(0, 1);
+      let hue: number;
+      if (colorVariation < 0.6) {
+        // 60%: 黄緑〜緑（0.15 - 0.25）
+        hue = randomInRange(0.15, 0.25);
+      } else if (colorVariation < 0.9) {
+        // 30%: 青緑（0.45 - 0.55）
+        hue = randomInRange(0.45, 0.55);
+      } else {
+        // 10%: 薄紫（0.7 - 0.8）
+        hue = randomInRange(0.7, 0.8);
+      }
+      const color = new THREE.Color();
       color.setHSL(
-        THREE.MathUtils.euclideanModulo(hsl.h + randomInRange(-0.02, 0.03), 1),
-        THREE.MathUtils.clamp(hsl.s + randomInRange(-0.08, 0.06), 0, 1),
-        THREE.MathUtils.clamp(hsl.l + randomInRange(-0.12, 0.12), 0, 1)
+        hue,
+        THREE.MathUtils.clamp(0.8 + randomInRange(-0.1, 0.2), 0.6, 1.0), // 高彩度
+        THREE.MathUtils.clamp(0.6 + randomInRange(-0.1, 0.2), 0.5, 0.8)  // 明るめ
       );
       const colorComponents: [number, number, number] = [color.r, color.g, color.b];
+
+      // サイズのバリエーション
+      const size = FIREFLY_SIZE + randomInRange(-FIREFLY_SIZE_VARIATION, FIREFLY_SIZE_VARIATION);
 
       const trail: number[] = [];
       for (let t = 0; t < TRAIL_SEGMENTS; t++) {
@@ -193,6 +210,7 @@ export const Fireflies: React.FC = () => {
         blinkOffset: randomInRange(0, Math.PI * 2),
         colorComponents,
         trail,
+        size,
       });
     }
     firefliesRef.current = newFireflies;
@@ -322,7 +340,7 @@ export const Fireflies: React.FC = () => {
         DISTANCE_BRIGHTNESS_MAX
       );
       const brightness = Math.min(
-        1.8,
+        2.5, // より明るく幻想的に
         computeBlinkBrightness(firefly.phase, firefly.blinkType, firefly.blinkOffset) * distanceFactor
       );
 
@@ -335,7 +353,7 @@ export const Fireflies: React.FC = () => {
       }
 
       positionMatrix.makeTranslation(firefly.x, firefly.y, firefly.z);
-      const fireflyScale = FIREFLY_SIZE * distanceFactor;
+      const fireflyScale = firefly.size * distanceFactor * GLOW_SIZE_MULTIPLIER; // グロー効果
       scaleMatrix.makeScale(fireflyScale, fireflyScale, fireflyScale);
       positionMatrix.multiply(scaleMatrix);
       positionMatrix.toArray(matrixArray, i * 16);
@@ -352,11 +370,11 @@ export const Fireflies: React.FC = () => {
           const tz = firefly.trail[t * 3 + 2];
           positionMatrix.makeTranslation(tx, ty, tz);
           const fade = Math.pow(TRAIL_FADE, t + 1);
-          const trailScale = FIREFLY_SIZE * fade * distanceFactor * 0.9;
+          const trailScale = firefly.size * fade * distanceFactor * 1.8; // トレイルを大きく
           scaleMatrix.makeScale(trailScale, trailScale, trailScale);
           positionMatrix.multiply(scaleMatrix);
           positionMatrix.toArray(trailMatrixArray, index * 16);
-          const trailBrightness = brightness * fade;
+          const trailBrightness = brightness * fade * 0.8; // トレイルの明るさを調整
           trailColorArray[index * 3] = firefly.colorComponents[0] * trailBrightness;
           trailColorArray[index * 3 + 1] = firefly.colorComponents[1] * trailBrightness;
           trailColorArray[index * 3 + 2] = firefly.colorComponents[2] * trailBrightness;
@@ -387,8 +405,10 @@ export const Fireflies: React.FC = () => {
       new THREE.MeshBasicMaterial({
         color: FIREFLY_COLOR,
         transparent: true,
-        opacity: 1.0,
+        opacity: 0.7, // よりソフトなグロー
         toneMapped: false,
+        blending: THREE.AdditiveBlending, // 加算合成で幻想的に
+        depthWrite: false,
       }),
     []
   );
@@ -398,9 +418,10 @@ export const Fireflies: React.FC = () => {
       new THREE.MeshBasicMaterial({
         color: FIREFLY_COLOR,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.4, // トレイルはさらに薄く
         depthWrite: false,
         toneMapped: false,
+        blending: THREE.AdditiveBlending, // 加算合成で幻想的に
       }),
     []
   );
