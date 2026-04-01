@@ -24,7 +24,7 @@ const RESTING_SPOTS = [
 ];
 
 /** ホタルの設定 */
-const FIREFLY_COUNT = 25; // より幻想的に
+const FIREFLY_COUNT = 18; // パフォーマンスと美しさのバランス
 const FIREFLY_COLOR = "#CDFF00";
 const FIREFLY_SIZE = 0.08;
 const FIREFLY_SIZE_VARIATION = 0.04; // サイズのバリエーション
@@ -33,12 +33,12 @@ const RESTING_DURATION_MAX = 6;
 const FLYING_DURATION_MIN = 8; // 飛ぶ時間（秒）
 const FLYING_DURATION_MAX = 15;
 const IDEAL_FRAME_TIME = 1 / 60; // 60fps を基準
-const TRAIL_SEGMENTS = 12; // トレイルを長く
+const TRAIL_SEGMENTS = 10; // パフォーマンスと美しさのバランス
 const TRAIL_FADE = 0.75; // よりなめらかに
 const CAMERA_DISTANCE_FALLOFF = 28;
 const DISTANCE_BRIGHTNESS_MIN = 0.7; // 最小輝度を上げる
 const DISTANCE_BRIGHTNESS_MAX = 2.0; // より明るく
-const GLOBAL_BREEZE_STRENGTH = 0.0025;
+const GLOBAL_BREEZE_STRENGTH = 0.0015; // より穏やかな風
 const TRAIL_INSTANCE_COUNT = FIREFLY_COUNT * TRAIL_SEGMENTS;
 const GLOW_SIZE_MULTIPLIER = 2.5; // グロー効果を強化
 
@@ -51,8 +51,8 @@ const SPAWN_AREA = {
   Z_MAX: 8,
 };
 const SPEED = {
-  BASE: 0.025, // ゆっくり優雅に
-  VARIATION: 0.015,
+  BASE: 0.018, // よりゆっくり優雅に
+  VARIATION: 0.005, // 速度変化を最小限に
 };
 
 const BLINK_PATTERNS = ["single", "double", "breather"] as const;
@@ -192,14 +192,14 @@ export const Fireflies: React.FC = () => {
         baseY: startY,
         baseZ: startZ,
         time: randomInRange(0, 100),
-        frequencyX: randomInRange(0.4, 0.8),
-        frequencyY: randomInRange(0.5, 0.9),
-        frequencyZ: randomInRange(0.4, 0.8),
-        amplitudeX: randomInRange(1.2, 2.5),
-        amplitudeY: randomInRange(0.8, 1.8),
-        amplitudeZ: randomInRange(1.2, 2.5),
+        frequencyX: randomInRange(0.15, 0.35), // ゆっくりした周波数
+        frequencyY: randomInRange(0.2, 0.4),   // ゆっくりした周波数
+        frequencyZ: randomInRange(0.15, 0.35), // ゆっくりした周波数
+        amplitudeX: randomInRange(0.6, 1.2),   // 穏やかな振幅
+        amplitudeY: randomInRange(0.4, 1.0),   // 穏やかな振幅
+        amplitudeZ: randomInRange(0.6, 1.2),   // 穏やかな振幅
         phase: randomInRange(0, Math.PI * 2),
-        phaseSpeed: randomInRange(0.08, 0.15),
+        phaseSpeed: randomInRange(0.06, 0.12), // ゆっくりした点滅
         isResting: startResting,
         restingTime: 0,
         flyingTime: 0,
@@ -260,16 +260,17 @@ export const Fireflies: React.FC = () => {
     for (let i = 0; i < fireflies.length; i++) {
       const firefly = fireflies[i];
 
-      firefly.time += (SPEED.BASE + Math.sin(firefly.time * 0.1) * SPEED.VARIATION) * deltaFactor;
+      // より一定の速度で進む
+      firefly.time += (SPEED.BASE + Math.sin(firefly.time * 0.05) * SPEED.VARIATION) * deltaFactor;
       firefly.phase += firefly.phaseSpeed * deltaFactor;
       if (firefly.phase > Math.PI * 2) {
         firefly.phase -= Math.PI * 2;
       }
 
-      // さざ波に合わせたゆるい集団ドリフト
-      const driftWeight = firefly.isResting ? 0.2 : 1;
+      // さざ波に合わせたゆるい集団ドリフト（さらに穏やかに）
+      const driftWeight = firefly.isResting ? 0.1 : 0.5;
       firefly.baseX += globalBreeze * driftWeight;
-      firefly.baseZ += Math.cos(time * 0.07 + firefly.id) * 0.002 * deltaFactor;
+      firefly.baseZ += Math.cos(time * 0.05 + firefly.id) * 0.001 * deltaFactor;
 
       if (firefly.isResting) {
         firefly.restingTime += deltaTime;
@@ -313,9 +314,10 @@ export const Fireflies: React.FC = () => {
         firefly.x = firefly.baseX + offsetX;
         firefly.y = firefly.baseY + offsetY;
         firefly.z = firefly.baseZ + offsetZ;
-        firefly.baseX += Math.sin(firefly.time * 0.04) * 0.015;
-        firefly.baseY += Math.cos(firefly.time * 0.03) * 0.012;
-        firefly.baseZ += Math.sin(firefly.time * 0.035) * 0.015;
+        // よりゆっくりとした基準位置の移動
+        firefly.baseX += Math.sin(firefly.time * 0.02) * 0.008;
+        firefly.baseY += Math.cos(firefly.time * 0.015) * 0.006;
+        firefly.baseZ += Math.sin(firefly.time * 0.018) * 0.008;
         firefly.baseX = Math.max(SPAWN_AREA.X_MIN + 2, Math.min(SPAWN_AREA.X_MAX - 2, firefly.baseX));
         firefly.baseY = Math.max(SPAWN_AREA.Y_MIN + 0.3, Math.min(SPAWN_AREA.Y_MAX - 0.3, firefly.baseY));
         firefly.baseZ = Math.max(SPAWN_AREA.Z_MIN + 2, Math.min(SPAWN_AREA.Z_MAX - 2, firefly.baseZ));
