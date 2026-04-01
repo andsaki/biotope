@@ -57,14 +57,12 @@ const ParticleLayerInstanced: React.FC = () => {
   const particlesRef = useRef<Particle[]>([]);
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const frameCount = useRef(0);
-  const matrixArrayRef = useRef<Float32Array | null>(null);
   const rng = useMemo(() => createRng(0x1a2b3c4d), []);
   const randomInRange = useCallback(
     (min: number, max: number) => randomBetween(rng, min, max),
     [rng]
   );
-  const scaleMatrix = useMemo(() => new THREE.Matrix4(), []);
-  const positionMatrix = useMemo(() => new THREE.Matrix4(), []);
+  const dummyObject = useMemo(() => new THREE.Object3D(), []);
 
   // 季節に応じたパーティクル設定
   const particleConfig = useMemo(() => {
@@ -152,6 +150,11 @@ const ParticleLayerInstanced: React.FC = () => {
       });
     }
     particlesRef.current = newParticles;
+
+    if (instancedMeshRef.current) {
+      instancedMeshRef.current.count = particleCount;
+      instancedMeshRef.current.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    }
   }, [particleConfig, randomInRange]);
 
   // speedYRangeを定数としてキャッシュしてパフォーマンス向上
@@ -167,12 +170,6 @@ const ParticleLayerInstanced: React.FC = () => {
 
     const particles = particlesRef.current;
     const mesh = instancedMeshRef.current;
-    const matrixArray =
-      matrixArrayRef.current ??
-      (() => {
-        matrixArrayRef.current = new Float32Array(particles.length * 16);
-        return matrixArrayRef.current;
-      })();
 
     for (let i = 0; i < particles.length; i++) {
       const particle = particles[i];
@@ -192,14 +189,13 @@ const ParticleLayerInstanced: React.FC = () => {
         particle.speedY = randomInRange(speedYRange[0], speedYRange[1]);
       }
 
-      // 行列を直接Float32Arrayに書き込む
-      positionMatrix.makeTranslation(particle.x, particle.y, particle.z);
-      scaleMatrix.makeScale(particle.size, particle.size, particle.size);
-      positionMatrix.multiply(scaleMatrix);
-      positionMatrix.toArray(matrixArray, i * 16);
+      dummyObject.position.set(particle.x, particle.y, particle.z);
+      dummyObject.scale.set(particle.size, particle.size, particle.size);
+      dummyObject.rotation.set(0, 0, 0);
+      dummyObject.updateMatrix();
+      mesh.setMatrixAt(i, dummyObject.matrix);
     }
 
-    mesh.instanceMatrix.array.set(matrixArray);
     mesh.instanceMatrix.needsUpdate = true;
   });
 

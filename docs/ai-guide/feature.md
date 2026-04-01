@@ -1343,81 +1343,46 @@ curl -s https://your-app.pages.dev/api/daily-message | jq '.dateDescription, .me
 
 **原因**:
 
-`src/constants/particle.ts` の `PARTICLE_GEOMETRY_SIZE` が大きすぎる：
-
-```typescript
-// ❌ 問題のあるサイズ
-export const PARTICLE_GEOMETRY_SIZE = {
-  SPRING_WIDTH: 1.5,  // 桜の花びら (幅) - 巨大な板
-  SPRING_HEIGHT: 1.0, // 桜の花びら (高さ)
-  AUTUMN_WIDTH: 1.2,  // 落ち葉 (幅) - 巨大な板
-  AUTUMN_HEIGHT: 1.8, // 落ち葉 (高さ)
-  WINTER_SEGMENTS: 8,
-  SUMMER_SEGMENTS: 6,
-} as const;
-
-// ParticleLayerInstanced.tsx での球体サイズ
-geometry = new THREE.SphereGeometry(0.5, ...) // 半径0.5 - 巨大な球体
-```
+`ParticleLayerInstanced` が各フレームで `instancedMesh.instanceMatrix` を直接 `Float32Array` へ書き込み、`needsUpdate` だけを立てていた。season 変更などでパーティクル数が変化すると `count` と行列バッファの整合が崩れ、一部インスタンスが単位行列（位置=原点、スケール=1）のまま描画される。夏の球体は `SphereGeometry(0.05, …)` のままでも、単位行列のまま描画されると半径1相当の巨大な球体に見える。
 
 **解決策**:
 
-パーティクルのジオメトリサイズを1/10に縮小：
+1. `THREE.Object3D` を `dummyObject` として共有し、各パーティクル更新時に `position / scale / rotation` をセット後 `dummyObject.updateMatrix()` → `instancedMesh.setMatrixAt(i, dummy.matrix)` で書き込む。
+2. パーティクル再初期化時に `instancedMesh.count = particleCount` と `instanceMatrix.setUsage(THREE.DynamicDrawUsage)` を設定し、GPU バッファの再構築と差分更新を許可する。
+3. 以降 `mesh.instanceMatrix.needsUpdate = true;` を呼ぶだけで十分。独自 Float32Array を保持しない。
 
 ```typescript
-// ✅ 修正後のサイズ
-export const PARTICLE_GEOMETRY_SIZE = {
-  SPRING_WIDTH: 0.15,  // 桜の花びら (幅) - 1/10に縮小
-  SPRING_HEIGHT: 0.10, // 桜の花びら (高さ)
-  AUTUMN_WIDTH: 0.12,  // 落ち葉 (幅)
-  AUTUMN_HEIGHT: 0.18, // 落ち葉 (高さ)
-  WINTER_SEGMENTS: 8,
-  SUMMER_SEGMENTS: 6,
-} as const;
+const dummyObject = useMemo(() => new THREE.Object3D(), []);
+
+for (let i = 0; i < particles.length; i++) {
+  const particle = particles[i];
+  // 位置・スケールの更新 …
+  dummyObject.position.set(particle.x, particle.y, particle.z);
+  dummyObject.scale.set(particle.size, particle.size, particle.size);
+  dummyObject.rotation.set(0, 0, 0);
+  dummyObject.updateMatrix();
+  mesh.setMatrixAt(i, dummyObject.matrix);
+}
+
+mesh.instanceMatrix.needsUpdate = true;
 ```
 
-`src/components/ParticleLayerInstanced.tsx` の球体サイズも修正：
-
 ```typescript
-// 夏の球体
-case "summer":
-  geometry = new THREE.SphereGeometry(
-    0.05,  // 半径を0.5から0.05に縮小
-    PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS,
-    PARTICLE_GEOMETRY_SIZE.SUMMER_SEGMENTS
-  );
-  break;
-
-// 冬の球体
-case "winter":
-  geometry = new THREE.SphereGeometry(
-    0.05,  // 半径を0.5から0.05に縮小
-    PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS,
-    PARTICLE_GEOMETRY_SIZE.WINTER_SEGMENTS
-  );
-  break;
-
-// デフォルト
-default:
-  geometry = new THREE.SphereGeometry(0.05, 8, 8); // 0.5から0.05に縮小
+useEffect(() => {
+  // 粒子生成 …
+  if (instancedMeshRef.current) {
+    instancedMeshRef.current.count = particleCount;
+    instancedMeshRef.current.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  }
+}, [particleConfig]);
 ```
 
 **デバッグ手順**:
 
-1. **問題の特定**: コンポーネントを段階的にコメントアウトして原因を特定
-   ```typescript
-   // src/App.tsx
-   {/* <MemoizedParticleLayerInstanced /> */}
-   ```
-
-2. **サイズの確認**: 定数ファイルのサイズが適切か確認
-   ```bash
-   grep -A 10 "PARTICLE_GEOMETRY_SIZE" src/constants/particle.ts
-   ```
-
-3. **修正の適用**: 定数とコンポーネントの両方を修正
-
-4. **視覚確認**: ブラウザで小さなパーティクルとして表示されることを確認
+1. **季節切替で再現する**: 夏（特に夜）に切り替え、巨大な球体が浮かないか確認。
+2. **instancedMesh.count をチェック**: `console.log(instancedMesh.count, particleCount)` でズレていないか確認する。
+3. **`setMatrixAt` を使っているか確認**: 直接バッファを書き換えている場合は本節の解決策へ移行する。
+4. **視覚確認**: `npm run dev` で季節を切り替え、各季節の粒子が小さく散布されることを確認。
 
 **重要なポイント**:
 
