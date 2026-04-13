@@ -3,6 +3,7 @@ import { useSeason } from "../contexts";
 import SimulationClock from "./SimulationClock";
 import { tokens } from "@/styles/tokens";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useAmbientSound } from "@/hooks/useAmbientSound";
 
 /**
  * メインUIコンポーネント
@@ -12,6 +13,7 @@ const UI: React.FC = () => {
   const { season, setSeason } = useSeason();
   const isMobile = useIsMobile();
   const [isSeasonPanelOpen, setIsSeasonPanelOpen] = useState(false);
+  const ambientControls = useAmbientSound();
 
   const handleSeasonChange = (
     newSeason: "spring" | "summer" | "autumn" | "winter"
@@ -51,6 +53,27 @@ const UI: React.FC = () => {
       ? '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
       : '0 2px 6px rgba(0, 0, 0, 0.2)',
     textShadow: isActive ? '0 1px 2px rgba(0, 0, 0, 0.2)' : 'none',
+  });
+
+  const getAmbientButtonStyle = (isMuted: boolean) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacing.xs,
+    fontFamily: tokens.typography.fontFamily.serif,
+    fontSize: isMobile ? '13px' : '14px',
+    fontWeight: 400,
+    padding: `${tokens.spacing.xs} ${tokens.spacing.md}`,
+    borderRadius: '999px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
+    color: 'rgba(255, 255, 255, 0.85)',
+    background: isMuted
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'linear-gradient(120deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.12))',
+    cursor: 'pointer',
+    transition: tokens.transitions.base,
+    boxShadow: isMuted
+      ? '0 4px 12px rgba(0, 0, 0, 0.2)'
+      : '0 6px 20px rgba(0, 0, 0, 0.35)',
   });
 
   return (
@@ -143,22 +166,50 @@ const UI: React.FC = () => {
             ✕
           </button>
 
-          <h3
+          <div
             style={{
-              position: 'relative',
-              margin: 0,
-              marginBottom: isMobile ? tokens.spacing.xs : 0,
-              fontFamily: tokens.typography.fontFamily.serif,
-              fontSize: isMobile ? '14px' : '20px',
-              fontWeight: 300,
-              color: 'rgba(255, 255, 255, 0.95)',
-              textAlign: 'center',
-              letterSpacing: isMobile ? '4px' : '8px',
-              textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: tokens.spacing.sm,
+              paddingRight: tokens.spacing.lg,
             }}
           >
-            四季
-          </h3>
+            <h3
+              style={{
+                position: 'relative',
+                margin: 0,
+                marginBottom: isMobile ? tokens.spacing.xs : 0,
+                fontFamily: tokens.typography.fontFamily.serif,
+                fontSize: isMobile ? '14px' : '20px',
+                fontWeight: 300,
+                color: 'rgba(255, 255, 255, 0.95)',
+                textAlign: 'left',
+                letterSpacing: isMobile ? '4px' : '8px',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              四季
+            </h3>
+            <button
+              onClick={ambientControls.toggleMute}
+              disabled={!ambientControls.isSupported}
+              aria-pressed={ambientControls.isMuted}
+              style={{
+                ...getAmbientButtonStyle(ambientControls.isMuted),
+                opacity: ambientControls.isSupported ? 1 : 0.6,
+              }}
+            >
+              <span aria-hidden="true">
+                {ambientControls.isMuted ? "🔇" : "🎧"}
+              </span>
+              {ambientControls.isSupported
+                ? ambientControls.isMuted
+                  ? "環境音 OFF"
+                  : "環境音 ON"
+                : "環境音 非対応"}
+            </button>
+          </div>
 
           <div
             style={{
