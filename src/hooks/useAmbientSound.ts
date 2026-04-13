@@ -40,6 +40,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
   const waterSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const seasonSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const seasonGainRef = useRef<GainNode | null>(null);
+  const suzumushiBufferRef = useRef<AudioBuffer | null>(null);
 
   // AudioContext 初期化
   useEffect(() => {
@@ -96,6 +97,39 @@ export const useAmbientSound = (): AmbientSoundControls => {
     }
   }, []);
 
+  // 秋の鈴虫サンプルを読み込む
+  useEffect(() => {
+    if (!isReady || suzumushiBufferRef.current) {
+      return;
+    }
+    const context = audioContextRef.current;
+    if (!context || typeof window === "undefined") {
+      return;
+    }
+    let cancelled = false;
+    const loadSample = async () => {
+      try {
+        const response = await fetch("/audio/ambient/suzumushi-night.ogg");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch suzumushi sample: ${response.status}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        if (cancelled) return;
+        const decoded = await context.decodeAudioData(arrayBuffer);
+        if (!cancelled) {
+          suzumushiBufferRef.current = decoded;
+        }
+      } catch (error) {
+        console.warn("Suzumushi sample load failed", error);
+      }
+    };
+    void loadSample();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isReady]);
+
   // 季節 & 昼夜に応じてシンセ音を差し替え
   useEffect(() => {
     const context = audioContextRef.current;
@@ -105,8 +139,13 @@ export const useAmbientSound = (): AmbientSoundControls => {
     }
 
     const newSource = context.createBufferSource();
-    newSource.buffer = createSeasonalTexture(context, season, isDay);
-    newSource.loop = true;
+    if (season === "autumn" && !isDay && suzumushiBufferRef.current) {
+      newSource.buffer = suzumushiBufferRef.current;
+      newSource.loop = true;
+    } else {
+      newSource.buffer = createSeasonalTexture(context, season, isDay);
+      newSource.loop = true;
+    }
     newSource.connect(seasonGain);
     newSource.start(0);
 
@@ -245,7 +284,9 @@ const getSeasonalSample = (season: Season, isDay: boolean, time: number) => {
     case "autumn":
       return isDay
         ? dryLeavesLayer(time) * 0.35 + breezeLayer(time) * 0.15
-        : cricketLayer(time) * 0.3 + windWhistle(time) * 0.2;
+        : bellCricketLayer(time) * 0.35 +
+            cricketLayer(time) * 0.2 +
+            windWhistle(time) * 0.15;
     case "winter":
     default:
       return isDay
@@ -273,6 +314,16 @@ const shimmerLayer = (time: number) =>
 const cricketLayer = (time: number) =>
   Math.sin(2 * Math.PI * 2.5 * time) *
   Math.max(Math.sin(2 * Math.PI * 1.5 * time), 0);
+
+const bellCricketLayer = (time: number) => {
+  const gate = Math.max(Math.sin(2 * Math.PI * 3.2 * time), 0);
+  const envelope = Math.pow(gate, 2.8) * 0.8;
+  const chirp =
+    Math.sin(2 * Math.PI * 1200 * time) * 0.6 +
+    Math.sin(2 * Math.PI * 1500 * time) * 0.4 +
+    Math.sin(2 * Math.PI * 900 * time) * 0.3;
+  return envelope * chirp;
+};
 
 const waterDrops = (time: number) =>
   Math.sin(2 * Math.PI * (0.3 + 0.1 * Math.sin(time)) * time);
