@@ -58,11 +58,13 @@ const UI: React.FC = () => {
   const getAmbientButtonStyle = (isMuted: boolean) => ({
     display: 'flex',
     alignItems: 'center',
+    justifyContent: isMobile ? 'center' : 'flex-start',
     gap: tokens.spacing.xs,
     fontFamily: tokens.typography.fontFamily.serif,
     fontSize: isMobile ? '13px' : '14px',
     fontWeight: 400,
     padding: `${tokens.spacing.xs} ${tokens.spacing.md}`,
+    width: isMobile ? '100%' : 'auto',
     borderRadius: '999px',
     border: '1px solid rgba(255, 255, 255, 0.25)',
     color: 'rgba(255, 255, 255, 0.85)',
@@ -169,46 +171,54 @@ const UI: React.FC = () => {
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: 'column',
               gap: tokens.spacing.sm,
-              paddingRight: tokens.spacing.lg,
+              width: '100%',
+              paddingRight: isMobile ? 0 : tokens.spacing.lg,
             }}
           >
             <h3
               style={{
                 position: 'relative',
                 margin: 0,
-                marginBottom: isMobile ? tokens.spacing.xs : 0,
+                marginBottom: 0,
                 fontFamily: tokens.typography.fontFamily.serif,
                 fontSize: isMobile ? '14px' : '20px',
                 fontWeight: 300,
                 color: 'rgba(255, 255, 255, 0.95)',
-                textAlign: 'left',
+                textAlign: isMobile ? 'center' : 'left',
                 letterSpacing: isMobile ? '4px' : '8px',
                 textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)',
               }}
             >
               四季
             </h3>
-            <button
-              onClick={ambientControls.toggleMute}
-              disabled={!ambientControls.isSupported}
-              aria-pressed={ambientControls.isMuted}
+            <div
               style={{
-                ...getAmbientButtonStyle(ambientControls.isMuted),
-                opacity: ambientControls.isSupported ? 1 : 0.6,
+                display: 'flex',
+                justifyContent: isMobile ? 'center' : 'flex-end',
               }}
             >
-              <span aria-hidden="true">
-                {ambientControls.isMuted ? "🔇" : "🎧"}
-              </span>
-              {ambientControls.isSupported
-                ? ambientControls.isMuted
-                  ? "環境音 OFF"
-                  : "環境音 ON"
-                : "環境音 非対応"}
-            </button>
+              <button
+                onClick={ambientControls.toggleMute}
+                disabled={!ambientControls.isSupported}
+                aria-pressed={ambientControls.isMuted}
+                style={{
+                  ...getAmbientButtonStyle(ambientControls.isMuted),
+                  width: isMobile ? '100%' : 'auto',
+                  opacity: ambientControls.isSupported ? 1 : 0.6,
+                }}
+              >
+                <span aria-hidden="true">
+                  {ambientControls.isMuted ? "🔇" : "🎧"}
+                </span>
+                {ambientControls.isSupported
+                  ? ambientControls.isMuted
+                    ? "環境音 OFF"
+                    : "環境音 ON"
+                  : "環境音 非対応"}
+              </button>
+            </div>
           </div>
 
           <div
