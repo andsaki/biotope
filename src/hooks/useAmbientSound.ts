@@ -17,12 +17,21 @@ interface AmbientSoundControls {
   setVolume: (next: number) => void;
 }
 
+type AmbientSampleKey =
+  | "spring-day"
+  | "spring-night"
+  | "summer-day"
+  | "summer-night"
+  | "autumn-day"
+  | "autumn-night"
+  | "winter-night";
+
 const clamp = (value: number, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
 
 /**
  * 季節と昼夜に応じた環境音を管理するカスタムフック
- * - Web Audio API を使用して軽量なシンセ音を生成
+ * - Web Audio API を使用して軽量な環境音を生成
  * - 水音は常時再生し、季節レイヤーを重ねる
  * - ミュート状態と音量を公開
  */
@@ -40,7 +49,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
   const waterSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const seasonSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const seasonGainRef = useRef<GainNode | null>(null);
-  const suzumushiBufferRef = useRef<AudioBuffer | null>(null);
+  const sampleBuffersRef = useRef<Partial<Record<AmbientSampleKey, AudioBuffer>>>({});
 
   // AudioContext 初期化
   useEffect(() => {
@@ -97,9 +106,9 @@ export const useAmbientSound = (): AmbientSoundControls => {
     }
   }, []);
 
-  // 秋の鈴虫サンプルを読み込む
+  // 非生物系の実録サンプルを読み込む
   useEffect(() => {
-    if (!isReady || suzumushiBufferRef.current) {
+    if (!isReady) {
       return;
     }
     const context = audioContextRef.current;
@@ -108,20 +117,33 @@ export const useAmbientSound = (): AmbientSoundControls => {
     }
     let cancelled = false;
     const loadSample = async () => {
-      try {
-        const response = await fetch("/audio/ambient/suzumushi-night.ogg");
-        if (!response.ok) {
-          throw new Error(`Failed to fetch suzumushi sample: ${response.status}`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-        if (cancelled) return;
-        const decoded = await context.decodeAudioData(arrayBuffer);
-        if (!cancelled) {
-          suzumushiBufferRef.current = decoded;
-        }
-      } catch (error) {
-        console.warn("Suzumushi sample load failed", error);
-      }
+      const entries = Object.entries(AMBIENT_SAMPLE_URLS) as [AmbientSampleKey, string][];
+      await Promise.all(
+        entries.map(async ([key, url]) => {
+          if (sampleBuffersRef.current[key]) {
+            return;
+          }
+
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch ambient sample: ${response.status}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            if (cancelled) {
+              return;
+            }
+
+            const decoded = await context.decodeAudioData(arrayBuffer);
+            if (!cancelled) {
+              sampleBuffersRef.current[key] = decoded;
+            }
+          } catch (error) {
+            console.warn(`Ambient sample load failed: ${key}`, error);
+          }
+        })
+      );
     };
     void loadSample();
 
@@ -130,7 +152,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
     };
   }, [isReady]);
 
-  // 季節 & 昼夜に応じてシンセ音を差し替え
+  // 季節 & 昼夜に応じて実録音/環境レイヤーを差し替え
   useEffect(() => {
     const context = audioContextRef.current;
     const seasonGain = seasonGainRef.current;
@@ -139,8 +161,13 @@ export const useAmbientSound = (): AmbientSoundControls => {
     }
 
     const newSource = context.createBufferSource();
-    if (season === "autumn" && !isDay && suzumushiBufferRef.current) {
-      newSource.buffer = suzumushiBufferRef.current;
+    const sampleKey = getAmbientSampleKey(season, isDay);
+    const sampleBuffer = sampleKey ? sampleBuffersRef.current[sampleKey] : null;
+    const sampleGainMultiplier = sampleKey
+      ? AMBIENT_SAMPLE_GAIN_MULTIPLIERS[sampleKey]
+      : 1;
+    if (sampleBuffer) {
+      newSource.buffer = sampleBuffer;
       newSource.loop = true;
     } else {
       newSource.buffer = createSeasonalTexture(context, season, isDay);
@@ -155,7 +182,8 @@ export const useAmbientSound = (): AmbientSoundControls => {
     const now = context.currentTime;
     seasonGain.gain.cancelScheduledValues(now);
     seasonGain.gain.setValueAtTime(0, now);
-    const targetGain = isDay ? 0.45 : 0.32;
+    const baseGain = isDay ? 0.45 : 0.32;
+    const targetGain = baseGain * sampleGainMultiplier;
     seasonGain.gain.linearRampToValueAtTime(targetGain, now + 1.5);
 
     if (previous) {
@@ -234,6 +262,49 @@ export const useAmbientSound = (): AmbientSoundControls => {
   };
 };
 
+const AMBIENT_SAMPLE_URLS: Record<AmbientSampleKey, string> = {
+  "spring-day": "/audio/ambient/spring-birds-day.ogg",
+  "spring-night": "/audio/ambient/spring-frogs-night.ogg",
+  "summer-day": "/audio/ambient/summer-cicada-day.ogg",
+  "summer-night": "/audio/ambient/summer-cricket-night.ogg",
+  "autumn-day": "/audio/ambient/autumn-garden-day.ogg",
+  "autumn-night": "/audio/ambient/suzumushi-night.ogg",
+  "winter-night": "/audio/ambient/winter-snow-night.wav",
+};
+
+const AMBIENT_SAMPLE_GAIN_MULTIPLIERS: Record<AmbientSampleKey, number> = {
+  "spring-day": 0.8,
+  "spring-night": 0.7,
+  "summer-day": 0.72,
+  "summer-night": 0.68,
+  "autumn-day": 0.52,
+  "autumn-night": 0.62,
+  "winter-night": 0.16,
+};
+
+const getAmbientSampleKey = (
+  season: Season,
+  isDay: boolean
+): AmbientSampleKey | null => {
+  if (season === "spring") {
+    return isDay ? "spring-day" : "spring-night";
+  }
+
+  if (season === "summer") {
+    return isDay ? "summer-day" : "summer-night";
+  }
+
+  if (season === "autumn") {
+    return isDay ? "autumn-day" : "autumn-night";
+  }
+
+  if (season === "winter") {
+    return isDay ? null : "winter-night";
+  }
+
+  return null;
+};
+
 const createWaterTexture = (context: AudioContext) => {
   const duration = 10;
   const frameCount = Math.floor(context.sampleRate * duration);
@@ -290,7 +361,7 @@ const getSeasonalSample = (season: Season, isDay: boolean, time: number) => {
     case "winter":
     default:
       return isDay
-        ? windWhistle(time) * 0.45 + shimmerLayer(time) * 0.1
+        ? winterDayNoiseLayer(time) * 0.18 + slowPulse * 0.02
         : snowHushLayer(time) * 0.35 + slowPulse * 0.05;
   }
 };
@@ -352,6 +423,24 @@ const snowHushLayer = (time: number) =>
   Math.sin(2 * Math.PI * 0.05 * time) * 0.4 +
   Math.sin(2 * Math.PI * 0.02 * time) * 0.6;
 
+const winterDayNoiseLayer = (time: number) =>
+  smoothNoise(time, 1.8) * 0.8 + smoothNoise(time + 10, 4.5) * 0.25;
+
 const nocturnalAir = (time: number) =>
   Math.sin(2 * Math.PI * 0.15 * time) * 0.4 +
   Math.sin(2 * Math.PI * 0.04 * time) * 0.3;
+
+const smoothNoise = (time: number, rate: number) => {
+  const scaledTime = time * rate;
+  const lower = Math.floor(scaledTime);
+  const upper = lower + 1;
+  const blend = scaledTime - lower;
+  const start = pseudoRandom(lower) * 2 - 1;
+  const end = pseudoRandom(upper) * 2 - 1;
+  return start + (end - start) * blend;
+};
+
+const pseudoRandom = (seed: number) => {
+  const value = Math.sin(seed * 127.1) * 43758.5453123;
+  return value - Math.floor(value);
+};
