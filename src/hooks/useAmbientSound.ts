@@ -30,7 +30,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
   const { season } = useSeason();
   const isDay = useDayPeriod();
 
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolumeState] = useState(0.6);
   const [isReady, setIsReady] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
