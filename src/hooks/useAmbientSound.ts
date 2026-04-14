@@ -304,16 +304,28 @@ const frogLayer = (time: number) =>
   Math.sin(2 * Math.PI * 0.9 * time) * Math.sin(2 * Math.PI * 3 * time);
 
 const cicadaLayer = (time: number) =>
-  Math.sin(2 * Math.PI * 6 * time) *
-  Math.sin(2 * Math.PI * (12 + 2 * Math.sin(time)) * time);
+  (() => {
+    const gate = Math.max(Math.sin(2 * Math.PI * 7.5 * time), 0);
+    const envelope = Math.pow(gate, 3) * 0.9;
+    const carrier =
+      Math.sin(2 * Math.PI * (4200 + 180 * Math.sin(2 * Math.PI * 0.8 * time)) * time) * 0.6 +
+      Math.sin(2 * Math.PI * 6100 * time) * 0.25;
+    return envelope * carrier;
+  })();
 
 const shimmerLayer = (time: number) =>
-  Math.sin(2 * Math.PI * 8 * time) * 0.3 +
-  Math.sin(2 * Math.PI * 5 * time) * 0.2;
+  Math.sin(2 * Math.PI * 1400 * time) * 0.08 +
+  Math.sin(2 * Math.PI * 2200 * time) * 0.05;
 
 const cricketLayer = (time: number) =>
-  Math.sin(2 * Math.PI * 2.5 * time) *
-  Math.max(Math.sin(2 * Math.PI * 1.5 * time), 0);
+  (() => {
+    const gate = Math.max(Math.sin(2 * Math.PI * 2.4 * time), 0);
+    const envelope = Math.pow(gate, 4) * 0.75;
+    const chirp =
+      Math.sin(2 * Math.PI * 3200 * time) * 0.5 +
+      Math.sin(2 * Math.PI * 4700 * time) * 0.3;
+    return envelope * chirp;
+  })();
 
 const bellCricketLayer = (time: number) => {
   const gate = Math.max(Math.sin(2 * Math.PI * 3.2 * time), 0);
