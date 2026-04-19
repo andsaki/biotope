@@ -558,8 +558,12 @@ const UI: React.FC<UIProps> = ({
             left: isMobile ? '1rem' : '1.25rem',
             bottom: isMobile ? '1rem' : '1.25rem',
             zIndex: tokens.zIndex.ui,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             width: '2.5rem',
             height: '2.5rem',
+            padding: 0,
             border: '1px solid rgba(255, 255, 255, 0.18)',
             borderRadius: '999px',
             background: 'rgba(9, 18, 28, 0.52)',
@@ -567,12 +571,24 @@ const UI: React.FC<UIProps> = ({
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             boxShadow: '0 10px 24px rgba(0, 0, 0, 0.24)',
-            fontFamily: tokens.typography.fontFamily.serif,
-            fontSize: '16px',
             cursor: 'pointer',
           }}
         >
-          ?
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="9" opacity="0.35" />
+            <path d="M9.7 9.2a2.65 2.65 0 0 1 5.12.92c0 1.88-1.9 2.55-2.6 3.48-.25.33-.34.62-.34 1.4" />
+            <path d="M12 17.25h.01" />
+          </svg>
         </button>
       )}
 
