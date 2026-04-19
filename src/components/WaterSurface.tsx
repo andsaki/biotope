@@ -69,10 +69,18 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
 
     event.stopPropagation();
 
-    const localPoint = meshRef.current.worldToLocal(event.point.clone());
+    const rippleX =
+      event.uv !== undefined
+        ? (event.uv.x - 0.5) * WATER_SURFACE_SCALE_X
+        : meshRef.current.worldToLocal(event.point.clone()).x * WATER_SURFACE_SCALE_X;
+    const rippleY =
+      event.uv !== undefined
+        ? (event.uv.y - 0.5) * WATER_SURFACE_SCALE_Y
+        : meshRef.current.worldToLocal(event.point.clone()).y * WATER_SURFACE_SCALE_Y;
+
     const ripplePoint = {
-      x: localPoint.x * WATER_SURFACE_SCALE_X,
-      y: localPoint.y * WATER_SURFACE_SCALE_Y,
+      x: rippleX,
+      y: rippleY,
       startTime: elapsedTimeRef.current,
     } satisfies RipplePoint;
 
@@ -126,7 +134,9 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
           rippleOffset;
       }
     }
+
     geometryRef.current.attributes.position.needsUpdate = true;
+    geometryRef.current.computeVertexNormals();
   }, 30);
 
   return (

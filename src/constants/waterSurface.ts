@@ -13,7 +13,7 @@ export const WATER_SURFACE_SCALE_Y = 80;
 export const WATER_SURFACE_SCALE_Z = 1;
 
 // ジオメトリの解像度
-export const WATER_SURFACE_SEGMENTS = 32;
+export const WATER_SURFACE_SEGMENTS = 96;
 
 // 波紋の設定
 export const WATER_WAVE_FREQUENCY = 0.3;
@@ -23,7 +23,7 @@ export const WATER_RIPPLE_MAX_COUNT = 8;
 export const WATER_RIPPLE_LIFETIME = 2.8;
 export const WATER_RIPPLE_SPEED = 8.5;
 export const WATER_RIPPLE_WAVELENGTH = 1.8;
-export const WATER_RIPPLE_AMPLITUDE = 0.45;
+export const WATER_RIPPLE_AMPLITUDE = 0.8;
 export const WATER_RIPPLE_DECAY = 0.16;
 export const WATER_RIPPLE_TIME_DECAY = 1.1;
 
