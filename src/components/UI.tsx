@@ -97,6 +97,10 @@ const UI: React.FC<UIProps> = ({
       ? "環境音はここで切り替え"
       : "環境音はこのパネルで切り替え";
 
+  const showFloatingUiHint = showUiHint && !isSeasonPanelOpen;
+  const showInlineAmbientHint =
+    showUiHint && isSeasonPanelOpen && progress.hasOpenedPanel && !progress.hasToggledAmbient;
+
   const getButtonStyle = (isActive: boolean) => ({
     fontFamily: tokens.typography.fontFamily.serif,
     fontSize: '16px',
@@ -262,6 +266,9 @@ const UI: React.FC<UIProps> = ({
               style={{
                 display: 'flex',
                 justifyContent: isMobile ? 'center' : 'flex-end',
+                flexDirection: 'column',
+                alignItems: isMobile ? 'stretch' : 'flex-end',
+                gap: tokens.spacing.xs,
               }}
             >
               <button
@@ -283,6 +290,29 @@ const UI: React.FC<UIProps> = ({
                     : "環境音 ON"
                   : "環境音 非対応"}
               </button>
+
+              {showInlineAmbientHint && (
+                <div
+                  style={{
+                    alignSelf: isMobile ? 'stretch' : 'flex-end',
+                    maxWidth: isMobile ? '100%' : '220px',
+                    padding: isMobile ? '8px 10px' : '8px 12px',
+                    border: '1px solid rgba(255, 255, 255, 0.16)',
+                    borderRadius: '12px',
+                    background: 'rgba(9, 18, 28, 0.42)',
+                    color: 'rgba(255, 255, 255, 0.86)',
+                    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    fontFamily: tokens.typography.fontFamily.serif,
+                    fontSize: isMobile ? '11px' : '12px',
+                    lineHeight: 1.5,
+                    textAlign: isMobile ? 'center' : 'left',
+                  }}
+                >
+                  {uiHintText}
+                </div>
+              )}
             </div>
           </div>
 
@@ -397,11 +427,11 @@ const UI: React.FC<UIProps> = ({
         </button>
       )}
 
-      {showUiHint && (
+      {showFloatingUiHint && (
         <div
           style={{
             position: 'fixed',
-            top: isMobile ? '5.5rem' : '6rem',
+            top: isMobile ? '5.75rem' : '6.25rem',
             right: isMobile ? tokens.positioning.mobile.right : tokens.positioning.pc.right,
             zIndex: tokens.zIndex.modal,
             maxWidth: isMobile ? '180px' : '240px',
