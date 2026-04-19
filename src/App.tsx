@@ -34,6 +34,7 @@ import UI from "./components/UI";
 import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants/core";
 import { useWindDirection } from "./hooks/useWindDirection";
+import { useUxHints } from "./hooks/useUxHints";
 
 // 3Dモデルのpreload
 import { preloadModel } from "./hooks/useModelScene";
@@ -96,6 +97,7 @@ type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
 const AppContent = () => {
   const isDay = useDayPeriod();
   const windDirection = useWindDirection();
+  const uxHints = useUxHints();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [minDelayElapsed, setMinDelayElapsed] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -193,10 +195,14 @@ const AppContent = () => {
             <PottedPlant />
             <Rocks />
             <BubbleEffect />
-            <MemoizedWaterSurface />
+            <MemoizedWaterSurface onInteract={uxHints.markWaterRippled} />
             <MemoizedSundialGnomon />
             <MemoizedSundialBase />
-            <MemoizedDriftingBottle position={[-3, 8.2, 2]} />
+            <MemoizedDriftingBottle
+              position={[-3, 8.2, 2]}
+              onMessageRead={uxHints.markBottleOpened}
+              showHint={!isLoading && uxHints.shouldShowBottleHint}
+            />
             <MemoizedParticleLayerInstanced />
             <MemoizedClouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} />
 
@@ -211,7 +217,16 @@ const AppContent = () => {
         </Canvas>
         {/* パフォーマンスモニター - 表示（Canvas外） - ローディング完了後のみ表示 */}
         {PERFORMANCE_MONITOR && !isLoading && <PerformanceMonitorDisplay enabled={PERFORMANCE_MONITOR} />}
-        <UI />
+        <UI
+          showHints={!isLoading && uxHints.showHints}
+          showUiHint={!isLoading && uxHints.shouldShowUiHint}
+          showWaterHint={!isLoading && uxHints.shouldShowWaterHint}
+          hintProgress={uxHints.progress}
+          onDismissHints={uxHints.dismissHints}
+          onReopenHints={!isLoading ? uxHints.reopenHints : undefined}
+          onPanelOpened={uxHints.markPanelOpened}
+          onAmbientToggle={uxHints.markAmbientToggled}
+        />
         {/* 風向きコンパス - ローディング完了後のみ表示 */}
         {!isLoading && <MemoizedWindDirectionDisplay windDirection={windDirection} />}
       </div>
