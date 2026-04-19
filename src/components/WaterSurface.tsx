@@ -37,7 +37,11 @@ interface RipplePoint {
  * 水面コンポーネント
  * 波紋アニメーションと光の反射を持つ透明な水面を表示
  */
-const WaterSurface: React.FC = () => {
+interface WaterSurfaceProps {
+  onInteract?: () => void;
+}
+
+const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
   const ripplesRef = useRef<RipplePoint[]>([]);
@@ -73,7 +77,8 @@ const WaterSurface: React.FC = () => {
     } satisfies RipplePoint;
 
     ripplesRef.current = [...ripplesRef.current.slice(-(WATER_RIPPLE_MAX_COUNT - 1)), ripplePoint];
-  }, []);
+    onInteract?.();
+  }, [onInteract]);
 
   useThrottledFrame((state) => {
     if (!meshRef.current || !geometryRef.current) return;

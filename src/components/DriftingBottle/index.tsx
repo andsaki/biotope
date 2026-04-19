@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { Html } from "@react-three/drei";
 import { fetchDailyMessage } from "../../utils/dailyMessage";
 import { useBottleAnimation } from "../../hooks/useBottleAnimation";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { BottleModel } from "./BottleModel";
 import { MessageCard } from "./MessageCard";
 
@@ -10,6 +12,8 @@ interface DriftingBottleProps {
   position: [number, number, number];
   /** メッセージが読まれた時のコールバック */
   onMessageRead?: () => void;
+  /** 初回導線ヒントの表示 */
+  showHint?: boolean;
 }
 
 /**
@@ -20,12 +24,14 @@ interface DriftingBottleProps {
 export const DriftingBottle = ({
   position,
   onMessageRead,
+  showHint = false,
 }: DriftingBottleProps) => {
   const [showMessage, setShowMessage] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
   const [currentSender, setCurrentSender] = useState("");
   const [dailyMessageFetched, setDailyMessageFetched] = useState(false);
+  const isMobile = useIsMobile();
 
   const bottleRef = useBottleAnimation(position);
 
@@ -70,6 +76,28 @@ export const DriftingBottle = ({
       onPointerOut={() => setHovered(false)}
     >
       <BottleModel hovered={hovered} />
+      {showHint && !showMessage && (
+        <Html position={[0, 1.3, 0]} center distanceFactor={10} style={{ pointerEvents: "none" }}>
+          <div
+            style={{
+              padding: isMobile ? "8px 12px" : "10px 14px",
+              border: "1px solid rgba(255, 255, 255, 0.22)",
+              borderRadius: "999px",
+              background: "rgba(12, 20, 30, 0.56)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              color: "rgba(255, 255, 255, 0.92)",
+              boxShadow: "0 10px 24px rgba(0, 0, 0, 0.28)",
+              fontFamily: "'Noto Serif JP', serif",
+              fontSize: isMobile ? "12px" : "13px",
+              letterSpacing: "0.04em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {isMobile ? "瓶をタップして便りを読む" : "瓶をクリックして便りを読む"}
+          </div>
+        </Html>
+      )}
       {showMessage && (
         <MessageCard
           message={currentMessage}
