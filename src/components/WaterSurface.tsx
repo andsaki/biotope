@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useCallback, useEffect, useState } from "react";
 import * as THREE from "three";
-import { useThree } from "@react-three/fiber";
+import type { ThreeEvent } from "@react-three/fiber";
 import { useSeason } from "../contexts";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
@@ -84,19 +84,14 @@ interface WaterSurfaceProps {
 }
 
 const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
-  const { camera, gl } = useThree();
   const { season } = useSeason();
   const meshRef = useRef<THREE.Mesh>(null!);
-  const hitPlaneRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
   const ripplesRef = useRef<RipplePoint[]>([]);
   const dropletsRef = useRef<DropletParticle[]>([]);
   const elapsedTimeRef = useRef(0);
   const nextRippleIdRef = useRef(0);
   const nextDropletIdRef = useRef(0);
-  const raycasterRef = useRef(new THREE.Raycaster());
-  const pointerRef = useRef(new THREE.Vector2());
-  const localPointRef = useRef(new THREE.Vector3());
   const [, setRenderTick] = useState(0);
 
   // マテリアルをメモ化してパフォーマンス向上
@@ -118,11 +113,6 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
   const rippleRingGeometry = useMemo(() => new THREE.RingGeometry(0.978, 1, 80), []);
   const sparkleGeometry = useMemo(() => new THREE.CircleGeometry(1, 14), []);
   const dropletGeometry = useMemo(() => new THREE.SphereGeometry(1, 10, 10), []);
-  const hitPlaneGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1, 1, 1), []);
-  const hitPlaneMaterial = useMemo(
-    () => new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
-    []
-  );
 
   useEffect(() => {
     return () => {
@@ -131,13 +121,9 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
       rippleRingGeometry.dispose();
       sparkleGeometry.dispose();
       dropletGeometry.dispose();
-      hitPlaneGeometry.dispose();
-      hitPlaneMaterial.dispose();
     };
   }, [
     dropletGeometry,
-    hitPlaneGeometry,
-    hitPlaneMaterial,
     material,
     petalGeometry,
     rippleRingGeometry,
@@ -257,43 +243,20 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
     rippleTuning.petalChance,
   ]);
 
-  useEffect(() => {
-    const canvas = gl.domElement;
+  const handlePointerDown = useCallback((event: ThreeEvent<PointerEvent>) => {
+    if (!meshRef.current) {
+      return;
+    }
 
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!meshRef.current || !hitPlaneRef.current) {
-        return;
-      }
+    event.stopPropagation();
 
-      const rect = canvas.getBoundingClientRect();
-      pointerRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointerRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycasterRef.current.setFromCamera(pointerRef.current, camera);
-
-      const [waterIntersection] = raycasterRef.current.intersectObject(hitPlaneRef.current, false);
-
-      if (!waterIntersection) {
-        return;
-      }
-
-      const localPoint = meshRef.current.worldToLocal(
-        localPointRef.current.copy(waterIntersection.point)
-      );
-
-      addRipple(
-        localPoint.x * WATER_SURFACE_SCALE_X,
-        localPoint.y * WATER_SURFACE_SCALE_Y,
-        waterIntersection.point
-      );
-    };
-
-    canvas.addEventListener("pointerdown", handlePointerDown);
-
-    return () => {
-      canvas.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [addRipple, camera, gl]);
+    const localPoint = meshRef.current.worldToLocal(event.point.clone());
+    addRipple(
+      localPoint.x * WATER_SURFACE_SCALE_X,
+      localPoint.y * WATER_SURFACE_SCALE_Y,
+      event.point
+    );
+  }, [addRipple]);
 
   useThrottledFrame((state) => {
     if (!meshRef.current || !geometryRef.current) return;
@@ -362,24 +325,15 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
     <>
       <mesh
         ref={meshRef}
-        position={[0, WATER_SURFACE_Y, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={[WATER_SURFACE_SCALE_X, WATER_SURFACE_SCALE_Y, WATER_SURFACE_SCALE_Z]}
-        receiveShadow={true}
-      >
-        <planeGeometry ref={geometryRef} args={[1, 1, WATER_SURFACE_SEGMENTS, WATER_SURFACE_SEGMENTS]} />
-        <primitive object={material} attach="material" />
-      </mesh>
-
-      <mesh
-        ref={hitPlaneRef}
-        position={[0, WATER_SURFACE_Y + 0.02, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={[WATER_SURFACE_SCALE_X, WATER_SURFACE_SCALE_Y, WATER_SURFACE_SCALE_Z]}
-      >
-        <primitive object={hitPlaneGeometry} attach="geometry" />
-        <primitive object={hitPlaneMaterial} attach="material" />
-      </mesh>
+      position={[0, WATER_SURFACE_Y, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
+      scale={[WATER_SURFACE_SCALE_X, WATER_SURFACE_SCALE_Y, WATER_SURFACE_SCALE_Z]}
+      receiveShadow={true}
+      onPointerDown={handlePointerDown}
+    >
+      <planeGeometry ref={geometryRef} args={[1, 1, WATER_SURFACE_SEGMENTS, WATER_SURFACE_SEGMENTS]} />
+      <primitive object={material} attach="material" />
+    </mesh>
 
       {ripplesRef.current.map((ripple) => {
         const age = elapsedTimeRef.current - ripple.startTime;
