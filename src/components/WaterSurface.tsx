@@ -73,6 +73,7 @@ interface DropletParticle {
 
 const DROPLET_LIFETIME = 0.9;
 const DROPLET_GRAVITY = 2.6;
+const RIPPLE_SPARKLE_INDICES = [0, 1, 2, 3, 4] as const;
 
 /**
  * 水面コンポーネント
@@ -114,6 +115,34 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
   );
 
   const petalGeometry = useMemo(() => createPetalGeometry(), []);
+  const rippleRingGeometry = useMemo(() => new THREE.RingGeometry(0.978, 1, 80), []);
+  const sparkleGeometry = useMemo(() => new THREE.CircleGeometry(1, 14), []);
+  const dropletGeometry = useMemo(() => new THREE.SphereGeometry(1, 10, 10), []);
+  const hitPlaneGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1, 1, 1), []);
+  const hitPlaneMaterial = useMemo(
+    () => new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      material.dispose();
+      petalGeometry.dispose();
+      rippleRingGeometry.dispose();
+      sparkleGeometry.dispose();
+      dropletGeometry.dispose();
+      hitPlaneGeometry.dispose();
+      hitPlaneMaterial.dispose();
+    };
+  }, [
+    dropletGeometry,
+    hitPlaneGeometry,
+    hitPlaneMaterial,
+    material,
+    petalGeometry,
+    rippleRingGeometry,
+    sparkleGeometry,
+  ]);
 
   const ripplePalette = useMemo(() => {
     switch (season) {
@@ -348,8 +377,8 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[WATER_SURFACE_SCALE_X, WATER_SURFACE_SCALE_Y, WATER_SURFACE_SCALE_Z]}
       >
-        <planeGeometry args={[1, 1, 1, 1]} />
-        <meshBasicMaterial transparent={true} opacity={0} depthWrite={false} />
+        <primitive object={hitPlaneGeometry} attach="geometry" />
+        <primitive object={hitPlaneMaterial} attach="material" />
       </mesh>
 
       {ripplesRef.current.map((ripple) => {
@@ -357,13 +386,30 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
         const progress = Math.min(1, Math.max(0, age / WATER_RIPPLE_LIFETIME));
         const mainRadius = 0.72 + progress * 3.15;
         const mainOpacity = Math.max(0, (1 - progress) * rippleTuning.ringOpacity);
+        const impactOpacity = Math.max(0, (1 - progress * 1.9) * rippleTuning.sparkleOpacity * 0.85);
+        const impactScale = 0.16 + progress * 0.55;
+        const trailingProgress = Math.min(1, Math.max(0, (progress - 0.12) / 0.88));
+        const trailingRadius = 0.5 + trailingProgress * 2.7;
+        const trailingOpacity = Math.max(0, (1 - trailingProgress) * rippleTuning.ringOpacity * 0.55);
         const sparkleOpacity = Math.max(0, (1 - progress) * rippleTuning.sparkleOpacity);
         const sparklePhase = progress * Math.PI * 0.9 + ripple.id * 0.19;
 
         return (
           <group key={ripple.id} position={[ripple.worldX, ripple.worldY + 0.05, ripple.worldZ]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[impactScale, impactScale, 1]} renderOrder={998}>
+              <primitive object={sparkleGeometry} attach="geometry" />
+              <meshBasicMaterial
+                color={ripplePalette.glow}
+                transparent={true}
+                opacity={impactOpacity}
+                depthWrite={false}
+                depthTest={false}
+                blending={THREE.AdditiveBlending}
+              />
+            </mesh>
+
             <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[mainRadius, mainRadius, 1]} renderOrder={999}>
-              <ringGeometry args={[0.978, 1, 80]} />
+              <primitive object={rippleRingGeometry} attach="geometry" />
               <meshBasicMaterial
                 color={ripplePalette.ring}
                 transparent={true}
@@ -374,7 +420,25 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
               />
             </mesh>
 
-            {Array.from({ length: 5 }, (_, index) => {
+            {trailingOpacity > 0 && (
+              <mesh
+                rotation={[-Math.PI / 2, 0, 0]}
+                scale={[trailingRadius, trailingRadius, 1]}
+                renderOrder={1000}
+              >
+                <primitive object={rippleRingGeometry} attach="geometry" />
+                <meshBasicMaterial
+                  color={ripplePalette.glow}
+                  transparent={true}
+                  opacity={trailingOpacity}
+                  depthWrite={false}
+                  depthTest={false}
+                  blending={THREE.AdditiveBlending}
+                />
+              </mesh>
+            )}
+
+            {RIPPLE_SPARKLE_INDICES.map((index) => {
               const seed = ripple.id * 17 + index * 31;
               const angle = sparklePhase + pseudoRandom(seed) * Math.PI * 2;
               const sparkleRadius = 0.24 + progress * (1.8 + pseudoRandom(seed + 1) * 0.9);
@@ -390,10 +454,10 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
                     Math.sin(angle) * sparkleRadius,
                   ]}
                   rotation={[-Math.PI / 2, 0, dropletRotation]}
-                  scale={[0.7, 1.35, 1]}
+                  scale={[sparkleScale * 0.7, sparkleScale * 1.35, 1]}
                   renderOrder={1001}
                 >
-                  <circleGeometry args={[sparkleScale, 14]} />
+                  <primitive object={sparkleGeometry} attach="geometry" />
                   <meshBasicMaterial
                     color={ripplePalette.glow}
                     transparent={true}
@@ -431,12 +495,12 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
                   ? [0, age * 1.4 + petalWobble, droplet.petalRotation + age * droplet.petalSpin]
                   : [0, 0, 0]
               }
-              scale={droplet.petalLike ? [scale * 0.95, scale * 1.55, 1] : [1, 1, 1]}
+              scale={droplet.petalLike ? [scale * 0.95, scale * 1.55, 1] : [scale, scale, scale]}
             >
               {droplet.petalLike ? (
                 <primitive object={petalGeometry} attach="geometry" />
               ) : (
-                <sphereGeometry args={[scale, 10, 10]} />
+                <primitive object={dropletGeometry} attach="geometry" />
               )}
               <meshBasicMaterial
                 color={droplet.petalLike ? ripplePalette.ring : ripplePalette.glow}
