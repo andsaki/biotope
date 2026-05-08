@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import {
+  FROG_CROAK_AUDIO_URL,
+  FROG_CROAK_CLIP_SECONDS,
   FROG_CROAK_VOLUME,
   FROG_JUMP_DURATION,
   FROG_JUMP_HEIGHT,
@@ -27,16 +29,6 @@ const scheduleNextAction = () =>
   FROG_RANDOM_ACTION_MIN_SECONDS +
   Math.random() * FROG_RANDOM_ACTION_VARIATION_SECONDS;
 
-const getAudioContextClass = () => {
-  if (typeof window === "undefined") return null;
-  return (
-    window.AudioContext ??
-    (window as typeof window & { webkitAudioContext?: typeof AudioContext })
-      .webkitAudioContext ??
-    null
-  );
-};
-
 /**
  * 蓮の葉に乗る小さなカエル。
  * 軽量なプリミティブで表現し、ランダム/クリックで鳴き声とジャンプを行う。
@@ -49,74 +41,48 @@ const Frog: React.FC<FrogProps> = ({
   phaseOffset,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const stopAudioTimeoutRef = useRef<number | null>(null);
   const jumpStartTimeRef = useRef<number | null>(null);
-  const nextActionAtRef = useRef(scheduleNextAction());
+  const nextActionAtRef = useRef<number | null>(null);
   const elapsedTimeRef = useRef(0);
 
-  const getAudioContext = useCallback(() => {
-    if (audioContextRef.current) return audioContextRef.current;
+  const getAudioElement = useCallback(() => {
+    if (typeof Audio === "undefined") return null;
+    if (audioRef.current) return audioRef.current;
 
-    const AudioContextClass = getAudioContextClass();
-    if (!AudioContextClass) return null;
+    const audio = new Audio(FROG_CROAK_AUDIO_URL);
+    audio.preload = "auto";
+    audio.volume = FROG_CROAK_VOLUME;
+    audioRef.current = audio;
 
-    audioContextRef.current = new AudioContextClass({
-      latencyHint: "interactive",
-    }) as AudioContext;
-    return audioContextRef.current;
+    return audio;
   }, []);
 
   const playCroak = useCallback(() => {
-    const context = getAudioContext();
-    if (!context) return;
+    const audio = getAudioElement();
+    if (!audio) return;
 
-    if (context.state === "suspended") {
-      void context.resume();
+    if (stopAudioTimeoutRef.current !== null) {
+      window.clearTimeout(stopAudioTimeoutRef.current);
     }
 
-    const now = context.currentTime;
-    const gain = context.createGain();
-    const lowOsc = context.createOscillator();
-    const midOsc = context.createOscillator();
-    const wobble = context.createOscillator();
-    const wobbleGain = context.createGain();
+    audio.pause();
+    audio.volume = FROG_CROAK_VOLUME;
+    if (Number.isFinite(audio.duration) && audio.duration > FROG_CROAK_CLIP_SECONDS) {
+      audio.currentTime = Math.random() * (audio.duration - FROG_CROAK_CLIP_SECONDS);
+    } else {
+      audio.currentTime = 0;
+    }
 
-    lowOsc.type = "sine";
-    midOsc.type = "triangle";
-    wobble.type = "sine";
+    void audio.play().catch(() => {
+      // ブラウザの自動再生制限時はクリックまで無音にする。
+    });
 
-    lowOsc.frequency.setValueAtTime(145, now);
-    lowOsc.frequency.exponentialRampToValueAtTime(92, now + 0.28);
-    midOsc.frequency.setValueAtTime(310, now);
-    midOsc.frequency.exponentialRampToValueAtTime(190, now + 0.22);
-    wobble.frequency.setValueAtTime(18, now);
-    wobbleGain.gain.setValueAtTime(38, now);
-
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(FROG_CROAK_VOLUME, now + 0.035);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
-
-    wobble.connect(wobbleGain);
-    wobbleGain.connect(lowOsc.frequency);
-    lowOsc.connect(gain);
-    midOsc.connect(gain);
-    gain.connect(context.destination);
-
-    lowOsc.start(now);
-    midOsc.start(now);
-    wobble.start(now);
-    lowOsc.stop(now + 0.36);
-    midOsc.stop(now + 0.32);
-    wobble.stop(now + 0.36);
-
-    window.setTimeout(() => {
-      lowOsc.disconnect();
-      midOsc.disconnect();
-      wobble.disconnect();
-      wobbleGain.disconnect();
-      gain.disconnect();
-    }, 420);
-  }, [getAudioContext]);
+    stopAudioTimeoutRef.current = window.setTimeout(() => {
+      audio.pause();
+    }, FROG_CROAK_CLIP_SECONDS * 1000);
+  }, [getAudioElement]);
 
   const triggerAction = useCallback(() => {
     jumpStartTimeRef.current = elapsedTimeRef.current;
@@ -125,24 +91,22 @@ const Frog: React.FC<FrogProps> = ({
   }, [playCroak]);
 
   useEffect(() => {
-    const unlockAudio = () => {
-      const context = getAudioContext();
-      if (context?.state === "suspended") {
-        void context.resume();
-      }
-    };
+    const audio = getAudioElement();
 
-    window.addEventListener("pointerdown", unlockAudio, { once: true });
+    audio?.load();
 
     return () => {
-      window.removeEventListener("pointerdown", unlockAudio);
-      void audioContextRef.current?.close();
+      if (stopAudioTimeoutRef.current !== null) {
+        window.clearTimeout(stopAudioTimeoutRef.current);
+      }
+      audio?.pause();
     };
-  }, [getAudioContext]);
+  }, [getAudioElement]);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     elapsedTimeRef.current = time;
+    nextActionAtRef.current ??= time + scheduleNextAction();
 
     const group = groupRef.current;
     if (!group) return;
@@ -177,7 +141,7 @@ const Frog: React.FC<FrogProps> = ({
       jumpOffset > 0 ? Math.cos(time * 16 + phaseOffset) * 0.05 : 0
     );
 
-    if (time > nextActionAtRef.current) {
+    if (nextActionAtRef.current !== null && time > nextActionAtRef.current) {
       triggerAction();
     }
   });
@@ -199,39 +163,55 @@ const Frog: React.FC<FrogProps> = ({
         document.body.style.cursor = "auto";
       }}
     >
-      <mesh position={[0, 0, 0]} scale={[1.25, 0.72, 0.95]}>
+      <mesh position={[0, -0.03, 0]} scale={[1.32, 0.74, 1.02]}>
         <sphereGeometry args={[0.32, 18, 12]} />
-        <meshStandardMaterial color="#5d8f3d" roughness={0.85} />
+        <meshStandardMaterial color="#63a642" roughness={0.72} emissive="#1f3d16" emissiveIntensity={0.16} />
       </mesh>
-      <mesh position={[0.18, 0.22, 0]} scale={[0.78, 0.62, 0.7]}>
+      <mesh position={[0.2, 0.22, 0]} scale={[0.82, 0.66, 0.74]}>
         <sphereGeometry args={[0.28, 18, 12]} />
-        <meshStandardMaterial color="#6fa64a" roughness={0.8} />
+        <meshStandardMaterial color="#7bc85a" roughness={0.68} emissive="#244d19" emissiveIntensity={0.18} />
       </mesh>
-      <mesh position={[0.34, 0.36, -0.13]} scale={[0.45, 0.45, 0.45]}>
+      <mesh position={[0.18, 0.08, 0]} scale={[0.7, 0.42, 0.5]}>
+        <sphereGeometry args={[0.18, 16, 10]} />
+        <meshStandardMaterial color="#e2d486" roughness={0.82} emissive="#4d4314" emissiveIntensity={0.1} />
+      </mesh>
+      <mesh position={[0.35, 0.38, -0.15]} scale={[0.52, 0.52, 0.52]}>
         <sphereGeometry args={[0.11, 12, 8]} />
-        <meshStandardMaterial color="#8fcf61" roughness={0.7} />
+        <meshStandardMaterial color="#a3e36d" roughness={0.58} emissive="#315c1c" emissiveIntensity={0.2} />
       </mesh>
-      <mesh position={[0.34, 0.36, 0.13]} scale={[0.45, 0.45, 0.45]}>
+      <mesh position={[0.35, 0.38, 0.15]} scale={[0.52, 0.52, 0.52]}>
         <sphereGeometry args={[0.11, 12, 8]} />
-        <meshStandardMaterial color="#8fcf61" roughness={0.7} />
+        <meshStandardMaterial color="#a3e36d" roughness={0.58} emissive="#315c1c" emissiveIntensity={0.2} />
       </mesh>
-      <mesh position={[0.39, 0.38, -0.13]} scale={[0.5, 0.5, 0.5]}>
+      <mesh position={[0.41, 0.41, -0.15]} scale={[0.58, 0.58, 0.58]}>
         <sphereGeometry args={[0.035, 8, 6]} />
         <meshStandardMaterial color="#131813" roughness={0.4} />
       </mesh>
-      <mesh position={[0.39, 0.38, 0.13]} scale={[0.5, 0.5, 0.5]}>
+      <mesh position={[0.41, 0.41, 0.15]} scale={[0.58, 0.58, 0.58]}>
         <sphereGeometry args={[0.035, 8, 6]} />
         <meshStandardMaterial color="#131813" roughness={0.4} />
       </mesh>
-      <mesh position={[-0.22, -0.1, -0.26]} rotation={[0.2, -0.45, -0.28]} scale={[0.8, 0.22, 0.28]}>
-        <sphereGeometry args={[0.26, 12, 8]} />
-        <meshStandardMaterial color="#4e7f33" roughness={0.9} />
+      <mesh position={[-0.06, 0.05, -0.21]} scale={[0.45, 0.2, 0.35]}>
+        <sphereGeometry args={[0.09, 10, 8]} />
+        <meshStandardMaterial color="#2d5a22" roughness={0.85} />
       </mesh>
-      <mesh position={[-0.22, -0.1, 0.26]} rotation={[-0.2, 0.45, 0.28]} scale={[0.8, 0.22, 0.28]}>
-        <sphereGeometry args={[0.26, 12, 8]} />
-        <meshStandardMaterial color="#4e7f33" roughness={0.9} />
+      <mesh position={[-0.08, 0.07, 0.18]} scale={[0.35, 0.16, 0.28]}>
+        <sphereGeometry args={[0.08, 10, 8]} />
+        <meshStandardMaterial color="#2d5a22" roughness={0.85} />
       </mesh>
-      <mesh position={[0.16, 0.08, 0]} rotation={[0, 0, Math.PI / 2]} scale={[0.45, 0.45, 0.12]}>
+      <mesh position={[0.08, 0.12, 0.24]} scale={[0.24, 0.12, 0.2]}>
+        <sphereGeometry args={[0.07, 10, 8]} />
+        <meshStandardMaterial color="#2d5a22" roughness={0.85} />
+      </mesh>
+      <mesh position={[-0.24, -0.12, -0.29]} rotation={[0.2, -0.45, -0.28]} scale={[0.92, 0.24, 0.32]}>
+        <sphereGeometry args={[0.26, 12, 8]} />
+        <meshStandardMaterial color="#4f8d35" roughness={0.86} />
+      </mesh>
+      <mesh position={[-0.24, -0.12, 0.29]} rotation={[-0.2, 0.45, 0.28]} scale={[0.92, 0.24, 0.32]}>
+        <sphereGeometry args={[0.26, 12, 8]} />
+        <meshStandardMaterial color="#4f8d35" roughness={0.86} />
+      </mesh>
+      <mesh position={[0.17, 0.08, 0]} rotation={[0, 0, Math.PI / 2]} scale={[0.5, 0.5, 0.14]}>
         <torusGeometry args={[0.17, 0.015, 6, 20, Math.PI]} />
         <meshStandardMaterial color="#29471f" roughness={0.8} />
       </mesh>
