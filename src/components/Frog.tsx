@@ -29,9 +29,121 @@ const scheduleNextAction = () =>
   FROG_RANDOM_ACTION_MIN_SECONDS +
   Math.random() * FROG_RANDOM_ACTION_VARIATION_SECONDS;
 
+const FrogModel = () => (
+  // Proportions reference: Quaternius Frog (CC0) on Poly Pizza, adapted for the pond scale.
+  <group rotation={[0, Math.PI / 2, 0]}>
+    <mesh position={[0, 0.02, 0]} rotation={[0, 0, -0.1]} scale={[1.38, 0.58, 0.86]}>
+      <sphereGeometry args={[0.34, 14, 10]} />
+      <meshStandardMaterial
+        color="#6da24a"
+        emissive="#203f1b"
+        emissiveIntensity={0.18}
+        flatShading
+        roughness={0.78}
+      />
+    </mesh>
+    <mesh position={[0.29, 0.21, 0]} rotation={[0, 0, -0.16]} scale={[0.92, 0.58, 0.72]}>
+      <sphereGeometry args={[0.31, 14, 10]} />
+      <meshStandardMaterial
+        color="#82b85a"
+        emissive="#274b1d"
+        emissiveIntensity={0.2}
+        flatShading
+        roughness={0.72}
+      />
+    </mesh>
+    <mesh position={[0.32, 0.1, 0]} rotation={[0, 0, -0.1]} scale={[0.66, 0.3, 0.48]}>
+      <sphereGeometry args={[0.23, 12, 8]} />
+      <meshStandardMaterial
+        color="#d7c77e"
+        emissive="#3d3513"
+        emissiveIntensity={0.08}
+        flatShading
+        roughness={0.84}
+      />
+    </mesh>
+
+    <mesh position={[0.43, 0.38, -0.16]} scale={[0.58, 0.58, 0.58]}>
+      <sphereGeometry args={[0.12, 12, 8]} />
+      <meshStandardMaterial color="#a7d66e" emissive="#355a1f" emissiveIntensity={0.2} flatShading />
+    </mesh>
+    <mesh position={[0.43, 0.38, 0.16]} scale={[0.58, 0.58, 0.58]}>
+      <sphereGeometry args={[0.12, 12, 8]} />
+      <meshStandardMaterial color="#a7d66e" emissive="#355a1f" emissiveIntensity={0.2} flatShading />
+    </mesh>
+    <mesh position={[0.49, 0.41, -0.16]} scale={[0.5, 0.5, 0.5]}>
+      <sphereGeometry args={[0.044, 10, 8]} />
+      <meshStandardMaterial color="#f4eab8" roughness={0.46} />
+    </mesh>
+    <mesh position={[0.49, 0.41, 0.16]} scale={[0.5, 0.5, 0.5]}>
+      <sphereGeometry args={[0.044, 10, 8]} />
+      <meshStandardMaterial color="#f4eab8" roughness={0.46} />
+    </mesh>
+    <mesh position={[0.505, 0.418, -0.16]} scale={[0.5, 0.5, 0.5]}>
+      <sphereGeometry args={[0.022, 8, 6]} />
+      <meshStandardMaterial color="#111611" roughness={0.34} />
+    </mesh>
+    <mesh position={[0.505, 0.418, 0.16]} scale={[0.5, 0.5, 0.5]}>
+      <sphereGeometry args={[0.022, 8, 6]} />
+      <meshStandardMaterial color="#111611" roughness={0.34} />
+    </mesh>
+
+    <mesh position={[-0.18, -0.11, -0.3]} rotation={[0.06, -0.28, -0.2]} scale={[0.94, 0.18, 0.26]}>
+      <sphereGeometry args={[0.28, 12, 8]} />
+      <meshStandardMaterial color="#547f36" flatShading roughness={0.86} />
+    </mesh>
+    <mesh position={[-0.18, -0.11, 0.3]} rotation={[-0.06, 0.28, 0.2]} scale={[0.94, 0.18, 0.26]}>
+      <sphereGeometry args={[0.28, 12, 8]} />
+      <meshStandardMaterial color="#547f36" flatShading roughness={0.86} />
+    </mesh>
+    <mesh position={[-0.43, -0.15, -0.36]} rotation={[0, -0.58, -0.04]} scale={[0.5, 0.09, 0.16]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#4b7131" flatShading roughness={0.88} />
+    </mesh>
+    <mesh position={[-0.43, -0.15, 0.36]} rotation={[0, 0.58, 0.04]} scale={[0.5, 0.09, 0.16]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#4b7131" flatShading roughness={0.88} />
+    </mesh>
+    <mesh position={[0.26, -0.09, -0.24]} rotation={[0, -0.32, -0.22]} scale={[0.5, 0.08, 0.12]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#5b8a3a" flatShading roughness={0.86} />
+    </mesh>
+    <mesh position={[0.26, -0.09, 0.24]} rotation={[0, 0.32, 0.22]} scale={[0.5, 0.08, 0.12]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#5b8a3a" flatShading roughness={0.86} />
+    </mesh>
+
+    {[-0.18, 0.02, 0.18].map((z) => (
+      <mesh key={`back-toe-left-${z}`} position={[-0.68, -0.17, -0.38 + z * 0.2]} rotation={[0, -0.7, 0]} scale={[0.14, 0.035, 0.035]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="#6d9c45" flatShading roughness={0.82} />
+      </mesh>
+    ))}
+    {[-0.18, 0.02, 0.18].map((z) => (
+      <mesh key={`back-toe-right-${z}`} position={[-0.68, -0.17, 0.38 - z * 0.2]} rotation={[0, 0.7, 0]} scale={[0.14, 0.035, 0.035]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="#6d9c45" flatShading roughness={0.82} />
+      </mesh>
+    ))}
+
+    <mesh position={[0.16, 0.18, -0.26]} scale={[0.2, 0.08, 0.07]}>
+      <sphereGeometry args={[0.12, 8, 6]} />
+      <meshStandardMaterial color="#345326" flatShading roughness={0.88} />
+    </mesh>
+    <mesh position={[0.03, 0.09, 0.26]} scale={[0.16, 0.06, 0.06]}>
+      <sphereGeometry args={[0.1, 8, 6]} />
+      <meshStandardMaterial color="#345326" flatShading roughness={0.88} />
+    </mesh>
+    <mesh position={[-0.08, 0.17, 0.03]} scale={[0.18, 0.08, 0.07]}>
+      <sphereGeometry args={[0.09, 8, 6]} />
+      <meshStandardMaterial color="#315023" flatShading roughness={0.88} />
+    </mesh>
+  </group>
+);
+
 /**
  * 蓮の葉に乗る小さなカエル。
- * 軽量なプリミティブで表現し、ランダム/クリックで鳴き声とジャンプを行う。
+ * 低ポリのモデル風メッシュで表現し、ランダム/クリックで鳴き声とジャンプを行う。
  */
 const Frog: React.FC<FrogProps> = ({
   position,
@@ -163,58 +275,7 @@ const Frog: React.FC<FrogProps> = ({
         document.body.style.cursor = "auto";
       }}
     >
-      <mesh position={[0, -0.03, 0]} scale={[1.32, 0.74, 1.02]}>
-        <sphereGeometry args={[0.32, 18, 12]} />
-        <meshStandardMaterial color="#63a642" roughness={0.72} emissive="#1f3d16" emissiveIntensity={0.16} />
-      </mesh>
-      <mesh position={[0.2, 0.22, 0]} scale={[0.82, 0.66, 0.74]}>
-        <sphereGeometry args={[0.28, 18, 12]} />
-        <meshStandardMaterial color="#7bc85a" roughness={0.68} emissive="#244d19" emissiveIntensity={0.18} />
-      </mesh>
-      <mesh position={[0.18, 0.08, 0]} scale={[0.7, 0.42, 0.5]}>
-        <sphereGeometry args={[0.18, 16, 10]} />
-        <meshStandardMaterial color="#e2d486" roughness={0.82} emissive="#4d4314" emissiveIntensity={0.1} />
-      </mesh>
-      <mesh position={[0.35, 0.38, -0.15]} scale={[0.52, 0.52, 0.52]}>
-        <sphereGeometry args={[0.11, 12, 8]} />
-        <meshStandardMaterial color="#a3e36d" roughness={0.58} emissive="#315c1c" emissiveIntensity={0.2} />
-      </mesh>
-      <mesh position={[0.35, 0.38, 0.15]} scale={[0.52, 0.52, 0.52]}>
-        <sphereGeometry args={[0.11, 12, 8]} />
-        <meshStandardMaterial color="#a3e36d" roughness={0.58} emissive="#315c1c" emissiveIntensity={0.2} />
-      </mesh>
-      <mesh position={[0.41, 0.41, -0.15]} scale={[0.58, 0.58, 0.58]}>
-        <sphereGeometry args={[0.035, 8, 6]} />
-        <meshStandardMaterial color="#131813" roughness={0.4} />
-      </mesh>
-      <mesh position={[0.41, 0.41, 0.15]} scale={[0.58, 0.58, 0.58]}>
-        <sphereGeometry args={[0.035, 8, 6]} />
-        <meshStandardMaterial color="#131813" roughness={0.4} />
-      </mesh>
-      <mesh position={[-0.06, 0.05, -0.21]} scale={[0.45, 0.2, 0.35]}>
-        <sphereGeometry args={[0.09, 10, 8]} />
-        <meshStandardMaterial color="#2d5a22" roughness={0.85} />
-      </mesh>
-      <mesh position={[-0.08, 0.07, 0.18]} scale={[0.35, 0.16, 0.28]}>
-        <sphereGeometry args={[0.08, 10, 8]} />
-        <meshStandardMaterial color="#2d5a22" roughness={0.85} />
-      </mesh>
-      <mesh position={[0.08, 0.12, 0.24]} scale={[0.24, 0.12, 0.2]}>
-        <sphereGeometry args={[0.07, 10, 8]} />
-        <meshStandardMaterial color="#2d5a22" roughness={0.85} />
-      </mesh>
-      <mesh position={[-0.24, -0.12, -0.29]} rotation={[0.2, -0.45, -0.28]} scale={[0.92, 0.24, 0.32]}>
-        <sphereGeometry args={[0.26, 12, 8]} />
-        <meshStandardMaterial color="#4f8d35" roughness={0.86} />
-      </mesh>
-      <mesh position={[-0.24, -0.12, 0.29]} rotation={[-0.2, 0.45, 0.28]} scale={[0.92, 0.24, 0.32]}>
-        <sphereGeometry args={[0.26, 12, 8]} />
-        <meshStandardMaterial color="#4f8d35" roughness={0.86} />
-      </mesh>
-      <mesh position={[0.17, 0.08, 0]} rotation={[0, 0, Math.PI / 2]} scale={[0.5, 0.5, 0.14]}>
-        <torusGeometry args={[0.17, 0.015, 6, 20, Math.PI]} />
-        <meshStandardMaterial color="#29471f" roughness={0.8} />
-      </mesh>
+      <FrogModel />
     </group>
   );
 };
