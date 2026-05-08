@@ -63,9 +63,12 @@ export const FROG_JUMP_HEIGHT = 0.34;
 export const FROG_JUMP_DURATION = 0.58;
 export const FROG_RANDOM_ACTION_MIN_SECONDS = 5;
 export const FROG_RANDOM_ACTION_VARIATION_SECONDS = 8;
-export const FROG_CROAK_VOLUME = 0.22;
-export const FROG_CROAK_AUDIO_URL = "/audio/ambient/spring-frogs-night.ogg";
-export const FROG_CROAK_CLIP_SECONDS = 1.2;
+export const FROG_CROAK_VOLUME = 0.18;
+// Buergeria buergeri / カジカガエル: リトルスター, CC BY-SA 4.0
+// https://commons.wikimedia.org/wiki/File:Buergeria_buergeri.ogg
+export const FROG_CROAK_AUDIO_URL =
+  "https://upload.wikimedia.org/wikipedia/commons/0/0c/Buergeria_buergeri.ogg";
+export const FROG_CROAK_CLIP_SECONDS = 2.4;
 
 // 水面の波の設定
 export const WATER_HEIGHT_BASE = 8;
