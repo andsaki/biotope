@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -25,125 +25,105 @@ interface FrogProps {
   phaseOffset: number;
 }
 
+type Vec3 = [number, number, number];
+
 const scheduleNextAction = () =>
   FROG_RANDOM_ACTION_MIN_SECONDS +
   Math.random() * FROG_RANDOM_ACTION_VARIATION_SECONDS;
 
-const FrogModel = () => (
-  // Proportions reference: Quaternius Frog (CC0) on Poly Pizza, adapted for the pond scale.
-  <group rotation={[0, Math.PI / 2, 0]}>
-    <mesh position={[0, 0.02, 0]} rotation={[0, 0, -0.1]} scale={[1.38, 0.58, 0.86]}>
-      <sphereGeometry args={[0.34, 14, 10]} />
-      <meshStandardMaterial
-        color="#6da24a"
-        emissive="#203f1b"
-        emissiveIntensity={0.18}
-        flatShading
-        roughness={0.78}
-      />
-    </mesh>
-    <mesh position={[0.29, 0.21, 0]} rotation={[0, 0, -0.16]} scale={[0.92, 0.58, 0.72]}>
-      <sphereGeometry args={[0.31, 14, 10]} />
-      <meshStandardMaterial
-        color="#82b85a"
-        emissive="#274b1d"
-        emissiveIntensity={0.2}
-        flatShading
-        roughness={0.72}
-      />
-    </mesh>
-    <mesh position={[0.32, 0.1, 0]} rotation={[0, 0, -0.1]} scale={[0.66, 0.3, 0.48]}>
-      <sphereGeometry args={[0.23, 12, 8]} />
-      <meshStandardMaterial
-        color="#d7c77e"
-        emissive="#3d3513"
-        emissiveIntensity={0.08}
-        flatShading
-        roughness={0.84}
-      />
-    </mesh>
+const createMaterial = (color: number, roughness = 0.82, emissive = 0x000000) =>
+  new THREE.MeshStandardMaterial({
+    color,
+    roughness,
+    metalness: 0,
+    emissive,
+    emissiveIntensity: 0.08,
+  });
 
-    <mesh position={[0.43, 0.38, -0.16]} scale={[0.58, 0.58, 0.58]}>
-      <sphereGeometry args={[0.12, 12, 8]} />
-      <meshStandardMaterial color="#a7d66e" emissive="#355a1f" emissiveIntensity={0.2} flatShading />
-    </mesh>
-    <mesh position={[0.43, 0.38, 0.16]} scale={[0.58, 0.58, 0.58]}>
-      <sphereGeometry args={[0.12, 12, 8]} />
-      <meshStandardMaterial color="#a7d66e" emissive="#355a1f" emissiveIntensity={0.2} flatShading />
-    </mesh>
-    <mesh position={[0.49, 0.41, -0.16]} scale={[0.5, 0.5, 0.5]}>
-      <sphereGeometry args={[0.044, 10, 8]} />
-      <meshStandardMaterial color="#f4eab8" roughness={0.46} />
-    </mesh>
-    <mesh position={[0.49, 0.41, 0.16]} scale={[0.5, 0.5, 0.5]}>
-      <sphereGeometry args={[0.044, 10, 8]} />
-      <meshStandardMaterial color="#f4eab8" roughness={0.46} />
-    </mesh>
-    <mesh position={[0.505, 0.418, -0.16]} scale={[0.5, 0.5, 0.5]}>
-      <sphereGeometry args={[0.022, 8, 6]} />
-      <meshStandardMaterial color="#111611" roughness={0.34} />
-    </mesh>
-    <mesh position={[0.505, 0.418, 0.16]} scale={[0.5, 0.5, 0.5]}>
-      <sphereGeometry args={[0.022, 8, 6]} />
-      <meshStandardMaterial color="#111611" roughness={0.34} />
-    </mesh>
+const createFacetedGeometry = (geometry: THREE.BufferGeometry) => {
+  const facetedGeometry = geometry.toNonIndexed();
+  facetedGeometry.computeVertexNormals();
+  return facetedGeometry;
+};
 
-    <mesh position={[-0.18, -0.11, -0.3]} rotation={[0.06, -0.28, -0.2]} scale={[0.94, 0.18, 0.26]}>
-      <sphereGeometry args={[0.28, 12, 8]} />
-      <meshStandardMaterial color="#547f36" flatShading roughness={0.86} />
-    </mesh>
-    <mesh position={[-0.18, -0.11, 0.3]} rotation={[-0.06, 0.28, 0.2]} scale={[0.94, 0.18, 0.26]}>
-      <sphereGeometry args={[0.28, 12, 8]} />
-      <meshStandardMaterial color="#547f36" flatShading roughness={0.86} />
-    </mesh>
-    <mesh position={[-0.43, -0.15, -0.36]} rotation={[0, -0.58, -0.04]} scale={[0.5, 0.09, 0.16]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#4b7131" flatShading roughness={0.88} />
-    </mesh>
-    <mesh position={[-0.43, -0.15, 0.36]} rotation={[0, 0.58, 0.04]} scale={[0.5, 0.09, 0.16]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#4b7131" flatShading roughness={0.88} />
-    </mesh>
-    <mesh position={[0.26, -0.09, -0.24]} rotation={[0, -0.32, -0.22]} scale={[0.5, 0.08, 0.12]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#5b8a3a" flatShading roughness={0.86} />
-    </mesh>
-    <mesh position={[0.26, -0.09, 0.24]} rotation={[0, 0.32, 0.22]} scale={[0.5, 0.08, 0.12]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#5b8a3a" flatShading roughness={0.86} />
-    </mesh>
+const createCuteFrogModel = () => {
+  const root = new THREE.Group();
+  const moss = createMaterial(0x6f9346, 0.86, 0x15250d);
+  const lightMoss = createMaterial(0x93b860, 0.78, 0x1e3210);
+  const belly = createMaterial(0xd8c980, 0.86);
+  const eye = createMaterial(0xf0e6b5, 0.5);
+  const pupil = createMaterial(0x0b0d09, 0.42);
+  const cheek = createMaterial(0xcaa35f, 0.84);
 
-    {[-0.18, 0.02, 0.18].map((z) => (
-      <mesh key={`back-toe-left-${z}`} position={[-0.68, -0.17, -0.38 + z * 0.2]} rotation={[0, -0.7, 0]} scale={[0.14, 0.035, 0.035]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="#6d9c45" flatShading roughness={0.82} />
-      </mesh>
-    ))}
-    {[-0.18, 0.02, 0.18].map((z) => (
-      <mesh key={`back-toe-right-${z}`} position={[-0.68, -0.17, 0.38 - z * 0.2]} rotation={[0, 0.7, 0]} scale={[0.14, 0.035, 0.035]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="#6d9c45" flatShading roughness={0.82} />
-      </mesh>
-    ))}
+  const addMesh = (
+    geometry: THREE.BufferGeometry,
+    material: THREE.Material,
+    position: Vec3,
+    scale: Vec3,
+    rotation: Vec3 = [0, 0, 0]
+  ) => {
+    const mesh = new THREE.Mesh(createFacetedGeometry(geometry), material);
+    mesh.position.set(...position);
+    mesh.scale.set(...scale);
+    mesh.rotation.set(...rotation);
+    root.add(mesh);
+  };
 
-    <mesh position={[0.16, 0.18, -0.26]} scale={[0.2, 0.08, 0.07]}>
-      <sphereGeometry args={[0.12, 8, 6]} />
-      <meshStandardMaterial color="#345326" flatShading roughness={0.88} />
-    </mesh>
-    <mesh position={[0.03, 0.09, 0.26]} scale={[0.16, 0.06, 0.06]}>
-      <sphereGeometry args={[0.1, 8, 6]} />
-      <meshStandardMaterial color="#345326" flatShading roughness={0.88} />
-    </mesh>
-    <mesh position={[-0.08, 0.17, 0.03]} scale={[0.18, 0.08, 0.07]}>
-      <sphereGeometry args={[0.09, 8, 6]} />
-      <meshStandardMaterial color="#315023" flatShading roughness={0.88} />
-    </mesh>
-  </group>
-);
+  const sphere = (
+    material: THREE.Material,
+    position: Vec3,
+    scale: Vec3,
+    rotation: Vec3 = [0, 0, 0],
+    widthSegments = 10,
+    heightSegments = 7
+  ) =>
+    addMesh(
+      new THREE.SphereGeometry(1, widthSegments, heightSegments),
+      material,
+      position,
+      scale,
+      rotation
+    );
+
+  const box = (
+    material: THREE.Material,
+    position: Vec3,
+    scale: Vec3,
+    rotation: Vec3 = [0, 0, 0]
+  ) =>
+    addMesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      material,
+      position,
+      scale,
+      rotation
+    );
+
+  sphere(moss, [-0.08, 0.03, 0], [0.48, 0.19, 0.34], [0, 0, -0.04], 12, 7);
+  sphere(lightMoss, [0.34, 0.15, 0], [0.31, 0.2, 0.27], [0, 0, -0.12], 12, 7);
+  sphere(belly, [0.33, 0.03, 0], [0.2, 0.07, 0.17], [0, 0, -0.08], 10, 6);
+
+  sphere(lightMoss, [0.42, 0.3, -0.13], [0.09, 0.08, 0.08], [0, 0, -0.12], 8, 5);
+  sphere(lightMoss, [0.42, 0.3, 0.13], [0.09, 0.08, 0.08], [0, 0, -0.12], 8, 5);
+  sphere(eye, [0.46, 0.325, -0.13], [0.045, 0.035, 0.04], [0, 0, -0.12], 8, 5);
+  sphere(eye, [0.46, 0.325, 0.13], [0.045, 0.035, 0.04], [0, 0, -0.12], 8, 5);
+  sphere(pupil, [0.477, 0.333, -0.13], [0.018, 0.012, 0.018], [0, 0, -0.12], 6, 4);
+  sphere(pupil, [0.477, 0.333, 0.13], [0.018, 0.012, 0.018], [0, 0, -0.12], 6, 4);
+
+  sphere(moss, [-0.34, -0.08, -0.25], [0.2, 0.06, 0.11], [0.1, -0.45, -0.08], 8, 5);
+  sphere(moss, [-0.34, -0.08, 0.25], [0.2, 0.06, 0.11], [-0.1, 0.45, 0.08], 8, 5);
+  box(moss, [0.19, -0.1, -0.24], [0.23, 0.04, 0.055], [0.04, -0.32, -0.12]);
+  box(moss, [0.19, -0.1, 0.24], [0.23, 0.04, 0.055], [-0.04, 0.32, 0.12]);
+  sphere(cheek, [0.5, 0.17, -0.18], [0.025, 0.012, 0.025], [0, 0, -0.08], 6, 4);
+  sphere(cheek, [0.5, 0.17, 0.18], [0.025, 0.012, 0.025], [0, 0, -0.08], 6, 4);
+
+  root.rotation.y = -Math.PI / 2;
+  return root;
+};
 
 /**
  * 蓮の葉に乗る小さなカエル。
- * 低ポリのモデル風メッシュで表現し、ランダム/クリックで鳴き声とジャンプを行う。
+ * 遠景でも気持ち悪く見えない、記号寄りの小さなモデルとして配置する。
  */
 const Frog: React.FC<FrogProps> = ({
   position,
@@ -153,6 +133,7 @@ const Frog: React.FC<FrogProps> = ({
   phaseOffset,
 }) => {
   const groupRef = useRef<THREE.Group>(null);
+  const frogModel = useMemo(createCuteFrogModel, []);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stopAudioTimeoutRef = useRef<number | null>(null);
   const jumpStartTimeRef = useRef<number | null>(null);
@@ -275,7 +256,7 @@ const Frog: React.FC<FrogProps> = ({
         document.body.style.cursor = "auto";
       }}
     >
-      <FrogModel />
+      <primitive object={frogModel} />
     </group>
   );
 };
