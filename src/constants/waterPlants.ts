@@ -45,8 +45,8 @@ export const FROG_DATA: ReadonlyArray<{
 }> = [
   {
     lilyIndex: 2,
-    offset: [0.08, 0.46, -0.06],
-    scale: 0.88,
+    offset: [0.08, 0.38, -0.06],
+    scale: 0.58,
     rotation: -Math.PI / 5,
     phaseOffset: 0.4,
   },
