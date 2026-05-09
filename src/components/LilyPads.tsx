@@ -2,7 +2,9 @@ import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useModelScene } from "../hooks/useModelScene";
+import Frog from "./Frog";
 import {
+  FROG_DATA,
   LILY_DATA,
   WATER_HEIGHT_BASE,
   WATER_HEIGHT_AMPLITUDE,
@@ -70,6 +72,21 @@ const LilyPads: React.FC = () => {
           <primitive object={lilyClones[i]} />
         </group>
       ))}
+      {FROG_DATA.map((frog, i) => {
+        const lily = LILY_DATA[frog.lilyIndex];
+        if (!lily) return null;
+
+        return (
+          <Frog
+            key={`frog-${i}`}
+            position={lily.position}
+            offset={frog.offset}
+            scale={frog.scale}
+            rotation={frog.rotation}
+            phaseOffset={frog.phaseOffset}
+          />
+        );
+      })}
     </group>
   );
 };

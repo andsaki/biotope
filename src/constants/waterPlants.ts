@@ -35,6 +35,34 @@ export const LILY_DATA: ReadonlyArray<{
   },
 ];
 
+// 蓮の葉に乗るカエルのデータ（夏季限定）
+export const FROG_DATA: ReadonlyArray<{
+  lilyIndex: number;
+  offset: [number, number, number];
+  scale: number;
+  rotation: number;
+  phaseOffset: number;
+}> = [
+  {
+    lilyIndex: 2,
+    offset: [0.08, 0.34, -0.06],
+    scale: 0.18,
+    rotation: -Math.PI / 5,
+    phaseOffset: 0.4,
+  },
+];
+
+export const FROG_JUMP_HEIGHT = 0.34;
+export const FROG_JUMP_DURATION = 0.58;
+export const FROG_RANDOM_ACTION_MIN_SECONDS = 5;
+export const FROG_RANDOM_ACTION_VARIATION_SECONDS = 8;
+export const FROG_CROAK_VOLUME = 0.18;
+// Buergeria buergeri / カジカガエル: リトルスター, CC BY-SA 4.0
+// https://commons.wikimedia.org/wiki/File:Buergeria_buergeri.ogg
+export const FROG_CROAK_AUDIO_URL =
+  "https://upload.wikimedia.org/wikipedia/commons/0/0c/Buergeria_buergeri.ogg";
+export const FROG_CROAK_CLIP_SECONDS = 2.4;
+
 // 水面の波の設定
 export const WATER_HEIGHT_BASE = 8;
 export const WATER_HEIGHT_AMPLITUDE = 0.5;
