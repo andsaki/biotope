@@ -48,7 +48,8 @@ const Frog: React.FC<FrogProps> = ({
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const modelRef = useRef<THREE.Group>(null);
-  const rippleRef = useRef<THREE.Mesh>(null);
+  const rippleOuterRef = useRef<THREE.Mesh>(null);
+  const rippleInnerRef = useRef<THREE.Mesh>(null);
   const frogScene = useModelScene("frog");
   const frogModel = useMemo(() => {
     const model = frogScene.clone(true);
@@ -134,7 +135,8 @@ const Frog: React.FC<FrogProps> = ({
     const group = groupRef.current;
     if (!group) return;
     const model = modelRef.current;
-    const ripple = rippleRef.current;
+    const rippleOuter = rippleOuterRef.current;
+    const rippleInner = rippleInnerRef.current;
 
     const waterHeight =
       WATER_HEIGHT_BASE +
@@ -218,22 +220,33 @@ const Frog: React.FC<FrogProps> = ({
         (attentive ? Math.cos(time * 7.5) * 0.035 : 0);
     }
 
-    if (ripple) {
-      const material = ripple.material as THREE.MeshBasicMaterial;
+    if (rippleOuter && rippleInner) {
+      const outerMaterial = rippleOuter.material as THREE.MeshBasicMaterial;
+      const innerMaterial = rippleInner.material as THREE.MeshBasicMaterial;
       const rippleStart = landingRippleStartRef.current;
       if (rippleStart === null) {
-        ripple.visible = false;
+        rippleOuter.visible = false;
+        rippleInner.visible = false;
       } else {
         const rippleProgress = (time - rippleStart) / FROG_LANDING_RIPPLE_SECONDS;
         if (rippleProgress >= 1) {
           landingRippleStartRef.current = null;
-          ripple.visible = false;
+          rippleOuter.visible = false;
+          rippleInner.visible = false;
         } else {
-          ripple.visible = true;
-          ripple.position.y = -1.55;
-          const rippleScale = (1.4 + rippleProgress * 5.8) / scale;
-          ripple.scale.set(rippleScale, rippleScale, rippleScale);
-          material.opacity = (1 - rippleProgress) * 0.62;
+          const opacity = (1 - rippleProgress) * 0.9;
+
+          rippleOuter.visible = true;
+          rippleOuter.position.y = -0.78;
+          const outerScale = (1.2 + rippleProgress * 7.5) / scale;
+          rippleOuter.scale.set(outerScale, outerScale, outerScale);
+          outerMaterial.opacity = opacity;
+
+          rippleInner.visible = true;
+          rippleInner.position.y = -0.76;
+          const innerScale = (0.62 + rippleProgress * 4.2) / scale;
+          rippleInner.scale.set(innerScale, innerScale, innerScale);
+          innerMaterial.opacity = opacity * 0.55;
         }
       }
     }
@@ -274,9 +287,25 @@ const Frog: React.FC<FrogProps> = ({
       }}
     >
       <primitive ref={modelRef} object={frogModel} />
-      <mesh ref={rippleRef} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <torusGeometry args={[0.18, 0.008, 8, 64]} />
-        <meshBasicMaterial color="#c8f7d0" transparent opacity={0} depthWrite={false} />
+      <mesh ref={rippleOuterRef} renderOrder={20} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <torusGeometry args={[0.18, 0.014, 8, 80]} />
+        <meshBasicMaterial
+          color="#f1ffd1"
+          transparent
+          opacity={0}
+          depthTest={false}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh ref={rippleInnerRef} renderOrder={21} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <torusGeometry args={[0.16, 0.01, 8, 72]} />
+        <meshBasicMaterial
+          color="#9ffff2"
+          transparent
+          opacity={0}
+          depthTest={false}
+          depthWrite={false}
+        />
       </mesh>
     </group>
   );
