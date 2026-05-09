@@ -234,19 +234,19 @@ const Frog: React.FC<FrogProps> = ({
           rippleOuter.visible = false;
           rippleInner.visible = false;
         } else {
-          const opacity = (1 - rippleProgress) * 0.9;
+          const opacity = (1 - rippleProgress) * 0.52;
 
           rippleOuter.visible = true;
           rippleOuter.position.y = -0.78;
-          const outerScale = (1.2 + rippleProgress * 7.5) / scale;
+          const outerScale = (0.85 + rippleProgress * 3.6) / scale;
           rippleOuter.scale.set(outerScale, outerScale, outerScale);
           outerMaterial.opacity = opacity;
 
           rippleInner.visible = true;
           rippleInner.position.y = -0.76;
-          const innerScale = (0.62 + rippleProgress * 4.2) / scale;
+          const innerScale = (0.46 + rippleProgress * 2.1) / scale;
           rippleInner.scale.set(innerScale, innerScale, innerScale);
-          innerMaterial.opacity = opacity * 0.55;
+          innerMaterial.opacity = opacity * 0.45;
         }
       }
     }
@@ -288,7 +288,7 @@ const Frog: React.FC<FrogProps> = ({
     >
       <primitive ref={modelRef} object={frogModel} />
       <mesh ref={rippleOuterRef} renderOrder={20} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <torusGeometry args={[0.18, 0.014, 8, 80]} />
+        <torusGeometry args={[0.18, 0.01, 8, 80]} />
         <meshBasicMaterial
           color="#f1ffd1"
           transparent
@@ -298,7 +298,7 @@ const Frog: React.FC<FrogProps> = ({
         />
       </mesh>
       <mesh ref={rippleInnerRef} renderOrder={21} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <torusGeometry args={[0.16, 0.01, 8, 72]} />
+        <torusGeometry args={[0.16, 0.007, 8, 72]} />
         <meshBasicMaterial
           color="#9ffff2"
           transparent
