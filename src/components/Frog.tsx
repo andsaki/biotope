@@ -230,10 +230,10 @@ const Frog: React.FC<FrogProps> = ({
           ripple.visible = false;
         } else {
           ripple.visible = true;
-          ripple.position.y = -0.16;
-          const rippleScale = 0.45 + rippleProgress * 1.15;
+          ripple.position.y = -1.55;
+          const rippleScale = (1.4 + rippleProgress * 5.8) / scale;
           ripple.scale.set(rippleScale, rippleScale, rippleScale);
-          material.opacity = (1 - rippleProgress) * 0.42;
+          material.opacity = (1 - rippleProgress) * 0.62;
         }
       }
     }
@@ -275,7 +275,7 @@ const Frog: React.FC<FrogProps> = ({
     >
       <primitive ref={modelRef} object={frogModel} />
       <mesh ref={rippleRef} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <torusGeometry args={[0.42, 0.012, 8, 40]} />
+        <torusGeometry args={[0.18, 0.008, 8, 64]} />
         <meshBasicMaterial color="#c8f7d0" transparent opacity={0} depthWrite={false} />
       </mesh>
     </group>
