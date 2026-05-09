@@ -30,6 +30,11 @@ const scheduleNextAction = () =>
   FROG_RANDOM_ACTION_MIN_SECONDS +
   Math.random() * FROG_RANDOM_ACTION_VARIATION_SECONDS;
 
+const FROG_COMBO_WINDOW_SECONDS = 1.2;
+const FROG_TRICK_DURATION_SECONDS = 0.95;
+const FROG_ATTENTION_SECONDS = 2.8;
+const FROG_LANDING_RIPPLE_SECONDS = 0.65;
+
 /**
  * 蓮の葉に乗る小さなカエル。
  * Get3DModelsの低ポリGLBを配置し、ランダム/クリックで鳴き声とジャンプを行う。
@@ -43,6 +48,7 @@ const Frog: React.FC<FrogProps> = ({
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const modelRef = useRef<THREE.Group>(null);
+  const rippleRef = useRef<THREE.Mesh>(null);
   const frogScene = useModelScene("frog");
   const frogModel = useMemo(() => {
     const model = frogScene.clone(true);
@@ -52,7 +58,12 @@ const Frog: React.FC<FrogProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stopAudioTimeoutRef = useRef<number | null>(null);
   const jumpStartTimeRef = useRef<number | null>(null);
+  const trickStartTimeRef = useRef<number | null>(null);
+  const landingRippleStartRef = useRef<number | null>(null);
   const nextActionAtRef = useRef<number | null>(null);
+  const lastClickAtRef = useRef<number | null>(null);
+  const clickComboRef = useRef(0);
+  const attentionUntilRef = useRef(0);
   const elapsedTimeRef = useRef(0);
 
   const getAudioElement = useCallback(() => {
@@ -92,8 +103,12 @@ const Frog: React.FC<FrogProps> = ({
     }, FROG_CROAK_CLIP_SECONDS * 1000);
   }, [getAudioElement]);
 
-  const triggerAction = useCallback(() => {
+  const triggerAction = useCallback((playTrick = false) => {
     jumpStartTimeRef.current = elapsedTimeRef.current;
+    if (playTrick) {
+      trickStartTimeRef.current = elapsedTimeRef.current;
+      attentionUntilRef.current = elapsedTimeRef.current + FROG_ATTENTION_SECONDS;
+    }
     nextActionAtRef.current = elapsedTimeRef.current + scheduleNextAction();
     playCroak();
   }, [playCroak]);
@@ -119,6 +134,7 @@ const Frog: React.FC<FrogProps> = ({
     const group = groupRef.current;
     if (!group) return;
     const model = modelRef.current;
+    const ripple = rippleRef.current;
 
     const waterHeight =
       WATER_HEIGHT_BASE +
@@ -130,14 +146,30 @@ const Frog: React.FC<FrogProps> = ({
 
     let jumpOffset = 0;
     let jumpProgress = 0;
+    let jumpEnded = false;
     const jumpStart = jumpStartTimeRef.current;
     if (jumpStart !== null) {
       jumpProgress = (time - jumpStart) / FROG_JUMP_DURATION;
       if (jumpProgress >= 1) {
         jumpStartTimeRef.current = null;
         jumpProgress = 0;
+        jumpEnded = true;
       } else {
-        jumpOffset = Math.sin(jumpProgress * Math.PI) * FROG_JUMP_HEIGHT;
+        const jumpMultiplier = trickStartTimeRef.current !== null ? 1.45 : 1;
+        jumpOffset = Math.sin(jumpProgress * Math.PI) * FROG_JUMP_HEIGHT * jumpMultiplier;
+      }
+    }
+
+    if (jumpEnded) {
+      landingRippleStartRef.current = time;
+    }
+
+    let trickProgress = 0;
+    if (trickStartTimeRef.current !== null) {
+      trickProgress = (time - trickStartTimeRef.current) / FROG_TRICK_DURATION_SECONDS;
+      if (trickProgress >= 1) {
+        trickStartTimeRef.current = null;
+        trickProgress = 0;
       }
     }
 
@@ -148,12 +180,17 @@ const Frog: React.FC<FrogProps> = ({
     );
     group.rotation.set(
       jumpOffset > 0 ? Math.sin(time * 18 + phaseOffset) * 0.08 : 0,
-      rotation + Math.sin(time * 1.2 + phaseOffset) * 0.06,
+      rotation +
+        Math.sin(time * 1.2 + phaseOffset) * 0.06 +
+        (trickProgress > 0 ? Math.sin(trickProgress * Math.PI) * 0.45 : 0),
       jumpOffset > 0 ? Math.cos(time * 16 + phaseOffset) * 0.05 : 0
     );
 
     if (model) {
       const breathing = Math.sin(time * 2.2 + phaseOffset) * 0.018;
+      const attentive = time < attentionUntilRef.current;
+      const curiousLean = attentive ? Math.sin(time * 8.4) * 0.055 : 0;
+      const trickSpin = trickProgress > 0 ? trickProgress * Math.PI * 2 : 0;
       const crouch =
         jumpProgress > 0 && jumpProgress < 0.18
           ? Math.sin((jumpProgress / 0.18) * Math.PI) * 0.1
@@ -173,8 +210,32 @@ const Frog: React.FC<FrogProps> = ({
       model.rotation.y =
         -Math.PI / 2 +
         Math.sin(time * 0.7 + phaseOffset) * 0.06 +
+        curiousLean +
+        trickSpin +
         (jumpOffset > 0 ? Math.sin(jumpProgress * Math.PI) * 0.18 : 0);
-      model.rotation.z = Math.sin(time * 1.1 + phaseOffset) * 0.018;
+      model.rotation.z =
+        Math.sin(time * 1.1 + phaseOffset) * 0.018 +
+        (attentive ? Math.cos(time * 7.5) * 0.035 : 0);
+    }
+
+    if (ripple) {
+      const material = ripple.material as THREE.MeshBasicMaterial;
+      const rippleStart = landingRippleStartRef.current;
+      if (rippleStart === null) {
+        ripple.visible = false;
+      } else {
+        const rippleProgress = (time - rippleStart) / FROG_LANDING_RIPPLE_SECONDS;
+        if (rippleProgress >= 1) {
+          landingRippleStartRef.current = null;
+          ripple.visible = false;
+        } else {
+          ripple.visible = true;
+          ripple.position.y = -0.16;
+          const rippleScale = 0.45 + rippleProgress * 1.15;
+          ripple.scale.set(rippleScale, rippleScale, rippleScale);
+          material.opacity = (1 - rippleProgress) * 0.42;
+        }
+      }
     }
 
     if (nextActionAtRef.current !== null && time > nextActionAtRef.current) {
@@ -184,7 +245,19 @@ const Frog: React.FC<FrogProps> = ({
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
-    triggerAction();
+    const time = elapsedTimeRef.current;
+    const lastClickAt = lastClickAtRef.current;
+    clickComboRef.current =
+      lastClickAt !== null && time - lastClickAt < FROG_COMBO_WINDOW_SECONDS
+        ? clickComboRef.current + 1
+        : 1;
+    lastClickAtRef.current = time;
+
+    const playTrick = clickComboRef.current >= 3;
+    if (playTrick) {
+      clickComboRef.current = 0;
+    }
+    triggerAction(playTrick);
   };
 
   return (
@@ -194,12 +267,17 @@ const Frog: React.FC<FrogProps> = ({
       onClick={handleClick}
       onPointerOver={() => {
         document.body.style.cursor = "pointer";
+        attentionUntilRef.current = elapsedTimeRef.current + FROG_ATTENTION_SECONDS;
       }}
       onPointerOut={() => {
         document.body.style.cursor = "auto";
       }}
     >
       <primitive ref={modelRef} object={frogModel} />
+      <mesh ref={rippleRef} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <torusGeometry args={[0.42, 0.012, 8, 40]} />
+        <meshBasicMaterial color="#c8f7d0" transparent opacity={0} depthWrite={false} />
+      </mesh>
     </group>
   );
 };
