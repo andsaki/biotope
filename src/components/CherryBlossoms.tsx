@@ -129,7 +129,7 @@ const CherryBlossoms: React.FC = React.memo(() => {
   }
 
   return (
-    <points ref={particlesRef}>
+    <points ref={particlesRef} renderOrder={20}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -144,6 +144,8 @@ const CherryBlossoms: React.FC = React.memo(() => {
         color={PETAL_COLOR}
         transparent
         opacity={PETAL_OPACITY}
+        depthWrite={false}
+        depthTest={false}
         sizeAttenuation
         map={createPetalTexture()}
         alphaTest={PETAL_ALPHA_TEST}

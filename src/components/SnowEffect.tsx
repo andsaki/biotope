@@ -126,7 +126,7 @@ const SnowEffect: React.FC = React.memo(() => {
   }
 
   return (
-    <points ref={snowRef}>
+    <points ref={snowRef} renderOrder={20}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -141,6 +141,8 @@ const SnowEffect: React.FC = React.memo(() => {
         color={SNOW_COLOR}
         transparent
         opacity={SNOW_OPACITY}
+        depthWrite={false}
+        depthTest={false}
         sizeAttenuation
         map={createSnowflakeTexture()}
         alphaTest={SNOW_ALPHA_TEST}
