@@ -490,7 +490,7 @@ const UI: React.FC<UIProps> = ({
                   letterSpacing: '0.08em',
                 }}
               >
-                はじめての歩き方
+                遊び方
               </div>
               <div
                 style={{
