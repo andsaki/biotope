@@ -12,17 +12,17 @@ export const SNOW_SPAWN_Y_OFFSET = 5;
 export const SNOW_SPAWN_Z_RANGE = 30;
 
 // 落下速度
-export const SNOW_VELOCITY_X_DRIFT = 0.1;
-export const SNOW_VELOCITY_Y_BASE = 0.1;
-export const SNOW_VELOCITY_Y_RANGE = 0.1;
-export const SNOW_VELOCITY_Z_DRIFT = 0.1;
+export const SNOW_VELOCITY_X_DRIFT = 0.045;
+export const SNOW_VELOCITY_Y_BASE = 0.32;
+export const SNOW_VELOCITY_Y_RANGE = 0.22;
+export const SNOW_VELOCITY_Z_DRIFT = 0.04;
 
 // アニメーション設定
-export const SNOW_ANIMATION_SPEED = 60;
-export const SNOW_WAVE_TIME_SCALE = 0.5;
-export const SNOW_WAVE_AMPLITUDE = 0.02;
+export const SNOW_ANIMATION_SPEED = 1;
+export const SNOW_WAVE_TIME_SCALE = 0.38;
+export const SNOW_WAVE_AMPLITUDE = 0.09;
 export const SNOW_WAVE_FREQUENCY_X = 0.1;
-export const SNOW_WAVE_TIME_SCALE_Z = 0.3;
+export const SNOW_WAVE_TIME_SCALE_Z = 0.24;
 export const SNOW_WAVE_FREQUENCY_Z = 0.1;
 
 // リセット設定

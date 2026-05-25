@@ -8,9 +8,10 @@ import styles from './Loader.module.css';
 interface LoaderProps {
   progress?: number; // 0-100
   loadingText?: string;
+  isExiting?: boolean;
 }
 
-const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProps) => {
+const Loader = ({ progress = 0, loadingText = "読み込み中...", isExiting = false }: LoaderProps) => {
   // 4匹の蛍 - それぞれ独立した経路を持つ
   const fireflies = [
     { delay: 0, x: [0, 30, -20, 10, 0], y: [0, -25, -15, -30, 0], duration: 4 },
@@ -20,7 +21,7 @@ const Loader = ({ progress = 0, loadingText = "読み込み中..." }: LoaderProp
   ];
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${isExiting ? styles.exiting : ""}`}>
       {/* グラデーション背景 - 夏の夜 */}
       <div className={styles.backgroundGradient} />
 

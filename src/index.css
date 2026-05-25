@@ -16,7 +16,7 @@
   /* Color Scheme */
   color: rgba(255, 255, 255, 0.87);
   color-scheme: light dark;
-  background-color: #242424;
+  background-color: #0a1515;
 
   /* Font Rendering */
   font-synthesis: none;
@@ -38,12 +38,6 @@ body {
 
   /* Layout */
   place-items: center;
-}
-
-.boot-loader {
-  width: 100vw;
-  height: 100vh;
-  background: #4a90e2;
 }
 
 /* ==========================================================================

@@ -15,6 +15,11 @@
   overflow: hidden;
 }
 
+.exiting {
+  pointer-events: none;
+  animation: loaderFadeOut 450ms ease forwards;
+}
+
 /* グラデーション背景 - 夏の夜 */
 .backgroundGradient {
   position: absolute;
@@ -213,6 +218,16 @@
   }
   50% {
     filter: hue-rotate(5deg) brightness(1.05);
+  }
+}
+
+@keyframes loaderFadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 
