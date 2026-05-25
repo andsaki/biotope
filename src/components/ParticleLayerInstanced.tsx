@@ -210,6 +210,13 @@ const ParticleLayerInstanced: React.FC = () => {
     [particleConfig.particleColor]
   );
 
+  useEffect(() => {
+    return () => {
+      particleConfig.geometry.dispose();
+      material.dispose();
+    };
+  }, [particleConfig.geometry, material]);
+
   return (
     <instancedMesh
       ref={instancedMeshRef}

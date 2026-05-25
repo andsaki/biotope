@@ -44,7 +44,6 @@ export const DriftingBottle = ({
         setCurrentSender("海からの便り");
       } else {
         // APIが失敗した場合のフォールバック
-        console.error('Failed to load daily message');
         setCurrentMessage("今日の海は静かで、便りはまだ届いていません。\n\nまた明日、お越しください。");
         setCurrentSender("海からの便り");
       }

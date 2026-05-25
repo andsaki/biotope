@@ -46,13 +46,13 @@ export const useAmbientSound = (): AmbientSoundControls => {
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
+  const waterGainRef = useRef<GainNode | null>(null);
   const waterSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const seasonSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const seasonGainRef = useRef<GainNode | null>(null);
   const sampleBuffersRef = useRef<Partial<Record<AmbientSampleKey, AudioBuffer>>>({});
 
-  // AudioContext 初期化
-  useEffect(() => {
+  const initializeAudio = useCallback(() => {
     if (typeof window === "undefined" || audioContextRef.current) {
       return;
     }
@@ -89,21 +89,24 @@ export const useAmbientSound = (): AmbientSoundControls => {
 
       audioContextRef.current = context;
       masterGainRef.current = masterGain;
+      waterGainRef.current = waterGain;
       waterSourceRef.current = waterSource;
       seasonGainRef.current = seasonGain;
       setIsReady(true);
-
-      return () => {
-        waterSource.stop();
-        seasonSourceRef.current?.stop();
-        masterGain.disconnect();
-        waterGain.disconnect();
-        seasonGain.disconnect();
-        void context.close();
-      };
     } catch {
       setIsSupported(false);
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      waterSourceRef.current?.stop();
+      seasonSourceRef.current?.stop();
+      masterGainRef.current?.disconnect();
+      waterGainRef.current?.disconnect();
+      seasonGainRef.current?.disconnect();
+      void audioContextRef.current?.close();
+    };
   }, []);
 
   // 非生物系の実録サンプルを読み込む
@@ -244,8 +247,21 @@ export const useAmbientSound = (): AmbientSoundControls => {
   }, [isMuted]);
 
   const toggleMute = useCallback(() => {
-    setIsMuted((prev) => !prev);
-  }, []);
+    setIsMuted((prev) => {
+      const next = !prev;
+      if (!next) {
+        initializeAudio();
+      }
+      return next;
+    });
+  }, [initializeAudio]);
+
+  const setMuted = useCallback((next: boolean) => {
+    if (!next) {
+      initializeAudio();
+    }
+    setIsMuted(next);
+  }, [initializeAudio]);
 
   const setVolume = useCallback((next: number) => {
     setVolumeState(clamp(next));
@@ -257,7 +273,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
     isReady,
     volume,
     toggleMute,
-    setMuted: setIsMuted,
+    setMuted,
     setVolume,
   };
 };

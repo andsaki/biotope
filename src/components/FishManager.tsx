@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSeason, useDayPeriod } from "../contexts";
+import { useSeason } from "../contexts";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useModelScene } from "../hooks/useModelScene";
@@ -24,8 +24,6 @@ import {
   FISH_BOUNDARY,
   FISH_MODEL_SCALE,
   FISH_MODEL_ROTATION,
-  FLATFISH_OPACITY,
-  NORMAL_FISH_OPACITY,
 } from "../constants/fish";
 
 /** 魚の種類 */
@@ -65,7 +63,6 @@ interface Fish {
  */
 const FishManager: React.FC = () => {
   const { season } = useSeason();
-  const isDay = useDayPeriod();
   const [fishList, setFishList] = useState<Fish[]>([]);
 
   useEffect(() => {
@@ -282,13 +279,6 @@ const FishManager: React.FC = () => {
           ? [FISH_MODEL_ROTATION.FLATFISH, 0, 0]
           : [FISH_MODEL_ROTATION.NORMAL, 0, 0];
 
-        // フラットフィッシュの透明度調整
-        // 待機中（砂に擬態）は薄く、移動中ははっきり見える
-        // 夜はさらに暗く
-        const opacity = isFlatfish
-          ? (!isDay ? FLATFISH_OPACITY.NIGHT : (fish.isMoving ? FLATFISH_OPACITY.MOVING_DAY : FLATFISH_OPACITY.WAITING_DAY))
-          : NORMAL_FISH_OPACITY;
-
         return (
           <group
             key={fish.id}
@@ -303,20 +293,6 @@ const FishManager: React.FC = () => {
                     fish.directionX + (isFlatfish ? 0 : FISH_MODEL_ROTATION.DIRECTION_OFFSET),
                     0
                   );
-                }
-
-                // フラットフィッシュの夜間の明るさ調整
-                if (isFlatfish) {
-                  el.traverse((child) => {
-                    if ((child as THREE.Mesh).isMesh) {
-                      const mesh = child as THREE.Mesh;
-                      const material = mesh.material as THREE.Material;
-                      if (material) {
-                        material.opacity = opacity;
-                        material.transparent = true;
-                      }
-                    }
-                  });
                 }
               }
             }}
