@@ -94,6 +94,7 @@ const AppContent = () => {
   const uxHints = useUxHints();
   const isMobile = useIsMobile();
   const [minDelayElapsed, setMinDelayElapsed] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
   const isLoading = !minDelayElapsed;
@@ -133,6 +134,18 @@ const AppContent = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (isLoading) {
+      setShowLoader(true);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
   const handleAssetsLoaded = useCallback(() => {
     setLoadingProgress(100);
     setLoadingText("完了");
@@ -152,7 +165,13 @@ const AppContent = () => {
         className="App"
         style={appStyle}
       >
-        {isLoading && <Loader progress={loadingProgress} loadingText={loadingText} />}
+        {showLoader && (
+          <Loader
+            progress={loadingProgress}
+            loadingText={loadingText}
+            isExiting={!isLoading}
+          />
+        )}
         <Canvas
           className="App-canvas"
           camera={cameraConfig}
