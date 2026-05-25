@@ -32,10 +32,15 @@ export async function fetchDailyMessage(): Promise<string | null> {
       }
     }
 
-    // APIから取得
+    // APIから取得。Vite単体のdev serverではFunctions APIがなくHTMLが返るため、
+    // JSON以外は通常のフォールバックとして扱う。
     const response = await fetch(API_ENDPOINT);
     if (!response.ok) {
-      console.error('Failed to fetch daily message:', response.status);
+      return null;
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
       return null;
     }
 

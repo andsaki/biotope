@@ -51,6 +51,10 @@ const ReflectedStars: React.FC = () => {
   const originalPositions = useMemo(() => new Float32Array(particles), [particles]);
 
   useFrame((state) => {
+    if (!visible && !isNight) {
+      return;
+    }
+
     // パフォーマンス向上：2フレームに1回だけ頂点を更新
     frameCount.current++;
     if (frameCount.current % 2 === 0 && pointsRef.current && visible) {
@@ -74,6 +78,10 @@ const ReflectedStars: React.FC = () => {
       );
     }
   });
+
+  if (!visible && !isNight) {
+    return null;
+  }
 
   return (
     <points ref={pointsRef} position={[0, REFLECTED_STAR_POSITION_Y, 0]}>

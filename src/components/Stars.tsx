@@ -64,6 +64,10 @@ const Stars: React.FC = () => {
   }, []);
 
   useFrame((_, delta) => {
+    if (!visible && !isNight) {
+      return;
+    }
+
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * STAR_ROTATION_SPEED;
     }
@@ -75,6 +79,10 @@ const Stars: React.FC = () => {
       );
     }
   });
+
+  if (!visible && !isNight) {
+    return null;
+  }
 
   return (
     <points ref={meshRef}>

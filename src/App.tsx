@@ -33,15 +33,9 @@ const BubbleEffect = React.lazy(() => import("./components/BubbleEffect"));
 import UI from "./components/UI";
 import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants/core";
+import { useIsMobile } from "./hooks/useIsMobile";
 import { useWindDirection } from "./hooks/useWindDirection";
 import { useUxHints } from "./hooks/useUxHints";
-
-// 3Dモデルのpreload
-import { preloadModel } from "./hooks/useModelScene";
-
-preloadModel("normalFish");
-preloadModel("flatfish");
-preloadModel("leaf");
 
 // const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
 const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
@@ -87,7 +81,7 @@ const LoadingTracker = ({
   return null;
 };
 
-const MINIMUM_LOADER_MS = 2000;
+const MINIMUM_LOADER_MS = 300;
 type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
 
 /**
@@ -98,11 +92,11 @@ const AppContent = () => {
   const isDay = useDayPeriod();
   const windDirection = useWindDirection();
   const uxHints = useUxHints();
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const isMobile = useIsMobile();
   const [minDelayElapsed, setMinDelayElapsed] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
-  const isLoading = !(assetsLoaded && minDelayElapsed);
+  const isLoading = !minDelayElapsed;
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
@@ -110,6 +104,26 @@ const AppContent = () => {
 
   // 背景色をメモ化
   const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
+  const cameraConfig = useMemo(
+    () => ({
+      position: [5, 3, 0] as [number, number, number],
+      fov: isMobile ? 75 : 70,
+    }),
+    [isMobile]
+  );
+  const rendererConfig = useMemo(
+    () => ({
+      antialias: !isMobile,
+      powerPreference: "high-performance" as const,
+      alpha: false,
+      stencil: false,
+    }),
+    [isMobile]
+  );
+  const canvasDpr = useMemo<[number, number]>(
+    () => (isMobile ? [0.75, 1.25] : [1, 1.75]),
+    [isMobile]
+  );
 
   // 最低表示時間を確保
   useEffect(() => {
@@ -120,7 +134,8 @@ const AppContent = () => {
   }, []);
 
   const handleAssetsLoaded = useCallback(() => {
-    setAssetsLoaded(true);
+    setLoadingProgress(100);
+    setLoadingText("完了");
   }, []);
 
   const handleProgress = useCallback((progress: number, text: string) => {
@@ -140,78 +155,87 @@ const AppContent = () => {
         {isLoading && <Loader progress={loadingProgress} loadingText={loadingText} />}
         <Canvas
           className="App-canvas"
-          camera={{ position: [5, 3, 0], fov: 70 }}
-          gl={{
-            antialias: true,
-            powerPreference: "high-performance", // 高性能GPUを優先
-            alpha: false, // 透明な背景が不要な場合はfalse
-            stencil: false, // ステンシルバッファを無効化してパフォーマンス向上
-          }}
-          dpr={[1, 2]} // デバイスピクセル比を制限してパフォーマンス向上
+          camera={cameraConfig}
+          gl={rendererConfig}
+          dpr={canvasDpr}
           frameloop="always" // 常にレンダリング
           performance={{ min: 0.5 }} // パフォーマンス低下時の最小品質
         >
           {/* Three.jsローダーの完了を検知 */}
           <LoadingTracker onLoaded={handleAssetsLoaded} onProgress={handleProgress} />
+          {!isDay && (
+            <>
+              <MemoizedStars />
+              <MemoizedReflectedStars />
+            </>
+          )}
+
+          {/* シーンの背景と霧 */}
+          <color attach="background" args={[backgroundColor]} />
+          <fog attach="fog" args={[backgroundColor, 10, isDay ? 60 : 40]} />
+
+          {/* ライティング */}
+          <SceneLights
+            directionalLightRef={directionalLightRef}
+            ambientLightRef={ambientLightRef}
+            pointLightRef={pointLightRef}
+            spotLightRef={spotLightRef}
+          />
+          <LightingController
+            directionalLightRef={directionalLightRef}
+            ambientLightRef={ambientLightRef}
+            pointLightRef={pointLightRef}
+            spotLightRef={spotLightRef}
+          />
+
+          {/* 太陽 */}
+          <Sun />
+          {/* カメラコントロール */}
+          <OrbitControls
+            enableZoom={true}
+            enablePan={true}
+            enableRotate={true}
+            maxDistance={20}
+            minDistance={1}
+            dampingFactor={0.1}
+            enableDamping={true}
+          />
+
+          {/* 初期表示の核になる軽量オブジェクト */}
+          <MemoizedGround />
+          <MemoizedWaterSurface onInteract={uxHints.markWaterRippled} />
+          <MemoizedSundialGnomon />
+          <MemoizedSundialBase />
+
+          {/* モデル・装飾系は初期描画をブロックしない */}
           <Suspense fallback={null}>
-            <MemoizedStars />
-            <MemoizedReflectedStars />
-
-            {/* シーンの背景と霧 */}
-            <color attach="background" args={[backgroundColor]} />
-            <fog attach="fog" args={[backgroundColor, 10, isDay ? 60 : 40]} />
-
-            {/* ライティング */}
-            <SceneLights
-              directionalLightRef={directionalLightRef}
-              ambientLightRef={ambientLightRef}
-              pointLightRef={pointLightRef}
-              spotLightRef={spotLightRef}
-            />
-            <LightingController
-              directionalLightRef={directionalLightRef}
-              ambientLightRef={ambientLightRef}
-              pointLightRef={pointLightRef}
-              spotLightRef={spotLightRef}
-            />
-
-            {/* 太陽 */}
-            <Sun />
-            {/* カメラコントロール */}
-            <OrbitControls
-              enableZoom={true}
-              enablePan={true}
-              enableRotate={true}
-              maxDistance={20}
-              minDistance={1}
-              dampingFactor={0.1}
-              enableDamping={true}
-            />
-
-            {/* 環境オブジェクト */}
-            <MemoizedGround />
             <MemoizedFishManager />
+          </Suspense>
+          <Suspense fallback={null}>
             <WaterPlantsLarge />
             <PottedPlant />
             <Rocks />
             <BubbleEffect />
-            <MemoizedWaterSurface onInteract={uxHints.markWaterRippled} />
-            <MemoizedSundialGnomon />
-            <MemoizedSundialBase />
+          </Suspense>
+          <Suspense fallback={null}>
             <MemoizedDriftingBottle
               position={[-3, 8.2, 2]}
               onMessageRead={uxHints.markBottleOpened}
               showHint={!isLoading && uxHints.shouldShowBottleHint}
             />
+          </Suspense>
+          <Suspense fallback={null}>
             <MemoizedParticleLayerInstanced />
             <MemoizedClouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} />
-
-            {/* 季節エフェクト */}
-            <MemoizedSeasonalEffects />
-
-            {/* デバッグヘルパー - 削除 */}
-            {/* <DebugHelpers enabled={DEBUG_MODE} /> */}
           </Suspense>
+
+          {/* 季節エフェクト */}
+          <Suspense fallback={null}>
+            <MemoizedSeasonalEffects />
+          </Suspense>
+
+          {/* デバッグヘルパー - 削除 */}
+          {/* <DebugHelpers enabled={DEBUG_MODE} /> */}
           {/* パフォーマンスモニター - データ収集（Canvas内） */}
           {PERFORMANCE_MONITOR && <PerformanceMonitorCollector />}
         </Canvas>
