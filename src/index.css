@@ -16,7 +16,7 @@
   /* Color Scheme */
   color: rgba(255, 255, 255, 0.87);
   color-scheme: light dark;
-  background-color: #242424;
+  background-color: #0a1515;
 
   /* Font Rendering */
   font-synthesis: none;
@@ -38,63 +38,6 @@ body {
 
   /* Layout */
   place-items: center;
-}
-
-.boot-loader {
-  display: grid;
-  place-items: center;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(30, 50, 20, 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(20, 40, 30, 0.3) 0%, transparent 45%),
-    linear-gradient(180deg, #0a1520 0%, #0d1d1d 40%, #0f2520 70%, #12301d 100%);
-}
-
-.boot-loader__content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-  animation: bootFloatUp 700ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.boot-loader h1 {
-  margin: 0;
-  color: transparent;
-  background: linear-gradient(135deg, #fff8dc 0%, #ffe4b5 30%, #ffd700 60%, #ffb347 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  font-family: "Noto Serif JP", serif;
-  font-size: clamp(56px, 10vw, 110px);
-  font-weight: 200;
-  letter-spacing: 0.2em;
-  text-shadow: 0 0 60px rgba(255, 215, 0, 0.6);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
-}
-
-.boot-loader p {
-  margin: 0;
-  color: #ffeb3b;
-  font-family: "Noto Serif JP", serif;
-  font-size: clamp(14px, 2vw, 20px);
-  font-weight: 300;
-  letter-spacing: 0.3em;
-  opacity: 0.9;
-  text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
-}
-
-@keyframes bootFloatUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* ==========================================================================

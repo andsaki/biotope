@@ -93,11 +93,12 @@ const AppContent = () => {
   const windDirection = useWindDirection();
   const uxHints = useUxHints();
   const isMobile = useIsMobile();
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [minDelayElapsed, setMinDelayElapsed] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
-  const isLoading = !minDelayElapsed;
+  const isLoading = !(assetsLoaded && minDelayElapsed);
   const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
   const ambientLightRef = useRef<THREE.AmbientLight>(null!);
   const pointLightRef = useRef<THREE.PointLight>(null!);
@@ -147,6 +148,7 @@ const AppContent = () => {
   }, [isLoading]);
 
   const handleAssetsLoaded = useCallback(() => {
+    setAssetsLoaded(true);
     setLoadingProgress(100);
     setLoadingText("完了");
   }, []);
