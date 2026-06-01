@@ -4,7 +4,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 
 const reactVendors = ["react", "react-dom"];
-const threeVendors = ["three", "@react-three/fiber", "@react-three/drei", "@react-three/rapier"];
+const threeCoreVendors = ["three"];
+const reactThreeVendors = ["@react-three/fiber"];
 const matchesPackage = (id: string, pkg: string) => id.includes(`/node_modules/${pkg}/`);
 
 // https://vite.dev/config/
@@ -32,8 +33,11 @@ export default defineConfig({
           if (reactVendors.some((pkg) => matchesPackage(id, pkg))) {
             return "react-vendor";
           }
-          if (threeVendors.some((pkg) => matchesPackage(id, pkg))) {
-            return "three-vendor";
+          if (threeCoreVendors.some((pkg) => matchesPackage(id, pkg))) {
+            return "three-core";
+          }
+          if (reactThreeVendors.some((pkg) => matchesPackage(id, pkg))) {
+            return "react-three-vendor";
           }
         },
       },
