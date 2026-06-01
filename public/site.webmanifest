@@ -1,0 +1,16 @@
+{
+  "name": "Mizube no Shiki 水辺の四季",
+  "short_name": "水辺の四季",
+  "description": "季節の移り変わりを静かに眺める水辺の空間",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#4b8ddf",
+  "theme_color": "#4b8ddf",
+  "icons": [
+    {
+      "src": "/assets/app-icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ]
+}
