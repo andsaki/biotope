@@ -8,13 +8,29 @@ import {
   RAIN_SPAWN_AREA,
   RAIN_COLOR,
   RAIN_OPACITY,
+  RAIN_RESET_Y,
+  RAIN_DROP_TILT,
 } from '../constants/rainEffect';
 
 interface RainDrop {
   position: [number, number, number];
   velocity: [number, number];
-  phase: number;
 }
+
+const spawnRainDrop = (): RainDrop => ({
+  position: [
+    Math.random() * (RAIN_SPAWN_AREA.X_MAX - RAIN_SPAWN_AREA.X_MIN) +
+      RAIN_SPAWN_AREA.X_MIN,
+    Math.random() * (RAIN_SPAWN_AREA.Y_MAX - RAIN_SPAWN_AREA.Y_MIN) +
+      RAIN_SPAWN_AREA.Y_MIN,
+    Math.random() * (RAIN_SPAWN_AREA.Z_MAX - RAIN_SPAWN_AREA.Z_MIN) +
+      RAIN_SPAWN_AREA.Z_MIN,
+  ] as [number, number, number],
+  velocity: [
+    RAIN_DROP_SPEED.X_BASE + (Math.random() - 0.5) * RAIN_DROP_SPEED.X_VARIATION,
+    -(RAIN_DROP_SPEED.Y_BASE + Math.random() * RAIN_DROP_SPEED.Y_VARIATION),
+  ] as [number, number],
+});
 
 const RainEffect: React.FC = () => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -22,45 +38,28 @@ const RainEffect: React.FC = () => {
 
   // 雨粒の初期データを生成（一度だけ）
   const rainDrops = useMemo<RainDrop[]>(() => {
-    return Array.from({ length: RAIN_DROP_COUNT }, () => ({
-      position: [
-        Math.random() * (RAIN_SPAWN_AREA.X_MAX - RAIN_SPAWN_AREA.X_MIN) +
-          RAIN_SPAWN_AREA.X_MIN,
-        Math.random() * 10 + RAIN_SPAWN_AREA.Y,
-        Math.random() * (RAIN_SPAWN_AREA.Z_MAX - RAIN_SPAWN_AREA.Z_MIN) +
-          RAIN_SPAWN_AREA.Z_MIN,
-      ] as [number, number, number],
-      velocity: [
-        (Math.random() - 0.5) * RAIN_DROP_SPEED.X_VARIATION,
-        RAIN_DROP_SPEED.Y,
-      ] as [number, number],
-      phase: Math.random() * Math.PI * 2,
-    }));
+    return Array.from({ length: RAIN_DROP_COUNT }, spawnRainDrop);
   }, []);
 
   // アニメーション
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!meshRef.current) return;
 
     rainDrops.forEach((drop, i) => {
       // 落下処理
-      drop.position[1] += drop.velocity[1];
-      drop.position[0] += drop.velocity[0];
+      drop.position[1] += drop.velocity[1] * delta;
+      drop.position[0] += drop.velocity[0] * delta;
 
       // 地面に到達したらリセット
-      if (drop.position[1] < 0) {
-        drop.position[1] = RAIN_SPAWN_AREA.Y;
-        drop.position[0] =
-          Math.random() * (RAIN_SPAWN_AREA.X_MAX - RAIN_SPAWN_AREA.X_MIN) +
-          RAIN_SPAWN_AREA.X_MIN;
-        drop.position[2] =
-          Math.random() * (RAIN_SPAWN_AREA.Z_MAX - RAIN_SPAWN_AREA.Z_MIN) +
-          RAIN_SPAWN_AREA.Z_MIN;
+      if (drop.position[1] < RAIN_RESET_Y) {
+        const nextDrop = spawnRainDrop();
+        drop.position = nextDrop.position;
+        drop.velocity = nextDrop.velocity;
       }
 
       // 行列を更新
       dummy.position.set(drop.position[0], drop.position[1], drop.position[2]);
-      dummy.rotation.z = drop.phase;
+      dummy.rotation.z = RAIN_DROP_TILT;
       dummy.updateMatrix();
       if (meshRef.current) {
         meshRef.current.setMatrixAt(i, dummy.matrix);
