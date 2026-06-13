@@ -1,8 +1,18 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Html } from "@react-three/drei";
 import { fetchDailyMessage } from "../../utils/dailyMessage";
 import { useBottleAnimation } from "../../hooks/useBottleAnimation";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useClockTime, useSeason } from "@/contexts";
+import { getTimeOfDay } from "@/utils/time";
+import {
+  createDailyLifeLog,
+  getLocalDateKey,
+  loadBottleJournal,
+  saveBottleJournalEntry,
+  type BottleJournalEntry,
+  type WindDirection,
+} from "@/utils/bottleJournal";
 import { BottleModel } from "./BottleModel";
 import { MessageCard } from "./MessageCard";
 
@@ -14,6 +24,8 @@ interface DriftingBottleProps {
   onMessageRead?: () => void;
   /** 初回導線ヒントの表示 */
   showHint?: boolean;
+  /** 現在の風向き */
+  windDirection?: WindDirection;
 }
 
 /**
@@ -25,15 +37,33 @@ export const DriftingBottle = ({
   position,
   onMessageRead,
   showHint = false,
+  windDirection = "East",
 }: DriftingBottleProps) => {
+  const { season } = useSeason();
+  const realTime = useClockTime();
   const [showMessage, setShowMessage] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
   const [currentSender, setCurrentSender] = useState("");
+  const [displayedLifeLog, setDisplayedLifeLog] = useState("");
   const [dailyMessageFetched, setDailyMessageFetched] = useState(false);
+  const [journalEntries, setJournalEntries] = useState<BottleJournalEntry[]>(() =>
+    loadBottleJournal()
+  );
   const isMobile = useIsMobile();
 
   const bottleRef = useBottleAnimation(position);
+  const today = useMemo(() => getLocalDateKey(), []);
+  const lifeLog = useMemo(
+    () =>
+      createDailyLifeLog({
+        date: today,
+        season,
+        timeOfDay: getTimeOfDay(realTime.hours),
+        windDirection,
+      }),
+    [realTime.hours, season, today, windDirection]
+  );
 
   // 1日1回、Gemini経由でメッセージを取得
   useEffect(() => {
@@ -57,9 +87,25 @@ export const DriftingBottle = ({
 
   const handleClick = () => {
     // 1日中同じGemini生成メッセージを表示
+    setDisplayedLifeLog(lifeLog);
     setShowMessage(true);
     onMessageRead?.();
   };
+
+  useEffect(() => {
+    if (!showMessage || !currentMessage || !currentSender || !displayedLifeLog) {
+      return;
+    }
+
+    const nextJournal = saveBottleJournalEntry({
+      date: today,
+      message: currentMessage,
+      sender: currentSender,
+      lifeLog: displayedLifeLog,
+      readAt: new Date().toISOString(),
+    });
+    setJournalEntries(nextJournal);
+  }, [currentMessage, currentSender, displayedLifeLog, showMessage, today]);
 
   const handleCloseMessage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -101,6 +147,9 @@ export const DriftingBottle = ({
         <MessageCard
           message={currentMessage}
           sender={currentSender}
+          lifeLog={displayedLifeLog || lifeLog}
+          currentDate={today}
+          journalEntries={journalEntries}
           onClose={handleCloseMessage}
         />
       )}

@@ -243,6 +243,7 @@ const AppContent = () => {
               position={[-3, 8.2, 2]}
               onMessageRead={uxHints.markBottleOpened}
               showHint={!isLoading && uxHints.shouldShowBottleHint}
+              windDirection={windDirection}
             />
           </Suspense>
           <Suspense fallback={null}>

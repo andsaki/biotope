@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { WIND_CHANGE_INTERVAL } from "../constants/core";
-
-/** 風向きの種類 */
-type WindDirection = "North" | "East" | "South" | "West";
+import type { WindDirection } from "@/utils/bottleJournal";
 
 /**
  * 風向きを定期的に変更するカスタムフック
