@@ -13,6 +13,7 @@ import {
   type BottleJournalEntry,
   type WindDirection,
 } from "@/utils/bottleJournal";
+import type { WeatherSnapshot } from "@/utils/weather";
 import { BottleModel } from "./BottleModel";
 import { MessageCard } from "./MessageCard";
 
@@ -26,6 +27,8 @@ interface DriftingBottleProps {
   showHint?: boolean;
   /** 現在の風向き */
   windDirection?: WindDirection;
+  /** 現在の天気 */
+  weather: WeatherSnapshot;
 }
 
 /**
@@ -38,6 +41,7 @@ export const DriftingBottle = ({
   onMessageRead,
   showHint = false,
   windDirection = "East",
+  weather,
 }: DriftingBottleProps) => {
   const { season } = useSeason();
   const realTime = useClockTime();
@@ -61,8 +65,9 @@ export const DriftingBottle = ({
         season,
         timeOfDay: getTimeOfDay(realTime.hours),
         windDirection,
+        weather,
       }),
-    [realTime.hours, season, today, windDirection]
+    [realTime.hours, season, today, weather, windDirection]
   );
 
   // 1日1回、Gemini経由でメッセージを取得
