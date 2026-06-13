@@ -1,5 +1,4 @@
 import React, { useMemo, useRef } from "react";
-import { Billboard } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -8,27 +7,24 @@ import {
   SHOOTING_STAR_COUNT,
   SHOOTING_STAR_CYCLE_SECONDS,
   SHOOTING_STAR_DELAY_STEP_SECONDS,
-  SHOOTING_STAR_DROP_Y,
   SHOOTING_STAR_HEAD_SIZE,
   SHOOTING_STAR_MAX_OPACITY,
-  SHOOTING_STAR_ROTATION_Z,
-  SHOOTING_STAR_SPACING_Z,
   SHOOTING_STAR_START_X,
   SHOOTING_STAR_START_Y,
   SHOOTING_STAR_START_Z,
   SHOOTING_STAR_TAIL_LENGTH,
-  SHOOTING_STAR_TAIL_WIDTH,
   SHOOTING_STAR_TRAVEL_X,
+  SHOOTING_STAR_TRAVEL_Z,
 } from "@/constants/shootingStars";
 
 interface ShootingStarRefs {
   group: THREE.Group | null;
-  tail: THREE.MeshBasicMaterial | null;
-  head: THREE.MeshBasicMaterial | null;
+  tail: THREE.LineBasicMaterial | null;
+  head: THREE.PointsMaterial | null;
 }
 
 /**
- * 夜空を短く横切る流れ星。
+ * 夜空を控えめに横切る細い光跡。
  */
 const ShootingStars: React.FC = () => {
   const starRefs = useRef<ShootingStarRefs[]>(
@@ -39,13 +35,31 @@ const ShootingStars: React.FC = () => {
     }))
   );
 
+  const tailGeometry = useMemo(() => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(
+        [-SHOOTING_STAR_TAIL_LENGTH, 0, 0, 0, 0, 0],
+        3
+      )
+    );
+    return geometry;
+  }, []);
+
+  const headGeometry = useMemo(() => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0], 3));
+    return geometry;
+  }, []);
+
   const stars = useMemo(
     () =>
       Array.from({ length: SHOOTING_STAR_COUNT }, (_, index) => ({
         id: index,
         delay: index * SHOOTING_STAR_DELAY_STEP_SECONDS,
-        yOffset: (index % 2) * 2.4,
-        zOffset: (index - (SHOOTING_STAR_COUNT - 1) / 2) * SHOOTING_STAR_SPACING_Z,
+        yOffset: index * 0.35,
+        zOffset: (index - 1) * 3.2,
       })),
     []
   );
@@ -59,8 +73,7 @@ const ShootingStars: React.FC = () => {
         continue;
       }
 
-      const cycleTime =
-        (elapsed + star.delay) % SHOOTING_STAR_CYCLE_SECONDS;
+      const cycleTime = (elapsed + star.delay) % SHOOTING_STAR_CYCLE_SECONDS;
       const isActive = cycleTime < SHOOTING_STAR_ACTIVE_SECONDS;
       const progress = isActive ? cycleTime / SHOOTING_STAR_ACTIVE_SECONDS : 0;
       const easedProgress = 1 - Math.pow(1 - progress, 3);
@@ -70,8 +83,8 @@ const ShootingStars: React.FC = () => {
 
       refs.group.position.set(
         SHOOTING_STAR_START_X - easedProgress * SHOOTING_STAR_TRAVEL_X,
-        SHOOTING_STAR_START_Y + star.yOffset - easedProgress * SHOOTING_STAR_DROP_Y,
-        SHOOTING_STAR_START_Z + star.zOffset
+        SHOOTING_STAR_START_Y + star.yOffset,
+        SHOOTING_STAR_START_Z + star.zOffset + easedProgress * SHOOTING_STAR_TRAVEL_Z
       );
       refs.tail.opacity = opacity;
       refs.head.opacity = opacity;
@@ -79,46 +92,41 @@ const ShootingStars: React.FC = () => {
   });
 
   return (
-    <group>
+    <group rotation-y={-0.34} rotation-z={-0.12}>
       {stars.map((star) => (
-        <Billboard
+        <group
           key={star.id}
           ref={(group) => {
             starRefs.current[star.id].group = group;
           }}
-          follow
         >
-          <group rotation-z={SHOOTING_STAR_ROTATION_Z}>
-            <mesh position={[-SHOOTING_STAR_TAIL_LENGTH / 2, 0, 0]}>
-              <planeGeometry
-                args={[SHOOTING_STAR_TAIL_LENGTH, SHOOTING_STAR_TAIL_WIDTH]}
-              />
-              <meshBasicMaterial
-                ref={(material) => {
-                  starRefs.current[star.id].tail = material;
-                }}
-                color={SHOOTING_STAR_COLOR}
-                transparent
-                opacity={0}
-                depthWrite={false}
-                blending={THREE.AdditiveBlending}
-              />
-            </mesh>
-            <mesh position={[0, 0, 0.01]}>
-              <sphereGeometry args={[SHOOTING_STAR_HEAD_SIZE, 12, 12]} />
-              <meshBasicMaterial
-                ref={(material) => {
-                  starRefs.current[star.id].head = material;
-                }}
-                color={SHOOTING_STAR_COLOR}
-                transparent
-                opacity={0}
-                depthWrite={false}
-                blending={THREE.AdditiveBlending}
-              />
-            </mesh>
-          </group>
-        </Billboard>
+          <lineSegments geometry={tailGeometry}>
+            <lineBasicMaterial
+              ref={(material) => {
+                starRefs.current[star.id].tail = material;
+              }}
+              color={SHOOTING_STAR_COLOR}
+              transparent
+              opacity={0}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </lineSegments>
+          <points geometry={headGeometry}>
+            <pointsMaterial
+              ref={(material) => {
+                starRefs.current[star.id].head = material;
+              }}
+              color={SHOOTING_STAR_COLOR}
+              size={SHOOTING_STAR_HEAD_SIZE}
+              sizeAttenuation
+              transparent
+              opacity={0}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </points>
+        </group>
       ))}
     </group>
   );
