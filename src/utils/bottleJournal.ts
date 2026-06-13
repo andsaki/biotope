@@ -1,4 +1,5 @@
 import type { Season } from "@/contexts/SeasonContext/context";
+import type { WeatherSnapshot } from "@/utils/weather";
 import type { TimeOfDay } from "./time";
 
 export type WindDirection = "North" | "East" | "South" | "West";
@@ -16,6 +17,7 @@ interface LifeLogInput {
   season: Season;
   timeOfDay: TimeOfDay;
   windDirection: WindDirection;
+  weather: WeatherSnapshot;
 }
 
 const JOURNAL_STORAGE_KEY = "mizube_bottle_journal";
@@ -41,6 +43,21 @@ const windLabels: Record<WindDirection, string> = {
   South: "南",
   West: "西",
 };
+
+const weatherNotes = {
+  clear: [
+    "空は明るく、水面の光もよく届いていた",
+    "晴れた気配の中で、水の色が少し澄んで見えた",
+  ],
+  cloudy: [
+    "雲が光をやわらげ、水辺の影も静かだった",
+    "曇り空の下で、水面の反射が落ち着いていた",
+  ],
+  rain: [
+    "雨粒が落ちるたび、水面に小さな輪が増えた",
+    "雨の気配で、岸辺の音が少し近く聞こえた",
+  ],
+} as const;
 
 const seasonNotes: Record<Season, string[]> = {
   spring: [
@@ -93,7 +110,7 @@ const createSeed = (value: string) => {
   return hash >>> 0;
 };
 
-const pick = <T,>(items: T[], seed: number) => items[seed % items.length];
+const pick = <T,>(items: readonly T[], seed: number) => items[seed % items.length];
 
 export const getLocalDateKey = (date = new Date()) => {
   const year = date.getFullYear();
@@ -112,13 +129,19 @@ export const createDailyLifeLog = ({
   season,
   timeOfDay,
   windDirection,
+  weather,
 }: LifeLogInput) => {
-  const seed = createSeed(`${date}:${season}:${timeOfDay}:${windDirection}`);
+  const seed = createSeed(
+    `${date}:${season}:${timeOfDay}:${windDirection}:${weather.condition}`
+  );
   const seasonalText = pick(seasonNotes[season], seed);
   const timeText = pick(timeNotes[timeOfDay], seed >>> 3);
+  const weatherText = pick(weatherNotes[weather.condition], seed >>> 5);
+  const weatherSourceText =
+    weather.source === "open-meteo" ? `${weather.location}の${weather.label}。` : "";
   const windText = `${windLabels[windDirection]}からの風。`;
 
-  return `${formatJournalDate(date)}、${seasonLabels[season]}の${timeLabels[timeOfDay]}。${seasonalText}。${timeText}。${windText}`;
+  return `${formatJournalDate(date)}、${seasonLabels[season]}の${timeLabels[timeOfDay]}。${weatherSourceText}${seasonalText}。${weatherText}。${timeText}。${windText}`;
 };
 
 export const loadBottleJournal = (): BottleJournalEntry[] => {

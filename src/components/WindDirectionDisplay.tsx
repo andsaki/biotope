@@ -1,11 +1,14 @@
 import React from 'react';
 import { tokens } from '@/styles/tokens';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import type { WeatherSnapshot } from '@/utils/weather';
 
 /** 風向き表示コンポーネントのプロパティ */
 interface WindDirectionDisplayProps {
   /** 風向き（北/東/南/西） */
   windDirection: "North" | "East" | "South" | "West";
+  /** 現在の天気 */
+  weather: WeatherSnapshot;
 }
 
 /** 風向きと表示情報のマッピング */
@@ -21,7 +24,10 @@ const windDirectionMap = {
  * 現在の風向きを視覚的に表示
  * @param props - コンポーネントのプロパティ
  */
-const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirection }) => {
+const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
+  windDirection,
+  weather,
+}) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
   const isMobile = useIsMobile();
 
@@ -215,6 +221,51 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({ windDirecti
         >
           の風
         </span>
+      </div>
+      <div
+        style={{
+          width: '100%',
+          paddingTop: tokens.spacing.sm,
+          borderTop: '1px solid rgba(255, 255, 255, 0.16)',
+          fontFamily: tokens.typography.fontFamily.serif,
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '18px',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.95)',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+          }}
+        >
+          {weather.label}
+        </div>
+        <div
+          style={{
+            marginTop: '2px',
+            fontSize: '11px',
+            fontWeight: 300,
+            color: 'rgba(255, 255, 255, 0.72)',
+            lineHeight: 1.5,
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          {weather.description}
+        </div>
+        <div
+          style={{
+            marginTop: '2px',
+            fontSize: '10px',
+            fontWeight: 300,
+            color: 'rgba(255, 255, 255, 0.52)',
+            lineHeight: 1.4,
+          }}
+        >
+          {weather.source === 'open-meteo'
+            ? `${weather.location}の実天気`
+            : '水辺の天気'}
+        </div>
       </div>
     </div>
   );

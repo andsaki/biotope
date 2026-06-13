@@ -35,6 +35,7 @@ import "./App.css";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "./constants/core";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useWindDirection } from "./hooks/useWindDirection";
+import { useWeather } from "./hooks/useWeather";
 import { useUxHints } from "./hooks/useUxHints";
 
 // const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
@@ -91,6 +92,7 @@ type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
 const AppContent = () => {
   const isDay = useDayPeriod();
   const windDirection = useWindDirection();
+  const weather = useWeather();
   const uxHints = useUxHints();
   const isMobile = useIsMobile();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -244,6 +246,7 @@ const AppContent = () => {
               onMessageRead={uxHints.markBottleOpened}
               showHint={!isLoading && uxHints.shouldShowBottleHint}
               windDirection={windDirection}
+              weather={weather}
             />
           </Suspense>
           <Suspense fallback={null}>
@@ -253,7 +256,7 @@ const AppContent = () => {
 
           {/* 季節エフェクト */}
           <Suspense fallback={null}>
-            <MemoizedSeasonalEffects />
+            <MemoizedSeasonalEffects weather={weather} />
           </Suspense>
 
           {/* デバッグヘルパー - 削除 */}
@@ -274,7 +277,12 @@ const AppContent = () => {
           onAmbientToggle={uxHints.markAmbientToggled}
         />
         {/* 風向きコンパス - ローディング完了後のみ表示 */}
-        {!isLoading && <MemoizedWindDirectionDisplay windDirection={windDirection} />}
+        {!isLoading && (
+          <MemoizedWindDirectionDisplay
+            windDirection={windDirection}
+            weather={weather}
+          />
+        )}
       </div>
   );
 };
