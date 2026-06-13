@@ -4,7 +4,7 @@
 
 export const METEOR_CYCLE_SECONDS = 11;
 export const METEOR_ACTIVE_SECONDS = 0.82;
-export const METEOR_FIRST_DELAY_SECONDS = 8;
+export const METEOR_FIRST_DELAY_SECONDS = 9.4;
 
 export const METEOR_TRAIL_LENGTH = 4.6;
 export const METEOR_TRAIL_WIDTH = 0.18;
