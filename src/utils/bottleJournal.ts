@@ -1,0 +1,168 @@
+import type { Season } from "@/contexts/SeasonContext/context";
+import type { TimeOfDay } from "./time";
+
+export type WindDirection = "North" | "East" | "South" | "West";
+
+export interface BottleJournalEntry {
+  date: string;
+  message: string;
+  sender: string;
+  lifeLog: string;
+  readAt: string;
+}
+
+interface LifeLogInput {
+  date: string;
+  season: Season;
+  timeOfDay: TimeOfDay;
+  windDirection: WindDirection;
+}
+
+const JOURNAL_STORAGE_KEY = "mizube_bottle_journal";
+const MAX_JOURNAL_ENTRIES = 14;
+
+const seasonLabels: Record<Season, string> = {
+  spring: "春",
+  summer: "夏",
+  autumn: "秋",
+  winter: "冬",
+};
+
+const timeLabels: Record<TimeOfDay, string> = {
+  morning: "朝",
+  afternoon: "昼",
+  evening: "夕方",
+  night: "夜",
+};
+
+const windLabels: Record<WindDirection, string> = {
+  North: "北",
+  East: "東",
+  South: "南",
+  West: "西",
+};
+
+const seasonNotes: Record<Season, string[]> = {
+  spring: [
+    "水面に花びらが一枚、輪を描いて流れた",
+    "浅瀬の色がやわらかく、岸辺が少し明るく見えた",
+    "細い草の先に、春の光が長く残っていた",
+  ],
+  summer: [
+    "蓮の葉が波に合わせて、ゆっくり向きを変えた",
+    "水辺の空気が揺れて、光の粒が濃く見えた",
+    "魚影が日差しを避けるように、少し深い方へ移った",
+  ],
+  autumn: [
+    "落ち葉が水面で止まり、また小さく動き出した",
+    "岸の影が澄んで、葉の色だけが静かに浮いた",
+    "水面に残った葉脈が、夕方まで薄く光っていた",
+  ],
+  winter: [
+    "水面の色が冷えて、魚の動きもゆっくりになった",
+    "白い粒が落ちるたび、池の音が少し遠くなった",
+    "岸辺の影が短く固まり、空気だけが澄んでいた",
+  ],
+};
+
+const timeNotes: Record<TimeOfDay, string[]> = {
+  morning: [
+    "浅瀬には早い時間の静けさが残っていた",
+    "光が低く入り、波紋の縁だけが見えた",
+  ],
+  afternoon: [
+    "水面は明るく、動くものの影が短く沈んだ",
+    "池の中央に光が集まり、岸辺は少し眠そうだった",
+  ],
+  evening: [
+    "夕方の色が水面に伸び、輪郭がゆっくり溶けた",
+    "沈む光に合わせて、漂うものの速度も落ちた",
+  ],
+  night: [
+    "暗い水面に、見えるものだけが小さく残った",
+    "夜の池は静かで、遠い反射だけが揺れていた",
+  ],
+};
+
+const createSeed = (value: string) => {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+};
+
+const pick = <T,>(items: T[], seed: number) => items[seed % items.length];
+
+export const getLocalDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+export const formatJournalDate = (dateKey: string) => {
+  const [, month, day] = dateKey.split("-");
+  return `${Number(month)}月${Number(day)}日`;
+};
+
+export const createDailyLifeLog = ({
+  date,
+  season,
+  timeOfDay,
+  windDirection,
+}: LifeLogInput) => {
+  const seed = createSeed(`${date}:${season}:${timeOfDay}:${windDirection}`);
+  const seasonalText = pick(seasonNotes[season], seed);
+  const timeText = pick(timeNotes[timeOfDay], seed >>> 3);
+  const windText = `${windLabels[windDirection]}からの風。`;
+
+  return `${formatJournalDate(date)}、${seasonLabels[season]}の${timeLabels[timeOfDay]}。${seasonalText}。${timeText}。${windText}`;
+};
+
+export const loadBottleJournal = (): BottleJournalEntry[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const rawJournal = window.localStorage.getItem(JOURNAL_STORAGE_KEY);
+    if (!rawJournal) {
+      return [];
+    }
+
+    const parsed = JSON.parse(rawJournal);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter(
+      (entry): entry is BottleJournalEntry =>
+        typeof entry?.date === "string" &&
+        typeof entry?.message === "string" &&
+        typeof entry?.sender === "string" &&
+        typeof entry?.lifeLog === "string" &&
+        typeof entry?.readAt === "string"
+    );
+  } catch (error) {
+    console.error("Error loading bottle journal:", error);
+    return [];
+  }
+};
+
+export const saveBottleJournalEntry = (entry: BottleJournalEntry) => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const withoutSameDate = loadBottleJournal().filter(
+    (storedEntry) => storedEntry.date !== entry.date
+  );
+  const nextJournal = [entry, ...withoutSameDate]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, MAX_JOURNAL_ENTRIES);
+
+  window.localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(nextJournal));
+  return nextJournal;
+};
