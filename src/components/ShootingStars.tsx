@@ -68,7 +68,6 @@ const ShootingStars: React.FC = () => {
         ? Math.sin(progress * Math.PI) * SHOOTING_STAR_MAX_OPACITY
         : 0;
 
-      refs.group.visible = isActive;
       refs.group.position.set(
         SHOOTING_STAR_START_X - easedProgress * SHOOTING_STAR_TRAVEL_X,
         SHOOTING_STAR_START_Y + star.yOffset - easedProgress * SHOOTING_STAR_DROP_Y,
@@ -88,7 +87,6 @@ const ShootingStars: React.FC = () => {
             starRefs.current[star.id].group = group;
           }}
           follow
-          visible={false}
         >
           <group rotation-z={SHOOTING_STAR_ROTATION_Z}>
             <mesh position={[-SHOOTING_STAR_TAIL_LENGTH / 2, 0, 0]}>
