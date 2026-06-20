@@ -79,43 +79,48 @@ const ShootingStars: React.FC = () => {
     return geometry;
   }, []);
 
-  const directionQuaternions = useMemo(
-    () =>
-      METEOR_PATHS.map((path) => {
-        const direction = new THREE.Vector3()
-          .subVectors(
-            new THREE.Vector3(...path.end),
-            new THREE.Vector3(...path.start)
-          )
-          .normalize();
-        return new THREE.Quaternion().setFromUnitVectors(
-          new THREE.Vector3(1, 0, 0),
-          direction
-        );
-      }),
-    []
-  );
+  const meteorPaths = useMemo(() => {
+    const xAxis = new THREE.Vector3(1, 0, 0);
+
+    return METEOR_PATHS.map((path) => {
+      const start = new THREE.Vector3(...path.start);
+      const end = new THREE.Vector3(...path.end);
+      const direction = new THREE.Vector3().subVectors(end, start).normalize();
+
+      return {
+        start,
+        end,
+        quaternion: new THREE.Quaternion().setFromUnitVectors(xAxis, direction),
+      };
+    });
+  }, []);
+
+  const currentPosition = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state) => {
     if (!refs.current.group || !refs.current.trail || !refs.current.glow) {
       return;
     }
 
-    const elapsed = state.clock.getElapsedTime() + METEOR_FIRST_DELAY_SECONDS;
-    const pathIndex = Math.floor(elapsed / METEOR_CYCLE_SECONDS) % METEOR_PATHS.length;
-    const cycleTime = elapsed % METEOR_CYCLE_SECONDS;
+    const elapsed = state.clock.getElapsedTime() - METEOR_FIRST_DELAY_SECONDS;
+    const isPastFirstDelay = elapsed >= 0;
+    const cycleTime = isPastFirstDelay ? elapsed % METEOR_CYCLE_SECONDS : METEOR_CYCLE_SECONDS;
     const isActive = cycleTime < METEOR_ACTIVE_SECONDS;
     const progress = isActive ? cycleTime / METEOR_ACTIVE_SECONDS : 0;
-    const path = METEOR_PATHS[pathIndex];
-    const start = new THREE.Vector3(...path.start);
-    const end = new THREE.Vector3(...path.end);
-    const position = start.lerp(end, 1 - Math.pow(1 - progress, 2));
+    const pathIndex = isPastFirstDelay
+      ? Math.floor(elapsed / METEOR_CYCLE_SECONDS) % meteorPaths.length
+      : 0;
+    const path = meteorPaths[pathIndex];
     const opacity = isActive
       ? Math.sin(progress * Math.PI) * METEOR_MAX_OPACITY
       : 0;
 
-    refs.current.group.position.copy(position);
-    refs.current.group.quaternion.copy(directionQuaternions[pathIndex]);
+    currentPosition
+      .copy(path.start)
+      .lerp(path.end, 1 - Math.pow(1 - progress, 2));
+
+    refs.current.group.position.copy(currentPosition);
+    refs.current.group.quaternion.copy(path.quaternion);
     refs.current.trail.opacity = opacity;
     refs.current.glow.opacity = opacity * 0.9;
   });
@@ -137,6 +142,8 @@ const ShootingStars: React.FC = () => {
           transparent
           opacity={0}
           depthWrite={false}
+          depthTest={false}
+          toneMapped={false}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
@@ -151,6 +158,8 @@ const ShootingStars: React.FC = () => {
           transparent
           opacity={0}
           depthWrite={false}
+          depthTest={false}
+          toneMapped={false}
           blending={THREE.AdditiveBlending}
         />
       </points>
