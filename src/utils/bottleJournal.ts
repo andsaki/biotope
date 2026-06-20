@@ -12,6 +12,12 @@ export interface BottleJournalEntry {
   readAt: string;
 }
 
+export interface BottleMemorySign {
+  date: string;
+  label: string;
+  readAt: string;
+}
+
 interface LifeLogInput {
   date: string;
   season: Season;
@@ -21,7 +27,9 @@ interface LifeLogInput {
 }
 
 const JOURNAL_STORAGE_KEY = "mizube_bottle_journal";
+const MEMORY_SIGNS_STORAGE_KEY = "mizube_bottle_memory_signs";
 const MAX_JOURNAL_ENTRIES = 14;
+const MAX_MEMORY_SIGNS = 10;
 
 const seasonLabels: Record<Season, string> = {
   spring: "春",
@@ -58,6 +66,13 @@ const weatherNotes = {
     "雨の気配で、岸辺の音が少し近く聞こえた",
   ],
 } as const;
+
+const discoveryLabels = [
+  "波紋の発見",
+  "風向きのしるし",
+  "光の漂着",
+  "水面の記録",
+] as const;
 
 const seasonNotes: Record<Season, string[]> = {
   spring: [
@@ -111,6 +126,9 @@ const createSeed = (value: string) => {
 };
 
 const pick = <T,>(items: readonly T[], seed: number) => items[seed % items.length];
+
+export const getBottleDiscoveryLabel = (date: string) =>
+  pick(discoveryLabels, createSeed(date));
 
 export const getLocalDateKey = (date = new Date()) => {
   const year = date.getFullYear();
@@ -188,4 +206,48 @@ export const saveBottleJournalEntry = (entry: BottleJournalEntry) => {
 
   window.localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(nextJournal));
   return nextJournal;
+};
+
+export const loadBottleMemorySigns = (): BottleMemorySign[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const rawSigns = window.localStorage.getItem(MEMORY_SIGNS_STORAGE_KEY);
+    if (!rawSigns) {
+      return [];
+    }
+
+    const parsed = JSON.parse(rawSigns);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter(
+      (sign): sign is BottleMemorySign =>
+        typeof sign?.date === "string" &&
+        typeof sign?.label === "string" &&
+        typeof sign?.readAt === "string"
+    );
+  } catch (error) {
+    console.error("Error loading bottle memory signs:", error);
+    return [];
+  }
+};
+
+export const saveBottleMemorySign = (sign: BottleMemorySign) => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const withoutSameDate = loadBottleMemorySigns().filter(
+    (storedSign) => storedSign.date !== sign.date
+  );
+  const nextSigns = [sign, ...withoutSameDate]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, MAX_MEMORY_SIGNS);
+
+  window.localStorage.setItem(MEMORY_SIGNS_STORAGE_KEY, JSON.stringify(nextSigns));
+  return nextSigns;
 };
