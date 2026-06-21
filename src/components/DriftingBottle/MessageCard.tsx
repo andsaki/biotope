@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Html } from "@react-three/drei";
-import { formatJournalDate, type BottleJournalEntry } from "@/utils/bottleJournal";
+import { useThree } from "@react-three/fiber";
+import { formatJournalDate, getBottleDiscoveryLabel } from "@/utils/bottleJournal";
 
 /** メッセージカードのプロパティ */
 interface MessageCardProps {
@@ -8,12 +9,8 @@ interface MessageCardProps {
   message: string;
   /** 送り主 */
   sender: string;
-  /** 今日の観察ログ */
-  lifeLog: string;
   /** 表示中の便りの日付 */
   currentDate: string;
-  /** 保存済みの便り履歴 */
-  journalEntries: BottleJournalEntry[];
   /** 閉じるボタンのクリックハンドラ */
   onClose: (e: React.MouseEvent) => void;
 }
@@ -21,23 +18,28 @@ interface MessageCardProps {
 /** カードのスタイル定義 */
 const CARD_STYLES = {
   container: {
-    background: "rgba(245, 230, 211, 0.98)",
-    padding: "20px",
+    background:
+      "linear-gradient(150deg, rgba(252, 239, 220, 0.98), rgba(238, 216, 186, 0.98))",
+    padding: "18px 20px 20px",
     borderRadius: "8px",
-    minWidth: "300px",
-    maxWidth: "400px",
-    maxHeight: "500px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)",
+    width: "330px",
+    maxWidth: "calc(100vw - 32px)",
+    maxHeight: "min(74vh, 560px)",
+    boxSizing: "border-box" as const,
+    boxShadow:
+      "0 18px 42px rgba(20, 12, 4, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
     fontFamily: "'Noto Serif JP', serif",
     position: "relative" as const,
     border: "2px solid #d4a574",
     overflow: "hidden" as const,
     display: "flex",
     flexDirection: "column" as const,
+    color: "#4f422f",
   },
   content: {
     overflowY: "auto" as const,
     paddingRight: "4px",
+    overscrollBehavior: "contain" as const,
   },
   closeButton: {
     position: "absolute" as const,
@@ -56,18 +58,44 @@ const CARD_STYLES = {
     padding: "0",
   },
   title: {
-    margin: "0 0 15px 0",
+    margin: "0",
     color: "#5d4e37",
-    fontSize: "18px",
-    borderBottom: "1px solid #d4a574",
-    paddingBottom: "10px",
+    fontSize: "20px",
     flexShrink: 0,
+    letterSpacing: "0.08em",
+  },
+  header: {
+    position: "relative" as const,
+    marginBottom: "14px",
+    padding: "0 42px 13px 0",
+    borderBottom: "1px solid rgba(160, 112, 64, 0.44)",
+  },
+  eyebrow: {
+    margin: "0 0 5px 0",
+    color: "#9b744a",
+    fontSize: "11px",
+    letterSpacing: "0.18em",
+  },
+  statusRow: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "7px",
+    marginBottom: "16px",
+  },
+  statusChip: {
+    padding: "5px 9px",
+    borderRadius: "999px",
+    background: "rgba(255, 250, 239, 0.72)",
+    border: "1px solid rgba(178, 128, 75, 0.32)",
+    color: "#76583a",
+    fontSize: "11px",
+    letterSpacing: "0.04em",
   },
   message: {
     margin: "0",
-    lineHeight: "1.8",
+    lineHeight: "1.9",
     color: "#4a4a4a",
-    fontSize: "14px",
+    fontSize: "14.5px",
     whiteSpace: "pre-wrap" as const,
   },
   sender: {
@@ -77,54 +105,14 @@ const CARD_STYLES = {
     color: "#8b7355",
     fontStyle: "italic" as const,
   },
-  section: {
-    marginTop: "18px",
-    paddingTop: "14px",
-    borderTop: "1px solid rgba(139, 115, 85, 0.28)",
-  },
-  sectionTitle: {
-    margin: "0 0 8px 0",
-    color: "#5d4e37",
-    fontSize: "13px",
-    letterSpacing: "0.08em",
-  },
-  lifeLog: {
-    margin: "0",
-    color: "#5f5548",
-    fontSize: "12px",
-    lineHeight: "1.7",
-  },
-  historyList: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "10px",
-  },
-  historyItem: {
-    padding: "9px 10px",
-    borderRadius: "6px",
-    background: "rgba(255, 248, 235, 0.62)",
-    border: "1px solid rgba(212, 165, 116, 0.34)",
-  },
-  historyDate: {
-    margin: "0 0 4px 0",
+  footerNote: {
+    margin: "18px 0 0 0",
+    paddingTop: "12px",
+    borderTop: "1px dashed rgba(139, 115, 85, 0.28)",
     color: "#8b7355",
     fontSize: "11px",
-  },
-  historyText: {
-    margin: "0",
-    color: "#4f4a42",
-    fontSize: "12px",
     lineHeight: "1.6",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical" as const,
-    overflow: "hidden",
-  },
-  emptyHistory: {
-    margin: "0",
-    color: "#8b7355",
-    fontSize: "12px",
-    lineHeight: "1.6",
+    textAlign: "center" as const,
   },
 };
 
@@ -135,46 +123,33 @@ const CARD_STYLES = {
 export const MessageCard = memo(({
   message,
   sender,
-  lifeLog,
   currentDate,
-  journalEntries,
   onClose,
 }: MessageCardProps) => {
-  const previousEntries = journalEntries.filter(
-    (entry) => entry.date !== currentDate
-  );
+  const discoveryLabel = getBottleDiscoveryLabel(currentDate);
+  const { size } = useThree();
+  const distanceFactor = size.width < 520 ? 6.2 : 10;
 
   return (
-    <Html center distanceFactor={10} style={{ pointerEvents: "all" }}>
+    <Html center distanceFactor={distanceFactor} style={{ pointerEvents: "all" }}>
       <div style={CARD_STYLES.container} onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} style={CARD_STYLES.closeButton}>
           ×
         </button>
-        <h3 style={CARD_STYLES.title}>海からの便り</h3>
+        <div style={CARD_STYLES.header}>
+          <p style={CARD_STYLES.eyebrow}>DRIFTING NOTE</p>
+          <h3 style={CARD_STYLES.title}>海からの便り</h3>
+        </div>
         <div style={CARD_STYLES.content}>
+          <div style={CARD_STYLES.statusRow}>
+            <span style={CARD_STYLES.statusChip}>{formatJournalDate(currentDate)}</span>
+            <span style={CARD_STYLES.statusChip}>今日のしるし: {discoveryLabel}</span>
+          </div>
           <p style={CARD_STYLES.message}>{message}</p>
           <div style={CARD_STYLES.sender}>— {sender}</div>
-          <section style={CARD_STYLES.section}>
-            <h4 style={CARD_STYLES.sectionTitle}>今日の観察</h4>
-            <p style={CARD_STYLES.lifeLog}>{lifeLog}</p>
-          </section>
-          <section style={CARD_STYLES.section}>
-            <h4 style={CARD_STYLES.sectionTitle}>これまでの便り</h4>
-            {previousEntries.length > 0 ? (
-              <div style={CARD_STYLES.historyList}>
-                {previousEntries.slice(0, 5).map((entry) => (
-                  <article key={entry.date} style={CARD_STYLES.historyItem}>
-                    <p style={CARD_STYLES.historyDate}>{formatJournalDate(entry.date)}</p>
-                    <p style={CARD_STYLES.historyText}>{entry.message}</p>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <p style={CARD_STYLES.emptyHistory}>
-                まだ過去の便りはありません。次に瓶を開くと、ここに記録が残ります。
-              </p>
-            )}
-          </section>
+          <p style={CARD_STYLES.footerNote}>
+            閉じると、今日のしるしが水面に残ります。
+          </p>
         </div>
       </div>
     </Html>
