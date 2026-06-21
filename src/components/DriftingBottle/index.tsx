@@ -338,8 +338,7 @@ export const DriftingBottle = ({
     setJournalEntries(nextJournal);
   }, [currentMessage, currentSender, displayedLifeLog, showMessage, today]);
 
-  const handleCloseMessage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCloseMessage = () => {
     setShowMessage(false);
     setMemorySigns(
       saveBottleMemorySign({
