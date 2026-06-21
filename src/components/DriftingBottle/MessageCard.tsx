@@ -12,8 +12,18 @@ interface MessageCardProps {
   /** 表示中の便りの日付 */
   currentDate: string;
   /** 閉じるボタンのクリックハンドラ */
-  onClose: (e: React.MouseEvent) => void;
+  onClose: () => void;
 }
+
+type CardPointerEvent =
+  | React.MouseEvent<HTMLElement>
+  | React.PointerEvent<HTMLElement>;
+
+const stopCardEvent = (event: CardPointerEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
+  event.nativeEvent.stopImmediatePropagation();
+};
 
 /** カードのスタイル定義 */
 const CARD_STYLES = {
@@ -35,6 +45,7 @@ const CARD_STYLES = {
     display: "flex",
     flexDirection: "column" as const,
     color: "#4f422f",
+    userSelect: "none" as const,
   },
   content: {
     overflowY: "auto" as const,
@@ -56,6 +67,10 @@ const CARD_STYLES = {
     alignItems: "center",
     justifyContent: "center",
     padding: "0",
+    lineHeight: "1",
+    zIndex: 2,
+    pointerEvents: "auto" as const,
+    touchAction: "manipulation" as const,
   },
   title: {
     margin: "0",
@@ -129,11 +144,32 @@ export const MessageCard = memo(({
   const discoveryLabel = getBottleDiscoveryLabel(currentDate);
   const { size } = useThree();
   const distanceFactor = size.width < 520 ? 6.2 : 10;
+  const handleClose = (event: React.MouseEvent<HTMLButtonElement>) => {
+    stopCardEvent(event);
+    onClose();
+  };
+  const handleClosePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    stopCardEvent(event);
+  };
+  const stopContainerEvent = (event: CardPointerEvent) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+  };
 
   return (
     <Html center distanceFactor={distanceFactor} style={{ pointerEvents: "all" }}>
-      <div style={CARD_STYLES.container} onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} style={CARD_STYLES.closeButton}>
+      <div
+        style={CARD_STYLES.container}
+        onClick={stopContainerEvent}
+        onPointerDown={stopContainerEvent}
+      >
+        <button
+          type="button"
+          onClick={handleClose}
+          onPointerDown={handleClosePointerDown}
+          style={CARD_STYLES.closeButton}
+          aria-label="便りを閉じる"
+        >
           ×
         </button>
         <div style={CARD_STYLES.header}>
