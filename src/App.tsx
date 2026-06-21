@@ -10,6 +10,7 @@ import Clouds from "./components/Clouds";
 import WindDirectionDisplay from "./components/WindDirectionDisplay";
 import Ground from "./components/Ground";
 import Stars from "./components/Stars";
+import ShootingStars from "./components/ShootingStars";
 import ReflectedStars from "./components/ReflectedStars";
 import WaterSurface from "./components/WaterSurface";
 import LightingController from "./components/LightingController";
@@ -47,6 +48,7 @@ const MemoizedFishManager = memo(FishManager);
 const MemoizedParticleLayerInstanced = memo(ParticleLayerInstanced);
 const MemoizedClouds = memo(Clouds);
 const MemoizedStars = memo(Stars);
+const MemoizedShootingStars = memo(ShootingStars);
 const MemoizedReflectedStars = memo(ReflectedStars);
 const MemoizedWaterSurface = memo(WaterSurface);
 // SundialGnomonは内部で太陽位置を参照するのでメモ化のみ行う
@@ -189,6 +191,7 @@ const AppContent = () => {
           {!isDay && (
             <>
               <MemoizedStars />
+              <MemoizedShootingStars />
               <MemoizedReflectedStars />
             </>
           )}
