@@ -1,6 +1,6 @@
 /**
  * Cloudflare Functions - 現在の天気API
- * Open-Meteoから東京の現在天気を取得する
+ * Cloudflare のリクエスト位置情報を使って Open-Meteo から現在天気を取得する
  */
 
 /// <reference types="@cloudflare/workers-types" />
@@ -14,21 +14,45 @@ interface OpenMeteoCurrent {
   snowfall: number;
   cloud_cover: number;
   wind_direction_10m: number;
+  wind_speed_10m: number;
+}
+
+interface OpenMeteoHourly {
+  time: string[];
+  weather_code: number[];
+  precipitation_probability?: number[];
+  precipitation: number[];
+  rain: number[];
+  showers: number[];
+  snowfall: number[];
+  cloud_cover: number[];
+  wind_direction_10m: number[];
+  wind_speed_10m: number[];
 }
 
 interface OpenMeteoResponse {
   current: OpenMeteoCurrent;
+  hourly?: OpenMeteoHourly;
 }
 
 type WeatherCondition = "clear" | "cloudy" | "rain";
 
-const TOKYO_STATION = {
-  name: "東京",
-  latitude: 35.6812,
-  longitude: 139.7671,
-} as const;
+interface RequestLocation {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+interface CloudflareGeo {
+  city?: unknown;
+  region?: unknown;
+  country?: unknown;
+  latitude?: unknown;
+  longitude?: unknown;
+}
 
 const CACHE_TTL_SECONDS = 30 * 60;
+const FORECAST_HOURS = 6;
 
 const WEATHER_LABELS: Record<WeatherCondition, string> = {
   clear: "晴",
@@ -37,9 +61,9 @@ const WEATHER_LABELS: Record<WeatherCondition, string> = {
 };
 
 const WEATHER_DESCRIPTIONS: Record<WeatherCondition, string> = {
-  clear: "東京の空が明るい",
-  cloudy: "東京の光がやわらぐ",
-  rain: "東京に雨が降る",
+  clear: "近くの空が明るい",
+  cloudy: "近くの光がやわらぐ",
+  rain: "近くに雨が降る",
 };
 
 const rainyWeatherCodes = new Set([
@@ -64,6 +88,75 @@ const getCondition = (current: OpenMeteoCurrent): WeatherCondition => {
   return "clear";
 };
 
+const getHourlyCondition = ({
+  weatherCode,
+  precipitation,
+  cloudCover,
+}: {
+  weatherCode: number;
+  precipitation: number;
+  cloudCover: number;
+}): WeatherCondition => {
+  if (precipitation > 0 || rainyWeatherCodes.has(weatherCode)) {
+    return "rain";
+  }
+
+  if (cloudCover >= 55 || cloudyWeatherCodes.has(weatherCode)) {
+    return "cloudy";
+  }
+
+  return "clear";
+};
+
+const sumPrecipitation = ({
+  precipitation,
+  rain,
+  showers,
+  snowfall,
+}: {
+  precipitation: number;
+  rain: number;
+  showers: number;
+  snowfall: number;
+}) => precipitation + rain + showers + snowfall;
+
+const getStringValue = (value: unknown) =>
+  typeof value === "string" && value.trim() ? value.trim() : null;
+
+const getNumberValue = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+};
+
+const getRequestLocation = (request: Request): RequestLocation | null => {
+  const cf = request.cf as CloudflareGeo | undefined;
+  const latitude = getNumberValue(cf?.latitude);
+  const longitude = getNumberValue(cf?.longitude);
+
+  if (latitude === null || longitude === null) {
+    return null;
+  }
+
+  const city = getStringValue(cf?.city);
+  const region = getStringValue(cf?.region);
+  const country = getStringValue(cf?.country);
+  const name = city ?? region ?? country ?? "現在地";
+
+  return {
+    name,
+    latitude,
+    longitude,
+  };
+};
+
 export const onRequest = async (context: EventContext<unknown, string, Record<string, unknown>>) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -76,9 +169,20 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
   }
 
   try {
+    const location = getRequestLocation(context.request);
+    if (!location) {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...corsHeaders,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
     const apiUrl = new URL("https://api.open-meteo.com/v1/forecast");
-    apiUrl.searchParams.set("latitude", String(TOKYO_STATION.latitude));
-    apiUrl.searchParams.set("longitude", String(TOKYO_STATION.longitude));
+    apiUrl.searchParams.set("latitude", String(location.latitude));
+    apiUrl.searchParams.set("longitude", String(location.longitude));
     apiUrl.searchParams.set(
       "current",
       [
@@ -89,10 +193,26 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
         "snowfall",
         "cloud_cover",
         "wind_direction_10m",
+        "wind_speed_10m",
       ].join(",")
     );
-    apiUrl.searchParams.set("timezone", "Asia/Tokyo");
+    apiUrl.searchParams.set(
+      "hourly",
+      [
+        "weather_code",
+        "precipitation_probability",
+        "precipitation",
+        "rain",
+        "showers",
+        "snowfall",
+        "cloud_cover",
+        "wind_direction_10m",
+        "wind_speed_10m",
+      ].join(",")
+    );
+    apiUrl.searchParams.set("timezone", "auto");
     apiUrl.searchParams.set("forecast_days", "1");
+    apiUrl.searchParams.set("forecast_hours", String(FORECAST_HOURS));
 
     const response = await fetch(apiUrl.toString(), {
       headers: {
@@ -111,6 +231,39 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
     const data: OpenMeteoResponse = await response.json();
     const current = data.current;
     const condition = getCondition(current);
+    const currentPrecipitation = sumPrecipitation({
+      precipitation: current.precipitation,
+      rain: current.rain,
+      showers: current.showers,
+      snowfall: current.snowfall,
+    });
+    const hourly = data.hourly;
+    const forecast = hourly?.time.map((time, index) => {
+      const precipitation = sumPrecipitation({
+        precipitation: hourly.precipitation[index] ?? 0,
+        rain: hourly.rain[index] ?? 0,
+        showers: hourly.showers[index] ?? 0,
+        snowfall: hourly.snowfall[index] ?? 0,
+      });
+      const cloudCover = hourly.cloud_cover[index] ?? 0;
+      const hourlyCondition = getHourlyCondition({
+        weatherCode: hourly.weather_code[index] ?? 0,
+        precipitation,
+        cloudCover,
+      });
+
+      return {
+        time,
+        condition: hourlyCondition,
+        label: WEATHER_LABELS[hourlyCondition],
+        description: WEATHER_DESCRIPTIONS[hourlyCondition],
+        precipitation,
+        precipitationProbability: hourly.precipitation_probability?.[index] ?? null,
+        cloudCover,
+        windDirection: hourly.wind_direction_10m[index] ?? 0,
+        windSpeed: hourly.wind_speed_10m[index] ?? 0,
+      };
+    }) ?? [];
 
     return new Response(
       JSON.stringify({
@@ -119,12 +272,13 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
         description: WEATHER_DESCRIPTIONS[condition],
         observedAt: current.time,
         source: "open-meteo",
-        location: TOKYO_STATION.name,
+        location: location.name,
         weatherCode: current.weather_code,
         cloudCover: current.cloud_cover,
-        precipitation:
-          current.precipitation + current.rain + current.showers + current.snowfall,
+        precipitation: currentPrecipitation,
         windDirection: current.wind_direction_10m,
+        windSpeed: current.wind_speed_10m,
+        forecast,
         cacheTtl: CACHE_TTL_SECONDS,
       }),
       {

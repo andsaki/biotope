@@ -19,6 +19,24 @@ const windDirectionMap = {
   West: { rotation: 270, label: '西', kanji: '西' },
 };
 
+const formatForecastHour = (date: Date) =>
+  `${String(date.getHours()).padStart(2, '0')}時`;
+
+const getWeatherTone = (condition: WeatherSnapshot['condition']) => {
+  switch (condition) {
+    case 'rain':
+      return '雨粒';
+    case 'cloudy':
+      return 'やわらぐ光';
+    case 'clear':
+    default:
+      return '戻る光';
+  }
+};
+
+const formatWindSpeed = (speed: number | null) =>
+  speed === null ? null : `${speed.toFixed(1)}m/s`;
+
 /**
  * 風向きコンパス表示コンポーネント
  * 現在の風向きを視覚的に表示
@@ -30,6 +48,8 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
 }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
   const isMobile = useIsMobile();
+  const forecastPreview = weather.forecast.slice(1, 4);
+  const windSpeedText = formatWindSpeed(weather.windSpeed);
 
   return (
     <div
@@ -266,6 +286,89 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
             ? `${weather.location}の実天気`
             : '水辺の天気'}
         </div>
+        {windSpeedText && (
+          <div
+            style={{
+              marginTop: '3px',
+              fontSize: '10px',
+              color: 'rgba(255, 255, 255, 0.58)',
+              lineHeight: 1.4,
+            }}
+          >
+            風 {windSpeedText}
+          </div>
+        )}
+        {forecastPreview.length > 0 && (
+          <div
+            style={{
+              width: '100%',
+              marginTop: tokens.spacing.sm,
+              paddingTop: tokens.spacing.sm,
+              borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+            }}
+          >
+            <div
+              style={{
+                marginBottom: '6px',
+                fontSize: '10px',
+                letterSpacing: '0.08em',
+                color: 'rgba(255, 255, 255, 0.58)',
+              }}
+            >
+              水辺予報
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '6px',
+              }}
+            >
+              {forecastPreview.map((point) => (
+                <div
+                  key={point.time.toISOString()}
+                  style={{
+                    minWidth: '34px',
+                    padding: '5px 6px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: 'rgba(255, 255, 255, 0.07)',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '9px',
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {formatForecastHour(point.time)}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: '2px',
+                      fontSize: '13px',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {point.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                marginTop: '6px',
+                fontSize: '10px',
+                color: 'rgba(255, 255, 255, 0.68)',
+                lineHeight: 1.45,
+              }}
+            >
+              {weather.forecastSummary || getWeatherTone(forecastPreview[0].condition)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -38,9 +38,25 @@ import { useIsMobile } from "./hooks/useIsMobile";
 import { useWindDirection } from "./hooks/useWindDirection";
 import { useWeather } from "./hooks/useWeather";
 import { useUxHints } from "./hooks/useUxHints";
+import type { WindDirection } from "./utils/bottleJournal";
 
 // const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
 const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
+
+const getWindDirectionFromDegrees = (
+  degrees: number | null,
+  fallback: WindDirection
+): WindDirection => {
+  if (degrees === null || !Number.isFinite(degrees)) {
+    return fallback;
+  }
+
+  const normalized = ((degrees % 360) + 360) % 360;
+  if (normalized >= 315 || normalized < 45) return "North";
+  if (normalized < 135) return "East";
+  if (normalized < 225) return "South";
+  return "West";
+};
 
 // メモ化されたコンポーネント
 const MemoizedGround = memo(Ground);
@@ -93,8 +109,12 @@ type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
  */
 const AppContent = () => {
   const isDay = useDayPeriod();
-  const windDirection = useWindDirection();
+  const simulatedWindDirection = useWindDirection();
   const weather = useWeather();
+  const windDirection = useMemo(
+    () => getWindDirectionFromDegrees(weather.windDirection, simulatedWindDirection),
+    [simulatedWindDirection, weather.windDirection]
+  );
   const uxHints = useUxHints();
   const isMobile = useIsMobile();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -212,6 +232,7 @@ const AppContent = () => {
             ambientLightRef={ambientLightRef}
             pointLightRef={pointLightRef}
             spotLightRef={spotLightRef}
+            weather={weather}
           />
 
           {/* 太陽 */}
@@ -229,13 +250,16 @@ const AppContent = () => {
 
           {/* 初期表示の核になる軽量オブジェクト */}
           <MemoizedGround />
-          <MemoizedWaterSurface onInteract={uxHints.markWaterRippled} />
+          <MemoizedWaterSurface
+            weather={weather}
+            onInteract={uxHints.markWaterRippled}
+          />
           <MemoizedSundialGnomon />
           <MemoizedSundialBase />
 
           {/* モデル・装飾系は初期描画をブロックしない */}
           <Suspense fallback={null}>
-            <MemoizedFishManager />
+            <MemoizedFishManager weather={weather} />
           </Suspense>
           <Suspense fallback={null}>
             <WaterPlantsLarge />
@@ -254,7 +278,10 @@ const AppContent = () => {
           </Suspense>
           <Suspense fallback={null}>
             <MemoizedParticleLayerInstanced />
-            <MemoizedClouds timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60} />
+            <MemoizedClouds
+              weather={weather}
+              timeScale={SIMULATED_SECONDS_PER_REAL_SECOND / 60}
+            />
           </Suspense>
 
           {/* 季節エフェクト */}

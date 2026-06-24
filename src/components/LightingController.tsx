@@ -9,6 +9,11 @@ import {
   SEASON_COLORS,
   DIRECTIONAL_SHADOW_MAP_SIZE,
 } from "../constants/lighting";
+import {
+  getCloudIntensity,
+  getRainIntensity,
+  type WeatherSnapshot,
+} from "@/utils/weather";
 
 /** ライティング制御のプロパティ */
 interface LightingControllerProps {
@@ -20,6 +25,8 @@ interface LightingControllerProps {
   pointLightRef: React.RefObject<THREE.PointLight>;
   /** スポットライトへの参照 */
   spotLightRef: React.RefObject<THREE.SpotLight>;
+  /** 現在の天気 */
+  weather: WeatherSnapshot;
 }
 
 /**
@@ -32,6 +39,7 @@ const LightingController: React.FC<LightingControllerProps> = ({
   ambientLightRef,
   pointLightRef,
   spotLightRef,
+  weather,
 }) => {
   const isDay = useDayPeriod();
   const { season } = useSeason();
@@ -63,6 +71,10 @@ const LightingController: React.FC<LightingControllerProps> = ({
 
       const targetColor = dayNightColors.directional;
       const targetAmbientColor = dayNightColors.ambient;
+      const cloudIntensity = getCloudIntensity(weather);
+      const rainIntensity = getRainIntensity(weather);
+      const weatherDimming = Math.max(0.52, 1 - cloudIntensity * 0.24 - rainIntensity * 0.32);
+      const ambientDimming = Math.max(0.65, 1 - cloudIntensity * 0.16 - rainIntensity * 0.18);
 
       let targetIntensity: number;
       if (season === "summer") {
@@ -73,9 +85,11 @@ const LightingController: React.FC<LightingControllerProps> = ({
         targetIntensity = isDay ? DAY_INTENSITY.directional.default : NIGHT_INTENSITY.directional.default;
       }
 
-      const targetAmbientIntensity = isDay ? DAY_INTENSITY.ambient : NIGHT_INTENSITY.ambient;
-      const targetPointIntensity = isDay ? DAY_INTENSITY.point : NIGHT_INTENSITY.point;
-      const targetSpotIntensity = isDay ? DAY_INTENSITY.spot : NIGHT_INTENSITY.spot;
+      targetIntensity *= weatherDimming;
+
+      const targetAmbientIntensity = (isDay ? DAY_INTENSITY.ambient : NIGHT_INTENSITY.ambient) * ambientDimming;
+      const targetPointIntensity = (isDay ? DAY_INTENSITY.point : NIGHT_INTENSITY.point) * (0.88 + weatherDimming * 0.12);
+      const targetSpotIntensity = (isDay ? DAY_INTENSITY.spot : NIGHT_INTENSITY.spot) * (0.82 + weatherDimming * 0.18);
 
       // スムーズな切り替え
       directionalLightRef.current.intensity +=

@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import {
@@ -32,9 +32,33 @@ const spawnRainDrop = (): RainDrop => ({
   ] as [number, number],
 });
 
-const RainEffect: React.FC = () => {
+interface RainEffectProps {
+  intensity?: number;
+}
+
+const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
+  const material = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: RAIN_COLOR,
+        transparent: true,
+        opacity: RAIN_OPACITY,
+      }),
+    []
+  );
+  const activeDropCount = useMemo(
+    () => Math.max(80, Math.min(RAIN_DROP_COUNT, Math.round(RAIN_DROP_COUNT * (0.35 + intensity * 0.75)))),
+    [intensity]
+  );
+  const speedMultiplier = 0.82 + intensity * 0.46;
+
+  useEffect(() => {
+    return () => {
+      material.dispose();
+    };
+  }, [material]);
 
   // 雨粒の初期データを生成（一度だけ）
   const rainDrops = useMemo<RainDrop[]>(() => {
@@ -44,11 +68,14 @@ const RainEffect: React.FC = () => {
   // アニメーション
   useFrame((_, delta) => {
     if (!meshRef.current) return;
+    meshRef.current.count = activeDropCount;
+    material.opacity = RAIN_OPACITY * (0.62 + intensity * 0.7);
 
-    rainDrops.forEach((drop, i) => {
+    for (let i = 0; i < activeDropCount; i += 1) {
+      const drop = rainDrops[i];
       // 落下処理
-      drop.position[1] += drop.velocity[1] * delta;
-      drop.position[0] += drop.velocity[0] * delta;
+      drop.position[1] += drop.velocity[1] * delta * speedMultiplier;
+      drop.position[0] += drop.velocity[0] * delta * (0.85 + intensity * 0.4);
 
       // 地面に到達したらリセット
       if (drop.position[1] < RAIN_RESET_Y) {
@@ -64,7 +91,7 @@ const RainEffect: React.FC = () => {
       if (meshRef.current) {
         meshRef.current.setMatrixAt(i, dummy.matrix);
       }
-    });
+    }
 
     if (meshRef.current) {
       meshRef.current.instanceMatrix.needsUpdate = true;
@@ -74,7 +101,7 @@ const RainEffect: React.FC = () => {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, RAIN_DROP_COUNT]}>
       <cylinderGeometry args={[RAIN_DROP_SIZE.WIDTH, RAIN_DROP_SIZE.WIDTH, RAIN_DROP_SIZE.HEIGHT, 4]} />
-      <meshBasicMaterial color={RAIN_COLOR} transparent opacity={RAIN_OPACITY} />
+      <primitive object={material} attach="material" />
     </instancedMesh>
   );
 };

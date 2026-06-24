@@ -4,6 +4,12 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { useSeason } from "../contexts";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
+  getRainIntensity,
+  getWaterReflectionIntensity,
+  getWeatherWaterTurbulence,
+  type WeatherSnapshot,
+} from "@/utils/weather";
+import {
   WATER_SURFACE_Y,
   WATER_SURFACE_Y_AMPLITUDE,
   WATER_SURFACE_Y_FREQUENCY,
@@ -81,9 +87,10 @@ const RIPPLE_SPARKLE_INDICES = [0, 1, 2, 3, 4] as const;
  */
 interface WaterSurfaceProps {
   onInteract?: () => void;
+  weather: WeatherSnapshot;
 }
 
-const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
+const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   const { season } = useSeason();
   const meshRef = useRef<THREE.Mesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
@@ -92,7 +99,11 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
   const elapsedTimeRef = useRef(0);
   const nextRippleIdRef = useRef(0);
   const nextDropletIdRef = useRef(0);
+  const nextWeatherRippleAtRef = useRef(0);
   const [, setRenderTick] = useState(0);
+  const rainIntensity = getRainIntensity(weather);
+  const reflectionIntensity = getWaterReflectionIntensity(weather);
+  const waterTurbulence = getWeatherWaterTurbulence(weather);
 
   // マテリアルをメモ化してパフォーマンス向上
   const material = useMemo(
@@ -199,7 +210,8 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
   const addRipple = useCallback((
     rippleX: number,
     rippleY: number,
-    worldPoint: THREE.Vector3
+    worldPoint: THREE.Vector3,
+    notifyInteraction = true
   ) => {
     const ripplePoint = {
       id: nextRippleIdRef.current++,
@@ -234,7 +246,9 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
 
     dropletsRef.current = [...dropletsRef.current, ...dropletParticles].slice(-24);
     setRenderTick((tick) => tick + 1);
-    onInteract?.();
+    if (notifyInteraction) {
+      onInteract?.();
+    }
   }, [
     onInteract,
     rippleTuning.dropletCount,
@@ -263,6 +277,31 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
 
     const time = state.clock.getElapsedTime();
     elapsedTimeRef.current = time;
+    material.roughness = THREE.MathUtils.clamp(
+      WATER_ROUGHNESS + (1 - reflectionIntensity) * 0.52,
+      0.08,
+      0.72
+    );
+    material.envMapIntensity = WATER_ENV_MAP_INTENSITY * (0.55 + reflectionIntensity * 0.55);
+    material.opacity = THREE.MathUtils.clamp(
+      WATER_OPACITY + rainIntensity * 0.08,
+      0.22,
+      0.42
+    );
+
+    if (rainIntensity > 0.05 && time >= nextWeatherRippleAtRef.current) {
+      const seed = nextRippleIdRef.current * 31 + Math.floor(time * 7);
+      const rippleX = (pseudoRandom(seed) - 0.5) * 30;
+      const rippleY = (pseudoRandom(seed + 1) - 0.5) * 30;
+      addRipple(
+        rippleX,
+        rippleY,
+        new THREE.Vector3(rippleX, WATER_SURFACE_Y + 0.04, rippleY),
+        false
+      );
+      nextWeatherRippleAtRef.current = time + Math.max(0.18, 1.05 - rainIntensity * 0.72);
+    }
+
     const nextRipples = ripplesRef.current.filter(
       (ripple) => time - ripple.startTime < WATER_RIPPLE_LIFETIME
     );
@@ -281,7 +320,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
     const width = WATER_SURFACE_SCALE_X;
     const height = WATER_SURFACE_SCALE_Y;
     const segments = WATER_SURFACE_SEGMENTS;
-    const timeScale = time * WATER_WAVE_TIME_SCALE;
+    const timeScale = time * WATER_WAVE_TIME_SCALE * (0.92 + waterTurbulence * 0.08);
 
     for (let i = 0; i <= segments; i++) {
       const x = (i / segments - 0.5) * width;
@@ -307,7 +346,10 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract }) => {
         }
 
         positions[index] =
-          sinX * Math.cos(y * WATER_WAVE_FREQUENCY + timeScale) * WATER_WAVE_AMPLITUDE +
+          sinX *
+            Math.cos(y * WATER_WAVE_FREQUENCY + timeScale) *
+            WATER_WAVE_AMPLITUDE *
+            waterTurbulence +
           rippleOffset;
       }
     }
