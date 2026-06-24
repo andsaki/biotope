@@ -158,8 +158,9 @@ export const createDailyLifeLog = ({
   const weatherSourceText =
     weather.source === "open-meteo" ? `${weather.location}の${weather.label}。` : "";
   const windText = `${windLabels[windDirection]}からの風。`;
+  const forecastText = weather.forecastSummary ? `${weather.forecastSummary}。` : "";
 
-  return `${formatJournalDate(date)}、${seasonLabels[season]}の${timeLabels[timeOfDay]}。${weatherSourceText}${seasonalText}。${weatherText}。${timeText}。${windText}`;
+  return `${formatJournalDate(date)}、${seasonLabels[season]}の${timeLabels[timeOfDay]}。${weatherSourceText}${seasonalText}。${weatherText}。${forecastText}${timeText}。${windText}`;
 };
 
 export const loadBottleJournal = (): BottleJournalEntry[] => {

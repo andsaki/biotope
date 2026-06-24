@@ -25,6 +25,11 @@ import {
   FISH_MODEL_SCALE,
   FISH_MODEL_ROTATION,
 } from "../constants/fish";
+import {
+  getCloudIntensity,
+  getRainIntensity,
+  type WeatherSnapshot,
+} from "@/utils/weather";
 
 /** 魚の種類 */
 type FishType = "normal" | "flatfish";
@@ -61,9 +66,17 @@ interface Fish {
  * 魚群の管理コンポーネント
  * 季節に応じた色と速度で複数の魚をアニメーション
  */
-const FishManager: React.FC = () => {
+interface FishManagerProps {
+  weather: WeatherSnapshot;
+}
+
+const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const { season } = useSeason();
   const [fishList, setFishList] = useState<Fish[]>([]);
+  const rainIntensity = getRainIntensity(weather);
+  const cloudIntensity = getCloudIntensity(weather);
+  const weatherSpeedMultiplier = 1.08 - rainIntensity * 0.34 - cloudIntensity * 0.12;
+  const weatherDepthOffset = -(rainIntensity * 0.55 + cloudIntensity * 0.18);
 
   useEffect(() => {
     // 季節に基づいて魚を初期化する
@@ -178,8 +191,8 @@ const FishManager: React.FC = () => {
 
         // 移動中のみ位置を更新
         if (newIsMoving) {
-          newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-          newZ = fish.z + Math.sin(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+          newX = fish.x + Math.cos(fish.directionX) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+          newZ = fish.z + Math.sin(fish.directionX) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
 
           // 境界チェック
           if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
@@ -209,14 +222,17 @@ const FishManager: React.FC = () => {
       }
 
       // 通常の魚：従来通りの動き
-      let newX = fish.x + Math.cos(fish.directionX) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-      let newY = fish.y + Math.sin(fish.directionY) * fish.speed * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      let newX = fish.x + Math.cos(fish.directionX) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      let newY = fish.y + Math.sin(fish.directionY) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
       let newZ =
-        fish.z + Math.sin(fish.directionX) * fish.speed * FISH_MOVEMENT.Z_DRIFT_DAMPING * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+        fish.z + Math.sin(fish.directionX) * fish.speed * weatherSpeedMultiplier * FISH_MOVEMENT.Z_DRIFT_DAMPING * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
       newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
 
       // 通常の魚：泳ぐ動きを模倣するためにわずかな垂直振動を追加する
-      newY += Math.sin(timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.id) * FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE;
+      newY +=
+        Math.sin(timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.id) *
+          FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE +
+        weatherDepthOffset;
 
       // 境界チェック
       if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {

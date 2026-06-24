@@ -37,6 +37,11 @@ import {
   CLOUD_EMISSIVE_COLOR,
   CLOUD_EMISSIVE_INTENSITY,
 } from '../constants/clouds';
+import {
+  getCloudIntensity,
+  getRainIntensity,
+  type WeatherSnapshot,
+} from '@/utils/weather';
 
 interface CloudInstance {
   basePosition: [number, number, number];
@@ -47,8 +52,15 @@ interface CloudInstance {
   parts: Array<{ position: [number, number, number]; scale: number }>;
 }
 
-const CloudsComponent: React.FC<{ timeScale: number }> = ({ timeScale }) => {
+interface CloudsProps {
+  timeScale: number;
+  weather: WeatherSnapshot;
+}
+
+const CloudsComponent: React.FC<CloudsProps> = ({ timeScale, weather }) => {
   const cloudRefs = useRef<Array<THREE.Group | null>>([]);
+  const cloudIntensity = getCloudIntensity(weather);
+  const rainIntensity = getRainIntensity(weather);
   const sharedGeometry = useMemo(
     () => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS),
     []
@@ -101,6 +113,11 @@ const CloudsComponent: React.FC<{ timeScale: number }> = ({ timeScale }) => {
     (state, accumulatedDelta) => {
       const frameScale = accumulatedDelta * 60; // 60fps換算で速度を維持
       const time = state.clock.getElapsedTime();
+      sharedMaterial.opacity = Math.min(
+        0.78,
+        CLOUD_OPACITY * (0.72 + cloudIntensity * 0.95 + rainIntensity * 0.28)
+      );
+      sharedMaterial.emissiveIntensity = CLOUD_EMISSIVE_INTENSITY * (0.8 + cloudIntensity * 0.35);
       cloudRefs.current.forEach((ref, index) => {
         if (!ref) return;
         const data = clouds[index];
