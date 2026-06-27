@@ -84,13 +84,13 @@ export const FISH_BOUNDARY = {
 
 // 魚のモデルスケール
 export const FISH_MODEL_SCALE = {
-  NORMAL: 10,
+  NORMAL: 0.42,
   FLATFISH: 0.05,
 } as const;
 
 // 魚のモデル回転
 export const FISH_MODEL_ROTATION = {
-  NORMAL: Math.PI / 2, // 通常の魚は垂直方向に調整
+  NORMAL: 0, // 通常魚OBJはY軸が上
   FLATFISH: 0, // フラットフィッシュは水平
   DIRECTION_OFFSET: Math.PI / 2, // 移動方向の回転オフセット
 } as const;

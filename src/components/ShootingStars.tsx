@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   METEOR_ACTIVE_SECONDS,
   METEOR_COLOR,
@@ -97,7 +97,7 @@ const ShootingStars: React.FC = () => {
 
   const currentPosition = useMemo(() => new THREE.Vector3(), []);
 
-  useFrame((state) => {
+  useThrottledFrame((state) => {
     if (!refs.current.group || !refs.current.trail || !refs.current.glow) {
       return;
     }
@@ -123,7 +123,7 @@ const ShootingStars: React.FC = () => {
     refs.current.group.quaternion.copy(path.quaternion);
     refs.current.trail.opacity = opacity;
     refs.current.glow.opacity = opacity * 0.9;
-  });
+  }, 30);
 
   return (
     <group

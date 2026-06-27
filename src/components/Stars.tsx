@@ -1,8 +1,8 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 import { useDayPeriod } from "../contexts";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   STAR_COUNT,
   STAR_POSITION_RANGE,
@@ -63,7 +63,7 @@ const Stars: React.FC = () => {
     };
   }, []);
 
-  useFrame((_, delta) => {
+  useThrottledFrame((_, delta) => {
     if (!visible && !isNight) {
       return;
     }
@@ -78,7 +78,7 @@ const Stars: React.FC = () => {
         STAR_FADE_SPEED
       );
     }
-  });
+  }, 20);
 
   if (!visible && !isNight) {
     return null;

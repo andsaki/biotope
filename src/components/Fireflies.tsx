@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useCallback } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import { createRng, randomBetween } from "../utils/random";
 import {
   LILY_DATA,
@@ -217,7 +217,7 @@ export const Fireflies: React.FC = () => {
   }, [randomInRange, rng]);
 
   // アニメーションループ
-  useFrame((state, delta) => {
+  useThrottledFrame((state, delta) => {
     if (!instancedMeshRef.current) return;
 
     const fireflies = firefliesRef.current;
@@ -399,7 +399,7 @@ export const Fireflies: React.FC = () => {
         trailMesh.instanceColor.needsUpdate = true;
       }
     }
-  });
+  }, 30);
 
   const geometry = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
   const material = useMemo(

@@ -1,8 +1,8 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 import { useDayPeriod } from "../contexts";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   REFLECTED_STAR_COUNT,
   STAR_DISPLAY_DELAY,
@@ -26,7 +26,6 @@ const ReflectedStars: React.FC = () => {
   const pointsRef = useRef<THREE.Points>(null!);
   const materialRef = useRef<THREE.PointsMaterial>(null!);
   const [visible, setVisible] = useState(false);
-  const frameCount = useRef(0);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -50,14 +49,12 @@ const ReflectedStars: React.FC = () => {
 
   const originalPositions = useMemo(() => new Float32Array(particles), [particles]);
 
-  useFrame((state) => {
+  useThrottledFrame((state) => {
     if (!visible && !isNight) {
       return;
     }
 
-    // パフォーマンス向上：2フレームに1回だけ頂点を更新
-    frameCount.current++;
-    if (frameCount.current % 2 === 0 && pointsRef.current && visible) {
+    if (pointsRef.current && visible) {
       const time = state.clock.getElapsedTime();
       const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
 
@@ -77,7 +74,7 @@ const ReflectedStars: React.FC = () => {
         STAR_FADE_SPEED
       );
     }
-  });
+  }, 20);
 
   if (!visible && !isNight) {
     return null;

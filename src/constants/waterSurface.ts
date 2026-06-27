@@ -13,7 +13,7 @@ export const WATER_SURFACE_SCALE_Y = 80;
 export const WATER_SURFACE_SCALE_Z = 1;
 
 // ジオメトリの解像度
-export const WATER_SURFACE_SEGMENTS = 96;
+export const WATER_SURFACE_SEGMENTS = 72;
 
 // 波紋の設定
 export const WATER_WAVE_FREQUENCY = 0.3;
