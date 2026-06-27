@@ -39,6 +39,7 @@ import {
 } from '../constants/clouds';
 import {
   getCloudIntensity,
+  getGustIntensity,
   getRainIntensity,
   type WeatherSnapshot,
 } from '@/utils/weather';
@@ -61,6 +62,7 @@ const CloudsComponent: React.FC<CloudsProps> = ({ timeScale, weather }) => {
   const cloudRefs = useRef<Array<THREE.Group | null>>([]);
   const cloudIntensity = getCloudIntensity(weather);
   const rainIntensity = getRainIntensity(weather);
+  const gustIntensity = getGustIntensity(weather);
   const sharedGeometry = useMemo(
     () => new THREE.SphereGeometry(CLOUD_SPHERE_RADIUS, CLOUD_SPHERE_WIDTH_SEGMENTS, CLOUD_SPHERE_HEIGHT_SEGMENTS),
     []
@@ -121,7 +123,7 @@ const CloudsComponent: React.FC<CloudsProps> = ({ timeScale, weather }) => {
       cloudRefs.current.forEach((ref, index) => {
         if (!ref) return;
         const data = clouds[index];
-        const xIncrement = data.speed * CLOUD_MOVEMENT_SPEED * timeScale * frameScale;
+        const xIncrement = data.speed * CLOUD_MOVEMENT_SPEED * timeScale * frameScale * (1 + gustIntensity * 2.2);
         ref.position.x += xIncrement;
         ref.position.y =
           data.basePosition[1] +

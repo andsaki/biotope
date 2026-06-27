@@ -1,7 +1,6 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
-import { useSeason } from "../contexts";
+import { useThrottledFrame } from "@/hooks/useThrottledFrame";
 import {
   SNOW_COUNT,
   SNOW_SPAWN_X_RANGE,
@@ -70,8 +69,11 @@ const createSnowflakeTexture = (() => {
  * 冬の雪エフェクト
  * 降り積もる雪をパーティクルシステムで表現
  */
-const SnowEffect: React.FC = React.memo(() => {
-  const { season } = useSeason();
+interface SnowEffectProps {
+  intensity?: number;
+}
+
+const SnowEffect: React.FC<SnowEffectProps> = React.memo(({ intensity = 1 }) => {
   const snowRef = useRef<THREE.Points>(null);
 
   // 雪のパーティクル生成
@@ -94,7 +96,7 @@ const SnowEffect: React.FC = React.memo(() => {
     return { positions, velocities };
   }, []);
 
-  useFrame((state, delta) => {
+  useThrottledFrame((state, delta) => {
     if (!snowRef.current) return;
 
     const positions = snowRef.current.geometry.attributes.position.array as Float32Array;
@@ -125,11 +127,7 @@ const SnowEffect: React.FC = React.memo(() => {
     }
 
     snowRef.current.geometry.attributes.position.needsUpdate = true;
-  });
-
-  if (season !== "winter") {
-    return null;
-  }
+  }, 30);
 
   return (
     <points ref={snowRef}>
@@ -146,7 +144,7 @@ const SnowEffect: React.FC = React.memo(() => {
         size={SNOW_SIZE}
         color={SNOW_COLOR}
         transparent
-        opacity={SNOW_OPACITY}
+        opacity={SNOW_OPACITY * (0.45 + intensity * 0.55)}
         sizeAttenuation
         map={createSnowflakeTexture()}
         alphaTest={SNOW_ALPHA_TEST}

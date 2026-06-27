@@ -6,7 +6,14 @@ import FallenLeaves from './FallenLeaves';
 import SnowEffect from './SnowEffect';
 import RainEffect from './RainEffect';
 import { Fireflies } from './Fireflies';
-import { getRainIntensity, shouldShowRain, type WeatherSnapshot } from '@/utils/weather';
+import {
+  getRainIntensity,
+  getGustIntensity,
+  getSnowIntensity,
+  shouldShowRain,
+  shouldShowSnow,
+  type WeatherSnapshot,
+} from '@/utils/weather';
 
 interface SeasonalEffectsProps {
   weather: WeatherSnapshot;
@@ -19,7 +26,10 @@ export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({ weather }) => 
   const { season } = useSeason();
   const isDay = useDayPeriod();
   const showRain = shouldShowRain(weather);
+  const showSnow = shouldShowSnow(weather);
   const rainIntensity = getRainIntensity(weather);
+  const gustIntensity = getGustIntensity(weather);
+  const snowIntensity = getSnowIntensity(weather);
 
   return (
     <>
@@ -27,8 +37,8 @@ export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({ weather }) => 
       {season === 'summer' && <SummerEffects />}
       {season === 'summer' && !isDay && <Fireflies />}
       {(season === 'autumn' || season === 'winter') && <FallenLeaves />}
-      {season === 'winter' && <SnowEffect />}
-      {showRain && <RainEffect intensity={rainIntensity} />}
+      {showSnow && <SnowEffect intensity={snowIntensity} />}
+      {showRain && <RainEffect intensity={rainIntensity} gustIntensity={gustIntensity} />}
     </>
   );
 };

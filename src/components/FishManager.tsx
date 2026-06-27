@@ -81,7 +81,8 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const rainIntensity = getRainIntensity(weather);
   const cloudIntensity = getCloudIntensity(weather);
   const weatherSpeedMultiplier = 1.08 - rainIntensity * 0.34 - cloudIntensity * 0.12;
-  const weatherDepthOffset = -(rainIntensity * 0.55 + cloudIntensity * 0.18);
+  const temperatureDepthOffset = weather.temperature >= 27 ? -0.28 : weather.temperature <= 8 ? -0.16 : 0;
+  const weatherDepthOffset = -(rainIntensity * 0.55 + cloudIntensity * 0.18) + temperatureDepthOffset;
 
   useEffect(() => {
     // 季節に基づいて魚を初期化する
