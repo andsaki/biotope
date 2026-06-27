@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSeason } from "../contexts";
-import { useFrame } from "@react-three/fiber";
+import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { useModelScene } from "../hooks/useModelScene";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import normalFishObjUrl from "../assets/Quaternius Fish/Fish1.obj?url";
+import normalFishMtlUrl from "../assets/Quaternius Fish/Fish1.mtl?url";
 import {
   NORMAL_FISH_COUNT,
   FLATFISH_COUNT,
@@ -144,10 +149,13 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
 
   const timeRef = React.useRef(0);
 
-  const normalFishScene = useModelScene("normalFish");
+  const normalFishMaterials = useLoader(MTLLoader, normalFishMtlUrl);
+  normalFishMaterials.preload();
+  const normalFishScene = useLoader(OBJLoader, normalFishObjUrl, (loader) => {
+    loader.setMaterials(normalFishMaterials);
+  });
   const flatfishScene = useModelScene("flatfish");
 
-  // モデルのクローンを事前に作成してパフォーマンス向上
   const normalFishClones = React.useMemo(() => {
     return Array.from({ length: NORMAL_FISH_COUNT }, () => normalFishScene.clone());
   }, [normalFishScene]);
@@ -156,12 +164,12 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
     return Array.from({ length: FLATFISH_COUNT }, () => flatfishScene.clone());
   }, [flatfishScene]);
 
-  // 各魚の位置を動的に更新するための参照を作成する
+  // 各魚モデルの位置を動的に更新するための参照を作成する
   const fishRefs = React.useRef<THREE.Group[]>([]);
 
   // useFrameを1つに統合してパフォーマンス向上
   // 状態更新を排除し、refのみを更新することで再レンダリングを削減
-  useFrame((_, delta) => {
+  useThrottledFrame((_, delta) => {
     timeRef.current += delta;
 
     // fishListの参照を直接変更（再レンダリングを避ける）
@@ -259,14 +267,13 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
       fish.y = newY;
       fish.z = newZ;
 
-      // 参照も同時に更新
       const ref = fishRefs.current[index];
       if (ref) {
         ref.position.set(newX, newY, newZ);
         ref.rotation.set(0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0);
       }
     });
-  });
+  }, 30);
 
   // デバッグのために位置をログする（コメントアウト）
   // useEffect(() => {

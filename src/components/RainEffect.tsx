@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useThrottledFrame } from '../hooks/useThrottledFrame';
 import {
   RAIN_DROP_COUNT,
   RAIN_DROP_SIZE,
@@ -66,7 +66,7 @@ const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1 }) => {
   }, []);
 
   // アニメーション
-  useFrame((_, delta) => {
+  useThrottledFrame((_, delta) => {
     if (!meshRef.current) return;
     meshRef.current.count = activeDropCount;
     material.opacity = RAIN_OPACITY * (0.62 + intensity * 0.7);
@@ -96,7 +96,7 @@ const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1 }) => {
     if (meshRef.current) {
       meshRef.current.instanceMatrix.needsUpdate = true;
     }
-  });
+  }, 30);
 
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, RAIN_DROP_COUNT]}>

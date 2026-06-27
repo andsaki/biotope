@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { tokens } from '@/styles/tokens';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import type { WeatherSnapshot } from '@/utils/weather';
@@ -37,6 +37,21 @@ const getWeatherTone = (condition: WeatherSnapshot['condition']) => {
 const formatWindSpeed = (speed: number | null) =>
   speed === null ? null : `${speed.toFixed(1)}m/s`;
 
+const panelSize = {
+  mobile: {
+    width: '176px',
+    compass: '92px',
+    padding: '14px',
+    gap: '12px',
+  },
+  pc: {
+    width: '180px',
+    compass: tokens.componentSizes.pc.compass,
+    padding: tokens.spacing.lg,
+    gap: tokens.spacing.md,
+  },
+} as const;
+
 /**
  * 風向きコンパス表示コンポーネント
  * 現在の風向きを視覚的に表示
@@ -47,9 +62,13 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
   weather,
 }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
+  const [expanded, setExpanded] = useState(false);
   const isMobile = useIsMobile();
   const forecastPreview = weather.forecast.slice(1, 4);
   const windSpeedText = formatWindSpeed(weather.windSpeed);
+  const size = isMobile ? panelSize.mobile : panelSize.pc;
+  const sourceText =
+    weather.source === 'open-meteo' ? '現在地付近の実天気' : '水辺の天気';
 
   return (
     <div
@@ -60,23 +79,45 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: tokens.spacing.md,
-        padding: tokens.spacing.lg,
-        border: '1px solid rgba(255, 255, 255, 0.18)',
+        gap: size.gap,
+        boxSizing: 'border-box',
+        width: size.width,
+        padding: size.padding,
+        border: '1px solid rgba(255, 255, 255, 0.28)',
         borderRadius: '16px',
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06))',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        background: 'linear-gradient(145deg, rgba(44, 48, 88, 0.9), rgba(36, 25, 42, 0.88))',
+        backdropFilter: 'blur(18px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(150%)',
         boxShadow: `
           0 8px 32px rgba(0, 0, 0, 0.4),
-          inset 0 1px 0 rgba(255, 255, 255, 0.3),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+          inset 0 1px 0 rgba(255, 255, 255, 0.22),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.28)
         `,
-        opacity: isMobile ? 0.95 : 1,
-        transform: isMobile ? 'scale(0.75)' : 'none',
+        opacity: 1,
+        transform: 'none',
         transformOrigin: 'top left',
       }}
     >
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-label={expanded ? '天気パネルを閉じる' : '天気パネルを開く'}
+        onClick={() => setExpanded((current) => !current)}
+        style={{
+          width: '100%',
+          padding: 0,
+          border: 0,
+          background: 'transparent',
+          color: 'inherit',
+          font: 'inherit',
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: size.gap,
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
 
       {/* コンパス本体 */}
       <div
@@ -85,8 +126,8 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: tokens.componentSizes.pc.compass,
-          height: tokens.componentSizes.pc.compass,
+          width: size.compass,
+          height: size.compass,
         }}
       >
         {/* 外側のリング */}
@@ -116,8 +157,8 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
               transform: 'translateX(-50%)',
               fontFamily: tokens.typography.fontFamily.serif,
               fontSize: '16px',
-              fontWeight: 600,
-              color: 'rgba(255, 255, 255, 0.95)',
+              fontWeight: 700,
+              color: 'rgba(255, 255, 255, 0.98)',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 255, 255, 0.2)',
             }}
           >
@@ -215,7 +256,10 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
       {/* 風向き表示 */}
       <div
         style={{
+          position: 'relative',
+          width: '100%',
           display: 'flex',
+          justifyContent: 'center',
           alignItems: 'baseline',
           gap: tokens.spacing.xs,
           fontFamily: tokens.typography.fontFamily.serif,
@@ -223,9 +267,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
       >
         <span
           style={{
-            fontSize: '22px',
-            fontWeight: 500,
-            color: 'rgba(255, 255, 255, 0.95)',
+            fontSize: isMobile ? '20px' : '22px',
+            fontWeight: 700,
+            color: 'rgba(255, 255, 255, 0.98)',
             textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
           }}
         >
@@ -234,28 +278,97 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
         <span
           style={{
             fontSize: '14px',
-            fontWeight: 300,
-            color: 'rgba(255, 255, 255, 0.8)',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.86)',
             textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
           }}
         >
           の風
         </span>
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: '50%',
+            width: '24px',
+            height: '24px',
+            borderRadius: '999px',
+            display: 'grid',
+            placeItems: 'center',
+            transform: 'translateY(-50%)',
+            border: '1px solid rgba(255, 255, 255, 0.24)',
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: 'rgba(255, 255, 255, 0.9)',
+            fontSize: '14px',
+            lineHeight: 1,
+          }}
+        >
+          {expanded ? '-' : '+'}
+        </span>
       </div>
+      {!expanded && (
+        <div
+          style={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            alignItems: 'center',
+            gap: '8px',
+            paddingTop: '10px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.22)',
+            fontFamily: tokens.typography.fontFamily.serif,
+          }}
+        >
+          <div
+            style={{
+              minWidth: 0,
+              textAlign: 'left',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '16px',
+                fontWeight: 700,
+                color: 'rgba(255, 255, 255, 0.98)',
+                lineHeight: 1.2,
+              }}
+            >
+              {weather.label}
+            </div>
+            <div
+              style={{
+                marginTop: '2px',
+                fontSize: '10px',
+                fontWeight: 500,
+                color: 'rgba(255, 255, 255, 0.74)',
+                lineHeight: 1.35,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {sourceText}
+            </div>
+          </div>
+        </div>
+      )}
+      </button>
+      {expanded && (
       <div
         style={{
           width: '100%',
-          paddingTop: tokens.spacing.sm,
-          borderTop: '1px solid rgba(255, 255, 255, 0.16)',
+          paddingTop: isMobile ? '10px' : tokens.spacing.sm,
+          borderTop: '1px solid rgba(255, 255, 255, 0.24)',
           fontFamily: tokens.typography.fontFamily.serif,
           textAlign: 'center',
         }}
       >
         <div
           style={{
-            fontSize: '18px',
-            fontWeight: 500,
-            color: 'rgba(255, 255, 255, 0.95)',
+            fontSize: isMobile ? '17px' : '18px',
+            fontWeight: 700,
+            color: 'rgba(255, 255, 255, 0.98)',
             textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
           }}
         >
@@ -265,8 +378,8 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
           style={{
             marginTop: '2px',
             fontSize: '11px',
-            fontWeight: 300,
-            color: 'rgba(255, 255, 255, 0.72)',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.82)',
             lineHeight: 1.5,
             textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
           }}
@@ -277,21 +390,20 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
           style={{
             marginTop: '2px',
             fontSize: '10px',
-            fontWeight: 300,
-            color: 'rgba(255, 255, 255, 0.52)',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.7)',
             lineHeight: 1.4,
           }}
         >
-          {weather.source === 'open-meteo'
-            ? `${weather.location}の実天気`
-            : '水辺の天気'}
+          {sourceText}
         </div>
         {windSpeedText && (
           <div
             style={{
               marginTop: '3px',
               fontSize: '10px',
-              color: 'rgba(255, 255, 255, 0.58)',
+              fontWeight: 500,
+              color: 'rgba(255, 255, 255, 0.74)',
               lineHeight: 1.4,
             }}
           >
@@ -311,8 +423,9 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
               style={{
                 marginBottom: '6px',
                 fontSize: '10px',
-                letterSpacing: '0.08em',
-                color: 'rgba(255, 255, 255, 0.58)',
+                letterSpacing: 0,
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.74)',
               }}
             >
               水辺予報
@@ -331,14 +444,15 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
                     minWidth: '34px',
                     padding: '5px 6px',
                     borderRadius: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    background: 'rgba(255, 255, 255, 0.07)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: 'rgba(255, 255, 255, 0.1)',
                   }}
                 >
                   <div
                     style={{
                       fontSize: '9px',
-                      color: 'rgba(255, 255, 255, 0.5)',
+                      fontWeight: 500,
+                      color: 'rgba(255, 255, 255, 0.72)',
                       lineHeight: 1.2,
                     }}
                   >
@@ -348,7 +462,8 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
                     style={{
                       marginTop: '2px',
                       fontSize: '13px',
-                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontWeight: 700,
+                      color: 'rgba(255, 255, 255, 0.96)',
                       lineHeight: 1.2,
                     }}
                   >
@@ -361,7 +476,8 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
               style={{
                 marginTop: '6px',
                 fontSize: '10px',
-                color: 'rgba(255, 255, 255, 0.68)',
+                fontWeight: 500,
+                color: 'rgba(255, 255, 255, 0.82)',
                 lineHeight: 1.45,
               }}
             >
@@ -370,6 +486,7 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

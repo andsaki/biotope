@@ -1,4 +1,3 @@
-import fishModel from "../assets/Smoked Fish Raw/weflciqaa_tier_0.gltf?url";
 import plantModel from "../assets/Potted Plant/scene.gltf?url";
 import frogModel from "../assets/Frog/Frog_by_get3dmodels.glb?url";
 
@@ -16,10 +15,6 @@ type ModelEntry =
     };
 
 const MODEL_URLS = {
-  normalFish: {
-    local: fishModel,
-    remote: `${R2_BASE}/Smoked Fish Raw/weflciqaa_tier_0.gltf`,
-  },
   flatfish: {
     remote: `${R2_BASE}/cc0____yellow_striped_flounder.glb`,
   },

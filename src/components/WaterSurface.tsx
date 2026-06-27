@@ -100,6 +100,8 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   const nextRippleIdRef = useRef(0);
   const nextDropletIdRef = useRef(0);
   const nextWeatherRippleAtRef = useRef(0);
+  const weatherRipplePointRef = useRef(new THREE.Vector3());
+  const normalUpdateCountRef = useRef(0);
   const [, setRenderTick] = useState(0);
   const rainIntensity = getRainIntensity(weather);
   const reflectionIntensity = getWaterReflectionIntensity(weather);
@@ -121,9 +123,9 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   );
 
   const petalGeometry = useMemo(() => createPetalGeometry(), []);
-  const rippleRingGeometry = useMemo(() => new THREE.RingGeometry(0.978, 1, 80), []);
+  const rippleRingGeometry = useMemo(() => new THREE.RingGeometry(0.978, 1, 48), []);
   const sparkleGeometry = useMemo(() => new THREE.CircleGeometry(1, 14), []);
-  const dropletGeometry = useMemo(() => new THREE.SphereGeometry(1, 10, 10), []);
+  const dropletGeometry = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
 
   useEffect(() => {
     return () => {
@@ -293,10 +295,11 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
       const seed = nextRippleIdRef.current * 31 + Math.floor(time * 7);
       const rippleX = (pseudoRandom(seed) - 0.5) * 30;
       const rippleY = (pseudoRandom(seed + 1) - 0.5) * 30;
+      weatherRipplePointRef.current.set(rippleX, WATER_SURFACE_Y + 0.04, rippleY);
       addRipple(
         rippleX,
         rippleY,
-        new THREE.Vector3(rippleX, WATER_SURFACE_Y + 0.04, rippleY),
+        weatherRipplePointRef.current,
         false
       );
       nextWeatherRippleAtRef.current = time + Math.max(0.18, 1.05 - rainIntensity * 0.72);
@@ -355,8 +358,10 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
     }
 
     geometryRef.current.attributes.position.needsUpdate = true;
-    geometryRef.current.computeVertexNormals();
-    geometryRef.current.computeBoundingSphere();
+    normalUpdateCountRef.current += 1;
+    if (normalUpdateCountRef.current % 2 === 0) {
+      geometryRef.current.computeVertexNormals();
+    }
 
     if (ripplesRef.current.length > 0 || dropletsRef.current.length > 0 || hadRippleChange || hadDropletChange) {
       setRenderTick((tick) => tick + 1);

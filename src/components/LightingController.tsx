@@ -1,7 +1,7 @@
 import React from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSeason, useDayPeriod } from "../contexts";
+import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import {
   LIGHTING_TRANSITION_SPEED,
   DAY_INTENSITY,
@@ -49,7 +49,7 @@ const LightingController: React.FC<LightingControllerProps> = ({
   const directionalColorRef = React.useRef(new THREE.Color());
   const ambientColorRef = React.useRef(new THREE.Color());
 
-  useFrame((_, delta) => {
+  useThrottledFrame((_, delta) => {
     if (
       directionalLightRef.current &&
       ambientLightRef.current &&
@@ -107,7 +107,7 @@ const LightingController: React.FC<LightingControllerProps> = ({
       spotLightRef.current.intensity +=
         (targetSpotIntensity - spotLightRef.current.intensity) * delta * LIGHTING_TRANSITION_SPEED;
     }
-  });
+  }, 20);
 
   return null; // このコンポーネントは目に見えるものをレンダリングしません
 };
