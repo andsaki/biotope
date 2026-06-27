@@ -8,6 +8,7 @@ import FishManager from "./components/FishManager";
 import ParticleLayerInstanced from "./components/ParticleLayerInstanced";
 import Clouds from "./components/Clouds";
 import WindDirectionDisplay from "./components/WindDirectionDisplay";
+import WeatherAtmosphere from "./components/WeatherAtmosphere";
 import Ground from "./components/Ground";
 import Stars from "./components/Stars";
 import ShootingStars from "./components/ShootingStars";
@@ -110,7 +111,7 @@ type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
 const AppContent = () => {
   const isDay = useDayPeriod();
   const simulatedWindDirection = useWindDirection();
-  const weather = useWeather();
+  const { weather, locationStatus, requestPreciseLocation } = useWeather();
   const windDirection = useMemo(
     () => getWindDirectionFromDegrees(weather.windDirection, simulatedWindDirection),
     [simulatedWindDirection, weather.windDirection]
@@ -218,7 +219,11 @@ const AppContent = () => {
 
           {/* シーンの背景と霧 */}
           <color attach="background" args={[backgroundColor]} />
-          <fog attach="fog" args={[backgroundColor, 10, isDay ? 60 : 40]} />
+          <WeatherAtmosphere
+            backgroundColor={backgroundColor}
+            isDay={isDay}
+            weather={weather}
+          />
 
           {/* ライティング */}
           <SceneLights
@@ -311,6 +316,8 @@ const AppContent = () => {
           <MemoizedWindDirectionDisplay
             windDirection={windDirection}
             weather={weather}
+            locationStatus={locationStatus}
+            onRequestPreciseLocation={requestPreciseLocation}
           />
         )}
       </div>

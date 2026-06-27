@@ -8,39 +8,69 @@
 interface OpenMeteoCurrent {
   time: string;
   weather_code: number;
+  temperature_2m: number;
+  apparent_temperature: number;
+  relative_humidity_2m: number;
   precipitation: number;
   rain: number;
   showers: number;
   snowfall: number;
   cloud_cover: number;
+  visibility: number;
   wind_direction_10m: number;
   wind_speed_10m: number;
+  wind_gusts_10m: number;
+  shortwave_radiation: number;
+  is_day: number;
 }
 
 interface OpenMeteoHourly {
   time: string[];
   weather_code: number[];
+  temperature_2m: number[];
+  apparent_temperature: number[];
+  relative_humidity_2m: number[];
   precipitation_probability?: number[];
   precipitation: number[];
   rain: number[];
   showers: number[];
   snowfall: number[];
   cloud_cover: number[];
+  visibility: number[];
   wind_direction_10m: number[];
   wind_speed_10m: number[];
+  wind_gusts_10m: number[];
+  shortwave_radiation: number[];
+  is_day: number[];
+}
+
+interface OpenMeteoDaily {
+  sunrise: string[];
+  sunset: string[];
 }
 
 interface OpenMeteoResponse {
   current: OpenMeteoCurrent;
   hourly?: OpenMeteoHourly;
+  daily?: OpenMeteoDaily;
 }
 
-type WeatherCondition = "clear" | "cloudy" | "rain";
+type WeatherCondition =
+  | "clear"
+  | "partly-cloudy"
+  | "cloudy"
+  | "fog"
+  | "drizzle"
+  | "rain"
+  | "showers"
+  | "snow"
+  | "thunderstorm";
 
 interface RequestLocation {
   name: string;
   latitude: number;
   longitude: number;
+  source: "browser" | "cloudflare";
 }
 
 interface CloudflareGeo {
@@ -56,56 +86,41 @@ const FORECAST_HOURS = 6;
 
 const WEATHER_LABELS: Record<WeatherCondition, string> = {
   clear: "晴",
+  "partly-cloudy": "薄曇",
   cloudy: "曇",
+  fog: "霧",
+  drizzle: "霧雨",
   rain: "雨",
+  showers: "にわか雨",
+  snow: "雪",
+  thunderstorm: "雷雨",
 };
 
 const WEATHER_DESCRIPTIONS: Record<WeatherCondition, string> = {
   clear: "近くの空が明るい",
+  "partly-cloudy": "雲間から光が差す",
   cloudy: "近くの光がやわらぐ",
+  fog: "水辺に霧が漂う",
+  drizzle: "細かな雨が水面を撫でる",
   rain: "近くに雨が降る",
+  showers: "雨脚が近づいては離れる",
+  snow: "白い粒が静かに落ちる",
+  thunderstorm: "遠くで空が鳴る",
 };
 
-const rainyWeatherCodes = new Set([
-  51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 71, 73, 75, 77, 80, 81, 82, 85, 86,
-  95, 96, 99,
-]);
-
-const cloudyWeatherCodes = new Set([2, 3, 45, 48]);
-
-const getCondition = (current: OpenMeteoCurrent): WeatherCondition => {
-  const precipitation =
-    current.precipitation + current.rain + current.showers + current.snowfall;
-
-  if (precipitation > 0 || rainyWeatherCodes.has(current.weather_code)) {
-    return "rain";
+const getCondition = (weatherCode: number, cloudCover: number): WeatherCondition => {
+  if (weatherCode === 0) return "clear";
+  if (weatherCode === 1) return "partly-cloudy";
+  if (weatherCode === 2 || weatherCode === 3) return "cloudy";
+  if (weatherCode === 45 || weatherCode === 48) return "fog";
+  if (weatherCode >= 51 && weatherCode <= 57) return "drizzle";
+  if (weatherCode >= 61 && weatherCode <= 67) return "rain";
+  if ((weatherCode >= 71 && weatherCode <= 77) || weatherCode === 85 || weatherCode === 86) {
+    return "snow";
   }
-
-  if (current.cloud_cover >= 55 || cloudyWeatherCodes.has(current.weather_code)) {
-    return "cloudy";
-  }
-
-  return "clear";
-};
-
-const getHourlyCondition = ({
-  weatherCode,
-  precipitation,
-  cloudCover,
-}: {
-  weatherCode: number;
-  precipitation: number;
-  cloudCover: number;
-}): WeatherCondition => {
-  if (precipitation > 0 || rainyWeatherCodes.has(weatherCode)) {
-    return "rain";
-  }
-
-  if (cloudCover >= 55 || cloudyWeatherCodes.has(weatherCode)) {
-    return "cloudy";
-  }
-
-  return "clear";
+  if (weatherCode >= 80 && weatherCode <= 82) return "showers";
+  if (weatherCode >= 95) return "thunderstorm";
+  return cloudCover >= 55 ? "cloudy" : "clear";
 };
 
 const sumPrecipitation = ({
@@ -118,7 +133,7 @@ const sumPrecipitation = ({
   rain: number;
   showers: number;
   snowfall: number;
-}) => precipitation + rain + showers + snowfall;
+}) => Math.max(precipitation, rain + showers + snowfall / 7);
 
 const getStringValue = (value: unknown) =>
   typeof value === "string" && value.trim() ? value.trim() : null;
@@ -137,6 +152,25 @@ const getNumberValue = (value: unknown) => {
 };
 
 const getRequestLocation = (request: Request): RequestLocation | null => {
+  const url = new URL(request.url);
+  const requestedLatitude = getNumberValue(url.searchParams.get("latitude"));
+  const requestedLongitude = getNumberValue(url.searchParams.get("longitude"));
+  if (
+    requestedLatitude !== null &&
+    requestedLongitude !== null &&
+    requestedLatitude >= -90 &&
+    requestedLatitude <= 90 &&
+    requestedLongitude >= -180 &&
+    requestedLongitude <= 180
+  ) {
+    return {
+      name: "現在地",
+      latitude: requestedLatitude,
+      longitude: requestedLongitude,
+      source: "browser",
+    };
+  }
+
   const cf = request.cf as CloudflareGeo | undefined;
   const latitude = getNumberValue(cf?.latitude);
   const longitude = getNumberValue(cf?.longitude);
@@ -154,6 +188,7 @@ const getRequestLocation = (request: Request): RequestLocation | null => {
     name,
     latitude,
     longitude,
+    source: "cloudflare",
   };
 };
 
@@ -187,29 +222,45 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
       "current",
       [
         "weather_code",
+        "temperature_2m",
+        "apparent_temperature",
+        "relative_humidity_2m",
         "precipitation",
         "rain",
         "showers",
         "snowfall",
         "cloud_cover",
+        "visibility",
         "wind_direction_10m",
         "wind_speed_10m",
+        "wind_gusts_10m",
+        "shortwave_radiation",
+        "is_day",
       ].join(",")
     );
     apiUrl.searchParams.set(
       "hourly",
       [
         "weather_code",
+        "temperature_2m",
+        "apparent_temperature",
+        "relative_humidity_2m",
         "precipitation_probability",
         "precipitation",
         "rain",
         "showers",
         "snowfall",
         "cloud_cover",
+        "visibility",
         "wind_direction_10m",
         "wind_speed_10m",
+        "wind_gusts_10m",
+        "shortwave_radiation",
+        "is_day",
       ].join(",")
     );
+    apiUrl.searchParams.set("daily", "sunrise,sunset");
+    apiUrl.searchParams.set("wind_speed_unit", "ms");
     apiUrl.searchParams.set("timezone", "auto");
     apiUrl.searchParams.set("forecast_days", "1");
     apiUrl.searchParams.set("forecast_hours", String(FORECAST_HOURS));
@@ -230,7 +281,7 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
 
     const data: OpenMeteoResponse = await response.json();
     const current = data.current;
-    const condition = getCondition(current);
+    const condition = getCondition(current.weather_code, current.cloud_cover);
     const currentPrecipitation = sumPrecipitation({
       precipitation: current.precipitation,
       rain: current.rain,
@@ -246,22 +297,30 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
         snowfall: hourly.snowfall[index] ?? 0,
       });
       const cloudCover = hourly.cloud_cover[index] ?? 0;
-      const hourlyCondition = getHourlyCondition({
-        weatherCode: hourly.weather_code[index] ?? 0,
-        precipitation,
-        cloudCover,
-      });
+      const rain = (hourly.rain[index] ?? 0) + (hourly.showers[index] ?? 0);
+      const snowfall = hourly.snowfall[index] ?? 0;
+      const hourlyCondition = getCondition(hourly.weather_code[index] ?? 0, cloudCover);
 
       return {
         time,
         condition: hourlyCondition,
         label: WEATHER_LABELS[hourlyCondition],
         description: WEATHER_DESCRIPTIONS[hourlyCondition],
+        weatherCode: hourly.weather_code[index] ?? 0,
+        temperature: hourly.temperature_2m[index] ?? 0,
+        apparentTemperature: hourly.apparent_temperature[index] ?? 0,
+        humidity: hourly.relative_humidity_2m[index] ?? 0,
         precipitation,
+        rain,
+        snowfall,
         precipitationProbability: hourly.precipitation_probability?.[index] ?? null,
         cloudCover,
+        visibility: hourly.visibility[index] ?? 20_000,
         windDirection: hourly.wind_direction_10m[index] ?? 0,
         windSpeed: hourly.wind_speed_10m[index] ?? 0,
+        windGusts: hourly.wind_gusts_10m[index] ?? 0,
+        solarRadiation: hourly.shortwave_radiation[index] ?? 0,
+        isDay: (hourly.is_day[index] ?? 0) === 1,
       };
     }) ?? [];
 
@@ -273,11 +332,23 @@ export const onRequest = async (context: EventContext<unknown, string, Record<st
         observedAt: current.time,
         source: "open-meteo",
         location: location.name,
+        locationSource: location.source,
         weatherCode: current.weather_code,
+        temperature: current.temperature_2m,
+        apparentTemperature: current.apparent_temperature,
+        humidity: current.relative_humidity_2m,
         cloudCover: current.cloud_cover,
+        visibility: current.visibility,
         precipitation: currentPrecipitation,
+        rain: current.rain + current.showers,
+        snowfall: current.snowfall,
         windDirection: current.wind_direction_10m,
         windSpeed: current.wind_speed_10m,
+        windGusts: current.wind_gusts_10m,
+        solarRadiation: current.shortwave_radiation,
+        isDay: current.is_day === 1,
+        sunrise: data.daily?.sunrise[0] ?? null,
+        sunset: data.daily?.sunset[0] ?? null,
         forecast,
         cacheTtl: CACHE_TTL_SECONDS,
       }),
