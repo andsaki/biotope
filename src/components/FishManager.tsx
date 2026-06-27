@@ -55,6 +55,14 @@ interface Fish {
   directionX: number;
   /** Y方向の移動方向 */
   directionY: number;
+  /** 滑らかに旋回するための目標方向 */
+  targetDirectionX: number;
+  /** 天候や泳ぎの揺れを加える前の基準深度 */
+  cruiseY: number;
+  /** 魚ごとの上下移動の位相 */
+  swimPhase: number;
+  /** 次に進路を変更するまでの時間（秒） */
+  directionChangeTime: number;
   /** 魚の色 */
   color: string;
   /** 魚のサイズ */
@@ -74,6 +82,16 @@ interface Fish {
 interface FishManagerProps {
   weather: WeatherSnapshot;
 }
+
+const normalizeAngle = (angle: number) =>
+  THREE.MathUtils.euclideanModulo(angle + Math.PI, Math.PI * 2) - Math.PI;
+
+const dampAngle = (current: number, target: number, damping: number, delta: number) =>
+  current + normalizeAngle(target - current) * (1 - Math.exp(-damping * delta));
+
+const createDirectionChangeTime = () =>
+  FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
+  Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION;
 
 const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const { season } = useSeason();
@@ -114,14 +132,22 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
 
     // 通常の魚を追加
     for (let i = 0; i < NORMAL_FISH_COUNT; i++) {
+      const direction = Math.random() * Math.PI * 2;
+      const cruiseY =
+        Math.random() * (NORMAL_FISH_SPAWN.Y_MAX - NORMAL_FISH_SPAWN.Y_MIN) +
+        NORMAL_FISH_SPAWN.Y_MIN;
       newFishList.push({
         id: i,
         x: Math.random() * (NORMAL_FISH_SPAWN.X_MAX - NORMAL_FISH_SPAWN.X_MIN) + NORMAL_FISH_SPAWN.X_MIN,
-        y: Math.random() * (NORMAL_FISH_SPAWN.Y_MAX - NORMAL_FISH_SPAWN.Y_MIN) + NORMAL_FISH_SPAWN.Y_MIN,
+        y: cruiseY,
         z: Math.random() * (NORMAL_FISH_SPAWN.Z_MAX - NORMAL_FISH_SPAWN.Z_MIN) + NORMAL_FISH_SPAWN.Z_MIN,
         speed: fishSpeed + (Math.random() * NORMAL_FISH_SPEED_VARIATION - NORMAL_FISH_SPEED_VARIATION / 2),
-        directionX: Math.random() * Math.PI * 2,
-        directionY: Math.random() * Math.PI * 2,
+        directionX: direction,
+        directionY: 0,
+        targetDirectionX: direction,
+        cruiseY,
+        swimPhase: Math.random() * Math.PI * 2,
+        directionChangeTime: createDirectionChangeTime(),
         color: fishColor,
         size: NORMAL_FISH_SIZE_MIN + Math.random() * NORMAL_FISH_SIZE_VARIATION,
         type: "normal",
@@ -138,6 +164,10 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
         speed: FLATFISH_SPEED,
         directionX: Math.random() * Math.PI * 2,
         directionY: 0,
+        targetDirectionX: 0,
+        cruiseY: FLATFISH_GROUND_Y,
+        swimPhase: 0,
+        directionChangeTime: 0,
         color: fishColor,
         size: FLATFISH_SIZE_MIN + Math.random() * FLATFISH_SIZE_VARIATION,
         type: "flatfish",
@@ -230,38 +260,62 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
         return;
       }
 
-      // 通常の魚：従来通りの動き
-      let newX = fish.x + Math.cos(fish.directionX) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-      let newY = fish.y + Math.sin(fish.directionY) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-      let newZ =
-        fish.z + Math.sin(fish.directionX) * fish.speed * weatherSpeedMultiplier * FISH_MOVEMENT.Z_DRIFT_DAMPING * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-      newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
-
-      // 通常の魚：泳ぐ動きを模倣するためにわずかな垂直振動を追加する
-      newY +=
-        Math.sin(timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.id) *
-          FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE +
-        weatherDepthOffset;
-
-      // 境界チェック
-      if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
-        fish.directionX = Math.PI - fish.directionX;
-        newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
-      }
-      if (newY < FISH_BOUNDARY.Y_MIN || newY > FISH_BOUNDARY.Y_MAX) {
-        fish.directionY = -fish.directionY;
-        newY = Math.max(FISH_BOUNDARY.Y_MIN, Math.min(FISH_BOUNDARY.Y_MAX, newY));
-      }
-      if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
-        fish.directionX = Math.PI - fish.directionX;
-        newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
+      // 通常魚は一定間隔で目標進路を選び、急に折れず滑らかに旋回する。
+      fish.directionChangeTime -= delta;
+      if (fish.directionChangeTime <= 0) {
+        fish.targetDirectionX +=
+          (Math.random() - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
+        fish.directionChangeTime = createDirectionChangeTime();
       }
 
-      // ランダムな方向変更
-      if (Math.random() < FISH_MOVEMENT.DIRECTION_CHANGE_PROBABILITY) {
-        fish.directionX += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
-        fish.directionY += (Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE) - FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_OFFSET;
+      const nearBoundary =
+        fish.x < FISH_BOUNDARY.X_MIN + FISH_MOVEMENT.BOUNDARY_MARGIN ||
+        fish.x > FISH_BOUNDARY.X_MAX - FISH_MOVEMENT.BOUNDARY_MARGIN ||
+        fish.z < FISH_BOUNDARY.Z_MIN + FISH_MOVEMENT.BOUNDARY_MARGIN ||
+        fish.z > FISH_BOUNDARY.Z_MAX - FISH_MOVEMENT.BOUNDARY_MARGIN;
+
+      if (nearBoundary) {
+        const centerX = (FISH_BOUNDARY.X_MIN + FISH_BOUNDARY.X_MAX) / 2;
+        const centerZ = (FISH_BOUNDARY.Z_MIN + FISH_BOUNDARY.Z_MAX) / 2;
+        fish.targetDirectionX = Math.atan2(centerZ - fish.z, centerX - fish.x);
+        fish.directionChangeTime = createDirectionChangeTime();
       }
+
+      fish.directionX = dampAngle(
+        fish.directionX,
+        fish.targetDirectionX,
+        FISH_MOVEMENT.TURN_DAMPING,
+        delta
+      );
+
+      const travelDistance =
+        fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      const newX = THREE.MathUtils.clamp(
+        fish.x + Math.cos(fish.directionX) * travelDistance,
+        FISH_BOUNDARY.X_MIN,
+        FISH_BOUNDARY.X_MAX
+      );
+      const newZ = THREE.MathUtils.clamp(
+        fish.z + Math.sin(fish.directionX) * travelDistance * FISH_MOVEMENT.Z_DRIFT_DAMPING,
+        FISH_BOUNDARY.Z_MIN,
+        FISH_BOUNDARY.Z_MAX
+      );
+      const targetY = THREE.MathUtils.clamp(
+        fish.cruiseY +
+          weatherDepthOffset +
+          Math.sin(
+            timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.swimPhase
+          ) *
+            FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE,
+        FISH_BOUNDARY.Y_MIN,
+        FISH_BOUNDARY.Y_MAX
+      );
+      const newY = THREE.MathUtils.damp(
+        fish.y,
+        targetY,
+        FISH_MOVEMENT.DEPTH_DAMPING,
+        delta
+      );
 
       // データを直接変更
       fish.x = newX;
