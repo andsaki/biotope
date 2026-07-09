@@ -11,7 +11,9 @@ import {
 } from "../constants/lighting";
 import {
   getCloudIntensity,
+  getFogIntensity,
   getRainIntensity,
+  getSolarIntensity,
   type WeatherSnapshot,
 } from "@/utils/weather";
 
@@ -73,8 +75,13 @@ const LightingController: React.FC<LightingControllerProps> = ({
       const targetAmbientColor = dayNightColors.ambient;
       const cloudIntensity = getCloudIntensity(weather);
       const rainIntensity = getRainIntensity(weather);
-      const weatherDimming = Math.max(0.52, 1 - cloudIntensity * 0.24 - rainIntensity * 0.32);
-      const ambientDimming = Math.max(0.65, 1 - cloudIntensity * 0.16 - rainIntensity * 0.18);
+      const fogIntensity = getFogIntensity(weather);
+      const solarIntensity = getSolarIntensity(weather);
+      const weatherDimming = Math.max(
+        0.42,
+        0.72 + solarIntensity * 0.38 - cloudIntensity * 0.22 - rainIntensity * 0.3 - fogIntensity * 0.2
+      );
+      const ambientDimming = Math.max(0.58, 1 - cloudIntensity * 0.14 - rainIntensity * 0.16 - fogIntensity * 0.18);
 
       let targetIntensity: number;
       if (season === "summer") {

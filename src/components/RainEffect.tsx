@@ -34,9 +34,10 @@ const spawnRainDrop = (): RainDrop => ({
 
 interface RainEffectProps {
   intensity?: number;
+  gustIntensity?: number;
 }
 
-const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1 }) => {
+const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1, gustIntensity = 0 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const material = useMemo(
@@ -86,7 +87,7 @@ const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1 }) => {
 
       // 行列を更新
       dummy.position.set(drop.position[0], drop.position[1], drop.position[2]);
-      dummy.rotation.z = RAIN_DROP_TILT;
+      dummy.rotation.z = RAIN_DROP_TILT - gustIntensity * 0.32;
       dummy.updateMatrix();
       if (meshRef.current) {
         meshRef.current.setMatrixAt(i, dummy.matrix);

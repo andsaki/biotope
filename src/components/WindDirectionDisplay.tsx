@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { tokens } from '@/styles/tokens';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import type { WeatherLocationStatus } from '@/hooks/useWeather';
 import type { WeatherSnapshot } from '@/utils/weather';
 
 /** 風向き表示コンポーネントのプロパティ */
@@ -9,6 +10,8 @@ interface WindDirectionDisplayProps {
   windDirection: "North" | "East" | "South" | "West";
   /** 現在の天気 */
   weather: WeatherSnapshot;
+  locationStatus: WeatherLocationStatus;
+  onRequestPreciseLocation: () => void;
 }
 
 /** 風向きと表示情報のマッピング */
@@ -24,9 +27,18 @@ const formatForecastHour = (date: Date) =>
 
 const getWeatherTone = (condition: WeatherSnapshot['condition']) => {
   switch (condition) {
+    case 'thunderstorm':
+      return '遠雷';
+    case 'snow':
+      return '白い粒';
+    case 'showers':
     case 'rain':
+    case 'drizzle':
       return '雨粒';
+    case 'fog':
+      return '深まる霧';
     case 'cloudy':
+    case 'partly-cloudy':
       return 'やわらぐ光';
     case 'clear':
     default:
@@ -60,6 +72,8 @@ const panelSize = {
 const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
   windDirection,
   weather,
+  locationStatus,
+  onRequestPreciseLocation,
 }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
   const [expanded, setExpanded] = useState(false);
@@ -67,8 +81,18 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
   const forecastPreview = weather.forecast.slice(1, 4);
   const windSpeedText = formatWindSpeed(weather.windSpeed);
   const size = isMobile ? panelSize.mobile : panelSize.pc;
-  const sourceText =
-    weather.source === 'open-meteo' ? '現在地付近の実天気' : '水辺の天気';
+  const sourceText = weather.locationSource === 'browser'
+    ? '現在地の実天気'
+    : weather.source === 'open-meteo'
+      ? '現在地付近の実天気'
+      : '水辺の天気';
+  const locationButtonText = locationStatus === 'requesting'
+    ? '位置を確認中'
+    : locationStatus === 'precise'
+      ? '現在地を使用中'
+      : locationStatus === 'denied'
+        ? '位置情報は未許可'
+        : '現在地を使う';
 
   return (
     <div
@@ -408,8 +432,28 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
             }}
           >
             風 {windSpeedText}
+            {weather.windGusts !== null && weather.windGusts > (weather.windSpeed ?? 0) + 1
+              ? ` / 突風 ${weather.windGusts.toFixed(1)}m/s`
+              : ''}
           </div>
         )}
+        <div
+          style={{
+            marginTop: '8px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '4px 10px',
+            fontSize: '10px',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.76)',
+            lineHeight: 1.5,
+          }}
+        >
+          <span>気温 {weather.temperature.toFixed(1)}℃</span>
+          <span>体感 {weather.apparentTemperature.toFixed(1)}℃</span>
+          <span>湿度 {Math.round(weather.humidity)}%</span>
+          <span>視程 {Math.max(0.1, weather.visibility / 1000).toFixed(1)}km</span>
+        </div>
         {forecastPreview.length > 0 && (
           <div
             style={{
@@ -485,6 +529,27 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
             </div>
           </div>
         )}
+        <button
+          type="button"
+          onClick={onRequestPreciseLocation}
+          disabled={locationStatus === 'requesting' || locationStatus === 'precise'}
+          style={{
+            width: '100%',
+            marginTop: '10px',
+            padding: '7px 8px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            background: 'rgba(255, 255, 255, 0.08)',
+            color: 'rgba(255, 255, 255, 0.86)',
+            fontFamily: tokens.typography.fontFamily.serif,
+            fontSize: '10px',
+            fontWeight: 600,
+            cursor: locationStatus === 'requesting' || locationStatus === 'precise' ? 'default' : 'pointer',
+            opacity: locationStatus === 'requesting' ? 0.65 : 1,
+          }}
+        >
+          {locationButtonText}
+        </button>
       </div>
       )}
     </div>

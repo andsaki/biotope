@@ -10,6 +10,14 @@ const matchesPackage = (id: string, pkg: string) => id.includes(`/node_modules/$
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8788",
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
