@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import { useSeason } from "../contexts";
 import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
@@ -22,7 +22,6 @@ import {
 import { createFishList } from "@/fish/createFish";
 import { applyLowPolyFlatfishMaterial } from "@/fish/materials";
 import { updateFishMovement } from "@/fish/movement";
-import type { Fish } from "@/fish/types";
 
 /**
  * 魚群の管理コンポーネント
@@ -34,16 +33,13 @@ interface FishManagerProps {
 
 const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const { season } = useSeason();
-  const [fishList, setFishList] = useState<Fish[]>([]);
   const rainIntensity = getRainIntensity(weather);
   const cloudIntensity = getCloudIntensity(weather);
   const weatherSpeedMultiplier = 1.08 - rainIntensity * 0.34 - cloudIntensity * 0.12;
   const temperatureDepthOffset = weather.temperature >= 27 ? -0.28 : weather.temperature <= 8 ? -0.16 : 0;
   const weatherDepthOffset = -(rainIntensity * 0.55 + cloudIntensity * 0.18) + temperatureDepthOffset;
 
-  useEffect(() => {
-    setFishList(createFishList(season));
-  }, [season]);
+  const fishList = useMemo(() => createFishList(season), [season]);
 
   const timeRef = useRef(0);
 
