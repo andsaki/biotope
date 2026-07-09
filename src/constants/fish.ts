@@ -73,6 +73,9 @@ export const FISH_MOVEMENT = {
   TURN_DAMPING: 1.8, // 目標方向へ旋回する滑らかさ
   DEPTH_DAMPING: 1.4, // 目標深度へ移動する滑らかさ
   BOUNDARY_MARGIN: 1.1, // 境界へ到達する前に内側へ向き始める距離
+  FLATFISH_TURN_DAMPING: 3.2, // ヒラメが目標方向へ向きを変える滑らかさ
+  FLATFISH_BOUNDARY_MARGIN: 0.9, // ヒラメが境界前に内側へ向き始める距離
+  FLATFISH_Z_DRIFT_DAMPING: 0.6, // ヒラメの奥行き方向移動の減衰
 } as const;
 
 // 魚の境界
@@ -96,6 +99,13 @@ export const FISH_MODEL_ROTATION = {
   NORMAL: 0, // 通常魚OBJはY軸が上
   FLATFISH: 0, // フラットフィッシュは水平
   DIRECTION_OFFSET: Math.PI / 2, // 移動方向の回転オフセット
+} as const;
+
+// ヒラメモデルのローポリ風マテリアル
+export const FLATFISH_LOW_POLY_MATERIAL = {
+  BASE_COLOR: "#b58c5d",
+  ACCENT_COLOR: "#d1b07a",
+  ROUGHNESS: 0.95,
 } as const;
 
 // フラットフィッシュの透明度

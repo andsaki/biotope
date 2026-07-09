@@ -29,6 +29,7 @@ import {
   FISH_BOUNDARY,
   FISH_MODEL_SCALE,
   FISH_MODEL_ROTATION,
+  FLATFISH_LOW_POLY_MATERIAL,
 } from "../constants/fish";
 import {
   getCloudIntensity,
@@ -93,6 +94,24 @@ const createDirectionChangeTime = () =>
   FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
   Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION;
 
+const applyLowPolyFlatfishMaterial = (scene: THREE.Object3D, index: number) => {
+  scene.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) {
+      return;
+    }
+
+    object.material = new THREE.MeshStandardMaterial({
+      color:
+        index % 2 === 0
+          ? FLATFISH_LOW_POLY_MATERIAL.BASE_COLOR
+          : FLATFISH_LOW_POLY_MATERIAL.ACCENT_COLOR,
+      flatShading: true,
+      metalness: 0,
+      roughness: FLATFISH_LOW_POLY_MATERIAL.ROUGHNESS,
+    });
+  });
+};
+
 const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const { season } = useSeason();
   const [fishList, setFishList] = useState<Fish[]>([]);
@@ -156,18 +175,19 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
 
     // フラットフィッシュ（底生魚）を追加
     for (let i = 0; i < FLATFISH_COUNT; i++) {
+      const direction = Math.random() * Math.PI * 2;
       newFishList.push({
         id: NORMAL_FISH_COUNT + i,
         x: Math.random() * (NORMAL_FISH_SPAWN.X_MAX - NORMAL_FISH_SPAWN.X_MIN) + NORMAL_FISH_SPAWN.X_MIN,
         y: FLATFISH_GROUND_Y,
         z: Math.random() * (NORMAL_FISH_SPAWN.Z_MAX - NORMAL_FISH_SPAWN.Z_MIN) + NORMAL_FISH_SPAWN.Z_MIN,
         speed: FLATFISH_SPEED,
-        directionX: Math.random() * Math.PI * 2,
+        directionX: direction,
         directionY: 0,
-        targetDirectionX: 0,
+        targetDirectionX: direction,
         cruiseY: FLATFISH_GROUND_Y,
         swimPhase: 0,
-        directionChangeTime: 0,
+        directionChangeTime: createDirectionChangeTime(),
         color: fishColor,
         size: FLATFISH_SIZE_MIN + Math.random() * FLATFISH_SIZE_VARIATION,
         type: "flatfish",
@@ -192,7 +212,11 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   }, [normalFishScene]);
 
   const flatfishClones = React.useMemo(() => {
-    return Array.from({ length: FLATFISH_COUNT }, () => flatfishScene.clone());
+    return Array.from({ length: FLATFISH_COUNT }, (_, index) => {
+      const clone = flatfishScene.clone();
+      applyLowPolyFlatfishMaterial(clone, index);
+      return clone;
+    });
   }, [flatfishScene]);
 
   // 各魚モデルの位置を動的に更新するための参照を作成する
@@ -205,7 +229,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
 
     // fishListの参照を直接変更（再レンダリングを避ける）
     fishList.forEach((fish, index) => {
-      // フラットフィッシュ：カレイらしい「待機→瞬間移動→待機」の動き
+      // フラットフィッシュ：底を這うように「待機→短距離移動→待機」し、向きは滑らかに変える。
       if (fish.type === "flatfish") {
         let newWaitTime = fish.waitTime ?? 0;
         let newIsMoving = fish.isMoving ?? false;
@@ -219,7 +243,9 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
           if (!newIsMoving) {
             // 待機終了 → 移動開始
             newIsMoving = true;
-            fish.directionX = Math.random() * Math.PI * 2;
+            fish.targetDirectionX =
+              fish.directionX +
+              (Math.random() - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
             newWaitTime = FLATFISH_MOVE_TIME_MIN + Math.random() * FLATFISH_MOVE_TIME_VARIATION;
           } else {
             // 移動終了 → 待機開始（砂に擬態）
@@ -230,18 +256,40 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
 
         // 移動中のみ位置を更新
         if (newIsMoving) {
-          newX = fish.x + Math.cos(fish.directionX) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-          newZ = fish.z + Math.sin(fish.directionX) * fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+          const nearBoundary =
+            fish.x < FISH_BOUNDARY.X_MIN + FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN ||
+            fish.x > FISH_BOUNDARY.X_MAX - FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN ||
+            fish.z < FISH_BOUNDARY.Z_MIN + FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN ||
+            fish.z > FISH_BOUNDARY.Z_MAX - FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN;
 
-          // 境界チェック
-          if (newX < FISH_BOUNDARY.X_MIN || newX > FISH_BOUNDARY.X_MAX) {
-            fish.directionX = Math.PI - fish.directionX;
-            newX = Math.max(FISH_BOUNDARY.X_MIN, Math.min(FISH_BOUNDARY.X_MAX, newX));
+          if (nearBoundary) {
+            const centerX = (FISH_BOUNDARY.X_MIN + FISH_BOUNDARY.X_MAX) / 2;
+            const centerZ = (FISH_BOUNDARY.Z_MIN + FISH_BOUNDARY.Z_MAX) / 2;
+            fish.targetDirectionX = Math.atan2(centerZ - fish.z, centerX - fish.x);
           }
-          if (newZ < FISH_BOUNDARY.Z_MIN || newZ > FISH_BOUNDARY.Z_MAX) {
-            fish.directionX = Math.PI - fish.directionX;
-            newZ = Math.max(FISH_BOUNDARY.Z_MIN, Math.min(FISH_BOUNDARY.Z_MAX, newZ));
-          }
+
+          fish.directionX = dampAngle(
+            fish.directionX,
+            fish.targetDirectionX,
+            FISH_MOVEMENT.FLATFISH_TURN_DAMPING,
+            delta
+          );
+
+          const travelDistance =
+            fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+          newX = THREE.MathUtils.clamp(
+            fish.x + Math.cos(fish.directionX) * travelDistance,
+            FISH_BOUNDARY.X_MIN,
+            FISH_BOUNDARY.X_MAX
+          );
+          newZ = THREE.MathUtils.clamp(
+            fish.z +
+              Math.sin(fish.directionX) *
+                travelDistance *
+                FISH_MOVEMENT.FLATFISH_Z_DRIFT_DAMPING,
+            FISH_BOUNDARY.Z_MIN,
+            FISH_BOUNDARY.Z_MAX
+          );
         }
 
         // データを直接変更
