@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSeason } from "../contexts";
 import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
@@ -11,70 +11,18 @@ import normalFishMtlUrl from "../assets/Quaternius Fish/Fish1.mtl?url";
 import {
   NORMAL_FISH_COUNT,
   FLATFISH_COUNT,
-  FISH_SPEED,
-  FISH_COLOR,
-  NORMAL_FISH_SPAWN,
-  NORMAL_FISH_SPEED_VARIATION,
-  NORMAL_FISH_SIZE_MIN,
-  NORMAL_FISH_SIZE_VARIATION,
-  FLATFISH_GROUND_Y,
-  FLATFISH_SPEED,
-  FLATFISH_SIZE_MIN,
-  FLATFISH_SIZE_VARIATION,
-  FLATFISH_WAIT_TIME_MIN,
-  FLATFISH_WAIT_TIME_VARIATION,
-  FLATFISH_MOVE_TIME_MIN,
-  FLATFISH_MOVE_TIME_VARIATION,
-  FISH_MOVEMENT,
-  FISH_BOUNDARY,
   FISH_MODEL_SCALE,
   FISH_MODEL_ROTATION,
-  FLATFISH_LOW_POLY_MATERIAL,
 } from "../constants/fish";
 import {
   getCloudIntensity,
   getRainIntensity,
   type WeatherSnapshot,
 } from "@/utils/weather";
-
-/** 魚の種類 */
-type FishType = "normal" | "flatfish";
-
-/** 魚の状態データ */
-interface Fish {
-  /** 魚のID */
-  id: number;
-  /** X座標 */
-  x: number;
-  /** Y座標 */
-  y: number;
-  /** Z座標 */
-  z: number;
-  /** 移動速度 */
-  speed: number;
-  /** X方向の移動方向 */
-  directionX: number;
-  /** Y方向の移動方向 */
-  directionY: number;
-  /** 滑らかに旋回するための目標方向 */
-  targetDirectionX: number;
-  /** 天候や泳ぎの揺れを加える前の基準深度 */
-  cruiseY: number;
-  /** 魚ごとの上下移動の位相 */
-  swimPhase: number;
-  /** 次に進路を変更するまでの時間（秒） */
-  directionChangeTime: number;
-  /** 魚の色 */
-  color: string;
-  /** 魚のサイズ */
-  size: number;
-  /** 魚の種類 */
-  type: FishType;
-  /** フラットフィッシュの待機時間（秒） */
-  waitTime?: number;
-  /** フラットフィッシュが移動中かどうか */
-  isMoving?: boolean;
-}
+import { createFishList } from "@/fish/createFish";
+import { applyLowPolyFlatfishMaterial } from "@/fish/materials";
+import { updateFishMovement } from "@/fish/movement";
+import type { Fish } from "@/fish/types";
 
 /**
  * 魚群の管理コンポーネント
@@ -83,34 +31,6 @@ interface Fish {
 interface FishManagerProps {
   weather: WeatherSnapshot;
 }
-
-const normalizeAngle = (angle: number) =>
-  THREE.MathUtils.euclideanModulo(angle + Math.PI, Math.PI * 2) - Math.PI;
-
-const dampAngle = (current: number, target: number, damping: number, delta: number) =>
-  current + normalizeAngle(target - current) * (1 - Math.exp(-damping * delta));
-
-const createDirectionChangeTime = () =>
-  FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
-  Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION;
-
-const applyLowPolyFlatfishMaterial = (scene: THREE.Object3D, index: number) => {
-  scene.traverse((object) => {
-    if (!(object instanceof THREE.Mesh)) {
-      return;
-    }
-
-    object.material = new THREE.MeshStandardMaterial({
-      color:
-        index % 2 === 0
-          ? FLATFISH_LOW_POLY_MATERIAL.BASE_COLOR
-          : FLATFISH_LOW_POLY_MATERIAL.ACCENT_COLOR,
-      flatShading: true,
-      metalness: 0,
-      roughness: FLATFISH_LOW_POLY_MATERIAL.ROUGHNESS,
-    });
-  });
-};
 
 const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const { season } = useSeason();
@@ -122,83 +42,10 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const weatherDepthOffset = -(rainIntensity * 0.55 + cloudIntensity * 0.18) + temperatureDepthOffset;
 
   useEffect(() => {
-    // 季節に基づいて魚を初期化する
-    const newFishList: Fish[] = [];
-    let fishSpeed: number;
-    let fishColor: string;
-
-    switch (season) {
-      case "spring":
-        fishSpeed = FISH_SPEED.SPRING;
-        fishColor = FISH_COLOR.SPRING;
-        break;
-      case "summer":
-        fishSpeed = FISH_SPEED.SUMMER;
-        fishColor = FISH_COLOR.SUMMER;
-        break;
-      case "autumn":
-        fishSpeed = FISH_SPEED.AUTUMN;
-        fishColor = FISH_COLOR.AUTUMN;
-        break;
-      case "winter":
-        fishSpeed = FISH_SPEED.WINTER;
-        fishColor = FISH_COLOR.WINTER;
-        break;
-      default:
-        fishSpeed = FISH_SPEED.DEFAULT;
-        fishColor = FISH_COLOR.DEFAULT;
-    }
-
-    // 通常の魚を追加
-    for (let i = 0; i < NORMAL_FISH_COUNT; i++) {
-      const direction = Math.random() * Math.PI * 2;
-      const cruiseY =
-        Math.random() * (NORMAL_FISH_SPAWN.Y_MAX - NORMAL_FISH_SPAWN.Y_MIN) +
-        NORMAL_FISH_SPAWN.Y_MIN;
-      newFishList.push({
-        id: i,
-        x: Math.random() * (NORMAL_FISH_SPAWN.X_MAX - NORMAL_FISH_SPAWN.X_MIN) + NORMAL_FISH_SPAWN.X_MIN,
-        y: cruiseY,
-        z: Math.random() * (NORMAL_FISH_SPAWN.Z_MAX - NORMAL_FISH_SPAWN.Z_MIN) + NORMAL_FISH_SPAWN.Z_MIN,
-        speed: fishSpeed + (Math.random() * NORMAL_FISH_SPEED_VARIATION - NORMAL_FISH_SPEED_VARIATION / 2),
-        directionX: direction,
-        directionY: 0,
-        targetDirectionX: direction,
-        cruiseY,
-        swimPhase: Math.random() * Math.PI * 2,
-        directionChangeTime: createDirectionChangeTime(),
-        color: fishColor,
-        size: NORMAL_FISH_SIZE_MIN + Math.random() * NORMAL_FISH_SIZE_VARIATION,
-        type: "normal",
-      });
-    }
-
-    // フラットフィッシュ（底生魚）を追加
-    for (let i = 0; i < FLATFISH_COUNT; i++) {
-      const direction = Math.random() * Math.PI * 2;
-      newFishList.push({
-        id: NORMAL_FISH_COUNT + i,
-        x: Math.random() * (NORMAL_FISH_SPAWN.X_MAX - NORMAL_FISH_SPAWN.X_MIN) + NORMAL_FISH_SPAWN.X_MIN,
-        y: FLATFISH_GROUND_Y,
-        z: Math.random() * (NORMAL_FISH_SPAWN.Z_MAX - NORMAL_FISH_SPAWN.Z_MIN) + NORMAL_FISH_SPAWN.Z_MIN,
-        speed: FLATFISH_SPEED,
-        directionX: direction,
-        directionY: 0,
-        targetDirectionX: direction,
-        cruiseY: FLATFISH_GROUND_Y,
-        swimPhase: 0,
-        directionChangeTime: createDirectionChangeTime(),
-        color: fishColor,
-        size: FLATFISH_SIZE_MIN + Math.random() * FLATFISH_SIZE_VARIATION,
-        type: "flatfish",
-        waitTime: FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION,
-        isMoving: false,
-      });
-    }
-    setFishList(newFishList);
+    setFishList(createFishList(season));
   }, [season]);
 
-  const timeRef = React.useRef(0);
+  const timeRef = useRef(0);
 
   const normalFishMaterials = useLoader(MTLLoader, normalFishMtlUrl);
   normalFishMaterials.preload();
@@ -207,11 +54,11 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   });
   const flatfishScene = useModelScene("flatfish");
 
-  const normalFishClones = React.useMemo(() => {
+  const normalFishClones = useMemo(() => {
     return Array.from({ length: NORMAL_FISH_COUNT }, () => normalFishScene.clone());
   }, [normalFishScene]);
 
-  const flatfishClones = React.useMemo(() => {
+  const flatfishClones = useMemo(() => {
     return Array.from({ length: FLATFISH_COUNT }, (_, index) => {
       const clone = flatfishScene.clone();
       applyLowPolyFlatfishMaterial(clone, index);
@@ -220,7 +67,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   }, [flatfishScene]);
 
   // 各魚モデルの位置を動的に更新するための参照を作成する
-  const fishRefs = React.useRef<THREE.Group[]>([]);
+  const fishRefs = useRef<THREE.Group[]>([]);
 
   // useFrameを1つに統合してパフォーマンス向上
   // 状態更新を排除し、refのみを更新することで再レンダリングを削減
@@ -229,167 +76,24 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
 
     // fishListの参照を直接変更（再レンダリングを避ける）
     fishList.forEach((fish, index) => {
-      // フラットフィッシュ：底を這うように「待機→短距離移動→待機」し、向きは滑らかに変える。
-      if (fish.type === "flatfish") {
-        let newWaitTime = fish.waitTime ?? 0;
-        let newIsMoving = fish.isMoving ?? false;
-        let newX = fish.x;
-        let newZ = fish.z;
-        const newY = FLATFISH_GROUND_Y;
-
-        newWaitTime -= delta;
-
-        if (newWaitTime <= 0) {
-          if (!newIsMoving) {
-            // 待機終了 → 移動開始
-            newIsMoving = true;
-            fish.targetDirectionX =
-              fish.directionX +
-              (Math.random() - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
-            newWaitTime = FLATFISH_MOVE_TIME_MIN + Math.random() * FLATFISH_MOVE_TIME_VARIATION;
-          } else {
-            // 移動終了 → 待機開始（砂に擬態）
-            newIsMoving = false;
-            newWaitTime = FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION;
-          }
-        }
-
-        // 移動中のみ位置を更新
-        if (newIsMoving) {
-          const nearBoundary =
-            fish.x < FISH_BOUNDARY.X_MIN + FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN ||
-            fish.x > FISH_BOUNDARY.X_MAX - FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN ||
-            fish.z < FISH_BOUNDARY.Z_MIN + FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN ||
-            fish.z > FISH_BOUNDARY.Z_MAX - FISH_MOVEMENT.FLATFISH_BOUNDARY_MARGIN;
-
-          if (nearBoundary) {
-            const centerX = (FISH_BOUNDARY.X_MIN + FISH_BOUNDARY.X_MAX) / 2;
-            const centerZ = (FISH_BOUNDARY.Z_MIN + FISH_BOUNDARY.Z_MAX) / 2;
-            fish.targetDirectionX = Math.atan2(centerZ - fish.z, centerX - fish.x);
-          }
-
-          fish.directionX = dampAngle(
-            fish.directionX,
-            fish.targetDirectionX,
-            FISH_MOVEMENT.FLATFISH_TURN_DAMPING,
-            delta
-          );
-
-          const travelDistance =
-            fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-          newX = THREE.MathUtils.clamp(
-            fish.x + Math.cos(fish.directionX) * travelDistance,
-            FISH_BOUNDARY.X_MIN,
-            FISH_BOUNDARY.X_MAX
-          );
-          newZ = THREE.MathUtils.clamp(
-            fish.z +
-              Math.sin(fish.directionX) *
-                travelDistance *
-                FISH_MOVEMENT.FLATFISH_Z_DRIFT_DAMPING,
-            FISH_BOUNDARY.Z_MIN,
-            FISH_BOUNDARY.Z_MAX
-          );
-        }
-
-        // データを直接変更
-        fish.x = newX;
-        fish.y = newY;
-        fish.z = newZ;
-        fish.waitTime = newWaitTime;
-        fish.isMoving = newIsMoving;
-
-        // 参照も同時に更新
-        const ref = fishRefs.current[index];
-        if (ref) {
-          ref.position.set(newX, newY, newZ);
-          ref.rotation.set(0, fish.directionX, 0);
-        }
-        return;
-      }
-
-      // 通常魚は一定間隔で目標進路を選び、急に折れず滑らかに旋回する。
-      fish.directionChangeTime -= delta;
-      if (fish.directionChangeTime <= 0) {
-        fish.targetDirectionX +=
-          (Math.random() - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
-        fish.directionChangeTime = createDirectionChangeTime();
-      }
-
-      const nearBoundary =
-        fish.x < FISH_BOUNDARY.X_MIN + FISH_MOVEMENT.BOUNDARY_MARGIN ||
-        fish.x > FISH_BOUNDARY.X_MAX - FISH_MOVEMENT.BOUNDARY_MARGIN ||
-        fish.z < FISH_BOUNDARY.Z_MIN + FISH_MOVEMENT.BOUNDARY_MARGIN ||
-        fish.z > FISH_BOUNDARY.Z_MAX - FISH_MOVEMENT.BOUNDARY_MARGIN;
-
-      if (nearBoundary) {
-        const centerX = (FISH_BOUNDARY.X_MIN + FISH_BOUNDARY.X_MAX) / 2;
-        const centerZ = (FISH_BOUNDARY.Z_MIN + FISH_BOUNDARY.Z_MAX) / 2;
-        fish.targetDirectionX = Math.atan2(centerZ - fish.z, centerX - fish.x);
-        fish.directionChangeTime = createDirectionChangeTime();
-      }
-
-      fish.directionX = dampAngle(
-        fish.directionX,
-        fish.targetDirectionX,
-        FISH_MOVEMENT.TURN_DAMPING,
-        delta
-      );
-
-      const travelDistance =
-        fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
-      const newX = THREE.MathUtils.clamp(
-        fish.x + Math.cos(fish.directionX) * travelDistance,
-        FISH_BOUNDARY.X_MIN,
-        FISH_BOUNDARY.X_MAX
-      );
-      const newZ = THREE.MathUtils.clamp(
-        fish.z + Math.sin(fish.directionX) * travelDistance * FISH_MOVEMENT.Z_DRIFT_DAMPING,
-        FISH_BOUNDARY.Z_MIN,
-        FISH_BOUNDARY.Z_MAX
-      );
-      const targetY = THREE.MathUtils.clamp(
-        fish.cruiseY +
-          weatherDepthOffset +
-          Math.sin(
-            timeRef.current * FISH_MOVEMENT.SWIM_OSCILLATION_SPEED + fish.swimPhase
-          ) *
-            FISH_MOVEMENT.SWIM_OSCILLATION_AMPLITUDE,
-        FISH_BOUNDARY.Y_MIN,
-        FISH_BOUNDARY.Y_MAX
-      );
-      const newY = THREE.MathUtils.damp(
-        fish.y,
-        targetY,
-        FISH_MOVEMENT.DEPTH_DAMPING,
-        delta
-      );
-
-      // データを直接変更
-      fish.x = newX;
-      fish.y = newY;
-      fish.z = newZ;
+      updateFishMovement(fish, {
+        delta,
+        elapsedTime: timeRef.current,
+        weatherDepthOffset,
+        weatherSpeedMultiplier,
+      });
 
       const ref = fishRefs.current[index];
       if (ref) {
-        ref.position.set(newX, newY, newZ);
-        ref.rotation.set(0, fish.directionX + FISH_MODEL_ROTATION.DIRECTION_OFFSET, 0);
+        ref.position.set(fish.x, fish.y, fish.z);
+        ref.rotation.set(
+          0,
+          fish.directionX + (fish.type === "flatfish" ? 0 : FISH_MODEL_ROTATION.DIRECTION_OFFSET),
+          0
+        );
       }
     });
   }, 30);
-
-  // デバッグのために位置をログする（コメントアウト）
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (fishList.length > 0) {
-  //       console.log(
-  //         "Fish positions:",
-  //         fishList.map((f) => ({ x: f.x, y: f.y, z: f.z }))
-  //       );
-  //     }
-  //   }, 2000);
-  //   return () => clearInterval(interval);
-  // }, [fishList]);
 
   return (
     <group>
