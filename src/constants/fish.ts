@@ -65,11 +65,14 @@ export const FLATFISH_MOVE_TIME_VARIATION = 0.2;
 export const FISH_MOVEMENT = {
   FRAME_MULTIPLIER: 60, // delta * 60
   Z_DRIFT_DAMPING: 0.2, // 通常の魚のZ方向移動の減衰
-  SWIM_OSCILLATION_SPEED: 2, // 泳ぎの垂直振動速度
-  SWIM_OSCILLATION_AMPLITUDE: 0.01, // 泳ぎの垂直振動幅
-  DIRECTION_CHANGE_PROBABILITY: 0.005, // ランダムな方向変更確率
-  DIRECTION_CHANGE_ANGLE_RANGE: Math.PI / 4, // 方向変更の角度範囲
-  DIRECTION_CHANGE_ANGLE_OFFSET: Math.PI / 8, // 方向変更の角度オフセット
+  SWIM_OSCILLATION_SPEED: 0.7, // 深度を緩やかに変える速度
+  SWIM_OSCILLATION_AMPLITUDE: 0.16, // 基準深度からの上下移動幅
+  DIRECTION_CHANGE_INTERVAL_MIN: 2.5, // 次の進路を選ぶまでの最短時間（秒）
+  DIRECTION_CHANGE_INTERVAL_VARIATION: 4, // 進路変更間隔のばらつき（秒）
+  DIRECTION_CHANGE_ANGLE_RANGE: Math.PI / 2.8, // 1回の進路変更角度
+  TURN_DAMPING: 1.8, // 目標方向へ旋回する滑らかさ
+  DEPTH_DAMPING: 1.4, // 目標深度へ移動する滑らかさ
+  BOUNDARY_MARGIN: 1.1, // 境界へ到達する前に内側へ向き始める距離
 } as const;
 
 // 魚の境界
