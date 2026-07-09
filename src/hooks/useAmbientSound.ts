@@ -26,6 +26,16 @@ type AmbientSampleKey =
   | "autumn-night"
   | "winter-night";
 
+const AMBIENT_SAMPLE_KEYS: AmbientSampleKey[] = [
+  "spring-day",
+  "spring-night",
+  "summer-day",
+  "summer-night",
+  "autumn-day",
+  "autumn-night",
+  "winter-night",
+];
+
 const clamp = (value: number, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
 
@@ -67,7 +77,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
     try {
       const context = new AudioContextClass({
         latencyHint: "playback",
-      }) as AudioContext;
+      });
 
       const masterGain = context.createGain();
       masterGain.gain.value = 0;
@@ -120,9 +130,9 @@ export const useAmbientSound = (): AmbientSoundControls => {
     }
     let cancelled = false;
     const loadSample = async () => {
-      const entries = Object.entries(AMBIENT_SAMPLE_URLS) as [AmbientSampleKey, string][];
       await Promise.all(
-        entries.map(async ([key, url]) => {
+        AMBIENT_SAMPLE_KEYS.map(async (key) => {
+          const url = AMBIENT_SAMPLE_URLS[key];
           if (sampleBuffersRef.current[key]) {
             return;
           }

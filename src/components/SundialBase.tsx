@@ -27,7 +27,7 @@ import {
  * 時刻表示と水面の波に同期する円盤
  */
 const SundialBase: React.FC = () => {
-  const groupRef = useRef<THREE.Group>(null!);
+  const groupRef = useRef<THREE.Group | null>(null);
   const hourTextRefs = useRef<THREE.Mesh[]>([]);
 
   useFrame((state) => {
@@ -72,7 +72,11 @@ const SundialBase: React.FC = () => {
         return (
           <Text
             key={i}
-            ref={(el) => (hourTextRefs.current[i] = el!)}
+            ref={(el) => {
+              if (el) {
+                hourTextRefs.current[i] = el;
+              }
+            }}
             position={[SUNDIAL_HOUR_RADIUS * Math.cos(angle), SUNDIAL_HOUR_Y_OFFSET, SUNDIAL_HOUR_RADIUS * Math.sin(angle)]}
             rotation={[-Math.PI / 2, 0, angle + Math.PI / 2]}
             fontSize={SUNDIAL_TEXT_SIZE}

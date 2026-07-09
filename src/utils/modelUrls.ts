@@ -39,15 +39,18 @@ export type ModelKey = keyof typeof MODEL_URLS;
  * R2/ローカルのいずれかからGLTFモデルURLを取得
  */
 export const getModelUrl = (key: ModelKey): string => {
-  const entry = MODEL_URLS[key] as ModelEntry;
-  if (entry.local && (isLocal || !entry.remote)) {
-    return entry.local;
+  const entry = MODEL_URLS[key];
+  const local = "local" in entry ? entry.local : undefined;
+  const remote = "remote" in entry ? entry.remote : undefined;
+
+  if (local && (isLocal || !remote)) {
+    return local;
   }
-  if (entry.remote) {
-    return entry.remote;
+  if (remote) {
+    return remote;
   }
-  if (entry.local) {
-    return entry.local;
+  if (local) {
+    return local;
   }
   throw new Error(`Model URL is not configured: ${key}`);
 };

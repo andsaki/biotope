@@ -23,8 +23,8 @@ import {
  */
 const ReflectedStars: React.FC = () => {
   const isNight = !useDayPeriod();
-  const pointsRef = useRef<THREE.Points>(null!);
-  const materialRef = useRef<THREE.PointsMaterial>(null!);
+  const pointsRef = useRef<THREE.Points | null>(null);
+  const materialRef = useRef<THREE.PointsMaterial | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -56,7 +56,10 @@ const ReflectedStars: React.FC = () => {
 
     if (pointsRef.current && visible) {
       const time = state.clock.getElapsedTime();
-      const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+      const positions = pointsRef.current.geometry.attributes.position.array;
+      if (!(positions instanceof Float32Array)) {
+        return;
+      }
 
       for (let i = 0; i < positions.length; i += 3) {
         const x = originalPositions[i];

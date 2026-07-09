@@ -73,14 +73,6 @@ interface RequestLocation {
   source: "browser" | "cloudflare";
 }
 
-interface CloudflareGeo {
-  city?: unknown;
-  region?: unknown;
-  country?: unknown;
-  latitude?: unknown;
-  longitude?: unknown;
-}
-
 const CACHE_TTL_SECONDS = 30 * 60;
 const FORECAST_HOURS = 6;
 
@@ -171,7 +163,7 @@ const getRequestLocation = (request: Request): RequestLocation | null => {
     };
   }
 
-  const cf = request.cf as CloudflareGeo | undefined;
+  const cf = request.cf;
   const latitude = getNumberValue(cf?.latitude);
   const longitude = getNumberValue(cf?.longitude);
 

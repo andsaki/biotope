@@ -24,8 +24,8 @@ import {
  */
 const Stars: React.FC = () => {
   const isNight = !useDayPeriod();
-  const meshRef = useRef<THREE.Points>(null!);
-  const materialRef = useRef<THREE.PointsMaterial>(null!);
+  const meshRef = useRef<THREE.Points | null>(null);
+  const materialRef = useRef<THREE.PointsMaterial | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

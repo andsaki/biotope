@@ -124,24 +124,24 @@ const AppContent = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
   const isLoading = !(assetsLoaded && minDelayElapsed);
-  const directionalLightRef = useRef<THREE.DirectionalLight>(null!);
-  const ambientLightRef = useRef<THREE.AmbientLight>(null!);
-  const pointLightRef = useRef<THREE.PointLight>(null!);
-  const spotLightRef = useRef<THREE.SpotLight>(null!);
+  const directionalLightRef = useRef<THREE.DirectionalLight | null>(null);
+  const ambientLightRef = useRef<THREE.AmbientLight | null>(null);
+  const pointLightRef = useRef<THREE.PointLight | null>(null);
+  const spotLightRef = useRef<THREE.SpotLight | null>(null);
 
   // 背景色をメモ化
   const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
-  const cameraConfig = useMemo(
+  const cameraConfig = useMemo<{ position: [number, number, number]; fov: number }>(
     () => ({
-      position: [5, 3, 0] as [number, number, number],
+      position: [5, 3, 0],
       fov: isMobile ? 75 : 70,
     }),
     [isMobile]
   );
-  const rendererConfig = useMemo(
+  const rendererConfig = useMemo<THREE.WebGLRendererParameters>(
     () => ({
       antialias: !isMobile,
-      powerPreference: "high-performance" as const,
+      powerPreference: "high-performance",
       alpha: false,
       stencil: false,
     }),

@@ -97,7 +97,10 @@ const CherryBlossoms: React.FC = React.memo(() => {
   useThrottledFrame((state, delta) => {
     if (!particlesRef.current) return;
 
-    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const positions = particlesRef.current.geometry.attributes.position.array;
+    if (!(positions instanceof Float32Array)) {
+      return;
+    }
     const scaledDelta = delta * PETAL_ANIMATION_SPEED;
 
     for (let i = 0; i < positions.length / 3; i++) {

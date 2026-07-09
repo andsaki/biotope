@@ -221,8 +221,15 @@ const Frog: React.FC<FrogProps> = ({
     }
 
     if (rippleOuter && rippleInner) {
-      const outerMaterial = rippleOuter.material as THREE.MeshBasicMaterial;
-      const innerMaterial = rippleInner.material as THREE.MeshBasicMaterial;
+      const { material: outerMaterial } = rippleOuter;
+      const { material: innerMaterial } = rippleInner;
+      if (
+        !(outerMaterial instanceof THREE.MeshBasicMaterial) ||
+        !(innerMaterial instanceof THREE.MeshBasicMaterial)
+      ) {
+        return;
+      }
+
       const rippleStart = landingRippleStartRef.current;
       if (rippleStart === null) {
         rippleOuter.visible = false;

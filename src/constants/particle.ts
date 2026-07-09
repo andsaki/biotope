@@ -20,14 +20,17 @@ export const PARTICLE_COLOR = {
   DEFAULT: "#FFB6C1",
 } as const;
 
+type ParticleSeasonKey = keyof typeof PARTICLE_COUNT;
+type ParticleSpeedRange = [number, number];
+
 // 季節ごとの落下速度範囲 (Y軸)
-export const PARTICLE_SPEED_Y = {
-  SPRING: [0.025, 0.05] as [number, number],
-  SUMMER: [0.01, 0.025] as [number, number],
-  AUTUMN: [0.005, 0.015] as [number, number],
-  WINTER: [0.005, 0.015] as [number, number],
-  DEFAULT: [0.025, 0.05] as [number, number],
-} as const;
+export const PARTICLE_SPEED_Y: Record<ParticleSeasonKey, ParticleSpeedRange> = {
+  SPRING: [0.025, 0.05],
+  SUMMER: [0.01, 0.025],
+  AUTUMN: [0.005, 0.015],
+  WINTER: [0.005, 0.015],
+  DEFAULT: [0.025, 0.05],
+};
 
 // 季節ごとのサイズ倍率
 export const PARTICLE_SIZE_MODIFIER = {

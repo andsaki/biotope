@@ -410,7 +410,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
             key={fish.id}
             ref={(el) => {
               if (el) {
-                fishRefs.current[index] = el as THREE.Group;
+                fishRefs.current[index] = el;
                 // 初期位置を設定（一度だけ）
                 if (el.position.x === 0 && el.position.y === 0 && el.position.z === 0) {
                   el.position.set(fish.x, fish.y, fish.z);

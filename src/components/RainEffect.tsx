@@ -25,11 +25,11 @@ const spawnRainDrop = (): RainDrop => ({
       RAIN_SPAWN_AREA.Y_MIN,
     Math.random() * (RAIN_SPAWN_AREA.Z_MAX - RAIN_SPAWN_AREA.Z_MIN) +
       RAIN_SPAWN_AREA.Z_MIN,
-  ] as [number, number, number],
+  ],
   velocity: [
     RAIN_DROP_SPEED.X_BASE + (Math.random() - 0.5) * RAIN_DROP_SPEED.X_VARIATION,
     -(RAIN_DROP_SPEED.Y_BASE + Math.random() * RAIN_DROP_SPEED.Y_VARIATION),
-  ] as [number, number],
+  ],
 });
 
 interface RainEffectProps {
