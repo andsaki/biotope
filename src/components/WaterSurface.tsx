@@ -92,8 +92,8 @@ interface WaterSurfaceProps {
 
 const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   const { season } = useSeason();
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const geometryRef = useRef<THREE.PlaneGeometry>(null!);
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  const geometryRef = useRef<THREE.PlaneGeometry | null>(null);
   const ripplesRef = useRef<RipplePoint[]>([]);
   const dropletsRef = useRef<DropletParticle[]>([]);
   const elapsedTimeRef = useRef(0);
@@ -275,7 +275,9 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   }, [addRipple]);
 
   useThrottledFrame((state) => {
-    if (!meshRef.current || !geometryRef.current) return;
+    const mesh = meshRef.current;
+    const geometry = geometryRef.current;
+    if (!mesh || !geometry) return;
 
     const time = state.clock.getElapsedTime();
     elapsedTimeRef.current = time;
@@ -316,10 +318,13 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
     ripplesRef.current = nextRipples;
     dropletsRef.current = nextDroplets;
 
-    meshRef.current.position.y =
+    mesh.position.y =
       WATER_SURFACE_Y + Math.sin(time * WATER_SURFACE_Y_FREQUENCY) * WATER_SURFACE_Y_AMPLITUDE;
 
-    const positions = geometryRef.current.attributes.position.array as Float32Array;
+    const positions = geometry.attributes.position.array;
+    if (!(positions instanceof Float32Array)) {
+      return;
+    }
     const width = WATER_SURFACE_SCALE_X;
     const height = WATER_SURFACE_SCALE_Y;
     const segments = WATER_SURFACE_SEGMENTS;
@@ -357,10 +362,10 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
       }
     }
 
-    geometryRef.current.attributes.position.needsUpdate = true;
+    geometry.attributes.position.needsUpdate = true;
     normalUpdateCountRef.current += 1;
     if (normalUpdateCountRef.current % 2 === 0) {
-      geometryRef.current.computeVertexNormals();
+      geometry.computeVertexNormals();
     }
 
     if (ripplesRef.current.length > 0 || dropletsRef.current.length > 0 || hadRippleChange || hadDropletChange) {

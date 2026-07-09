@@ -99,7 +99,10 @@ const SnowEffect: React.FC<SnowEffectProps> = React.memo(({ intensity = 1 }) => 
   useThrottledFrame((state, delta) => {
     if (!snowRef.current) return;
 
-    const positions = snowRef.current.geometry.attributes.position.array as Float32Array;
+    const positions = snowRef.current.geometry.attributes.position.array;
+    if (!(positions instanceof Float32Array)) {
+      return;
+    }
     const scaledDelta = delta * SNOW_ANIMATION_SPEED;
 
     for (let i = 0; i < positions.length / 3; i++) {

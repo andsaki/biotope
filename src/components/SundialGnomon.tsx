@@ -8,9 +8,8 @@ import { useSunPosition } from "../hooks/useSunPosition";
  * 水面の波と同期して上下に動き、太陽/月の位置に応じて影を落とす
  */
 const SundialGnomon: React.FC = () => {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const shadowLineRef = useRef<THREE.Mesh>(null!);
-  const groupRef = useRef<THREE.Group>(null!);
+  const shadowLineRef = useRef<THREE.Mesh | null>(null);
+  const groupRef = useRef<THREE.Group | null>(null);
   const sunVectorRef = useRef(new THREE.Vector3());
   const sunPosition = useSunPosition();
 
@@ -42,7 +41,6 @@ const SundialGnomon: React.FC = () => {
     <group ref={groupRef} position={[0, 8.2, 0]}>
       {/* 日時計の棒 */}
       <mesh
-        ref={meshRef}
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
         scale={[0.5, 2, 0.5]}

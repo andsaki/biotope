@@ -1,5 +1,5 @@
-import React, { useRef, useMemo } from "react";
-import { Mesh, CircleGeometry } from "three";
+import React, { useMemo } from "react";
+import { CircleGeometry } from "three";
 import { useSeason } from "../contexts";
 
 /**
@@ -8,7 +8,6 @@ import { useSeason } from "../contexts";
  */
 const Pond: React.FC = () => {
   const { season } = useSeason();
-  const meshRef = useRef<Mesh>(null!);
 
   // ジオメトリを共有してメモリ使用量を削減
   const circleGeometry = useMemo(() => new CircleGeometry(5, 32), []);
@@ -31,7 +30,7 @@ const Pond: React.FC = () => {
 
   return (
     <group>
-      <mesh ref={meshRef} position={[0, 0, -1]} rotation={[-Math.PI / 2, 0, 0]} geometry={circleGeometry}>
+      <mesh position={[0, 0, -1]} rotation={[-Math.PI / 2, 0, 0]} geometry={circleGeometry}>
         <meshStandardMaterial
           color={pondColor}
           transparent={true}

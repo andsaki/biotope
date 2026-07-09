@@ -82,7 +82,11 @@ const BubbleEffect: React.FC = () => {
       {bubbleDataRef.current.map((bubble, index) => (
         <mesh
           key={index}
-          ref={(el) => (bubbleRefs.current[index] = el!)}
+          ref={(el) => {
+            if (el) {
+              bubbleRefs.current[index] = el;
+            }
+          }}
           position={[bubble.x, bubble.y, bubble.z]}
           scale={[bubble.size, bubble.size, bubble.size]}
           geometry={geometry}

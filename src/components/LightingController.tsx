@@ -20,13 +20,13 @@ import {
 /** ライティング制御のプロパティ */
 interface LightingControllerProps {
   /** 指向性ライトへの参照 */
-  directionalLightRef: React.RefObject<THREE.DirectionalLight>;
+  directionalLightRef: React.RefObject<THREE.DirectionalLight | null>;
   /** 環境光への参照 */
-  ambientLightRef: React.RefObject<THREE.AmbientLight>;
+  ambientLightRef: React.RefObject<THREE.AmbientLight | null>;
   /** ポイントライトへの参照 */
-  pointLightRef: React.RefObject<THREE.PointLight>;
+  pointLightRef: React.RefObject<THREE.PointLight | null>;
   /** スポットライトへの参照 */
-  spotLightRef: React.RefObject<THREE.SpotLight>;
+  spotLightRef: React.RefObject<THREE.SpotLight | null>;
   /** 現在の天気 */
   weather: WeatherSnapshot;
 }

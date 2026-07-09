@@ -76,7 +76,7 @@ const BottleReadAfterglow = ({ onComplete }: BottleReadAfterglowProps) => {
       }),
     []
   );
-  const startedAtRef = useMemo(() => ({ value: null as number | null }), []);
+  const startedAtRef = useMemo<{ value: number | null }>(() => ({ value: null }), []);
   const completedRef = useMemo(() => ({ value: false }), []);
 
   useEffect(() => {

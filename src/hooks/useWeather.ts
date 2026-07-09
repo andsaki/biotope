@@ -17,12 +17,25 @@ interface StoredCoordinates {
 const LOCATION_SESSION_KEY = "mizube_weather_coordinates";
 const DIRECTOR_INTERVAL_MS = 10_000;
 
+const isStoredCoordinates = (value: unknown): value is StoredCoordinates => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  return (
+    "latitude" in value &&
+    "longitude" in value &&
+    Number.isFinite(value.latitude) &&
+    Number.isFinite(value.longitude)
+  );
+};
+
 const loadStoredCoordinates = (): StoredCoordinates | null => {
   try {
     const raw = window.sessionStorage.getItem(LOCATION_SESSION_KEY);
     if (!raw) return null;
-    const value = JSON.parse(raw) as StoredCoordinates;
-    return Number.isFinite(value.latitude) && Number.isFinite(value.longitude) ? value : null;
+    const value = JSON.parse(raw);
+    return isStoredCoordinates(value) ? value : null;
   } catch {
     return null;
   }

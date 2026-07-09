@@ -8,7 +8,7 @@ import { useModelScene } from "../hooks/useModelScene";
  * 風に揺れる複数の鉢植え植物を配置
  */
 const PottedPlant: React.FC = () => {
-  const plantRef = useRef<THREE.Group>(null!);
+  const plantRef = useRef<THREE.Group | null>(null);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
