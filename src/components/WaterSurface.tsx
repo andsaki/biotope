@@ -77,9 +77,9 @@ interface DropletParticle {
   startTime: number;
 }
 
-const DROPLET_LIFETIME = 0.9;
+const DROPLET_LIFETIME = 0.82;
 const DROPLET_GRAVITY = 2.6;
-const RIPPLE_SPARKLE_INDICES = [0, 1, 2, 3, 4] as const;
+const RIPPLE_SPARKLE_INDICES = [0, 1, 2, 3, 4, 5, 6] as const;
 
 /**
  * 水面コンポーネント
@@ -123,7 +123,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   );
 
   const petalGeometry = useMemo(() => createPetalGeometry(), []);
-  const rippleRingGeometry = useMemo(() => new THREE.RingGeometry(0.978, 1, 48), []);
+  const rippleRingGeometry = useMemo(() => new THREE.RingGeometry(0.99, 1, 56), []);
   const sparkleGeometry = useMemo(() => new THREE.CircleGeometry(1, 14), []);
   const dropletGeometry = useMemo(() => new THREE.SphereGeometry(1, 8, 8), []);
 
@@ -172,38 +172,38 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
     switch (season) {
       case "spring":
         return {
-          dropletCount: 4,
+          dropletCount: 5,
           dropletLift: 0.92,
           dropletSpread: 0.9,
-          ringOpacity: 0.16,
-          sparkleOpacity: 0.4,
+          ringOpacity: 0.13,
+          sparkleOpacity: 0.48,
           petalChance: 0.92,
         };
       case "summer":
         return {
-          dropletCount: 6,
-          dropletLift: 1.12,
-          dropletSpread: 1.08,
-          ringOpacity: 0.2,
-          sparkleOpacity: 0.48,
+          dropletCount: 9,
+          dropletLift: 1.24,
+          dropletSpread: 1.18,
+          ringOpacity: 0.15,
+          sparkleOpacity: 0.58,
           petalChance: 0,
         };
       case "autumn":
         return {
-          dropletCount: 4,
-          dropletLift: 0.88,
-          dropletSpread: 0.86,
-          ringOpacity: 0.15,
-          sparkleOpacity: 0.34,
-          petalChance: 0,
+          dropletCount: 5,
+          dropletLift: 0.9,
+          dropletSpread: 0.9,
+          ringOpacity: 0.12,
+          sparkleOpacity: 0.38,
+          petalChance: 0.58,
         };
       case "winter":
         return {
-          dropletCount: 3,
-          dropletLift: 0.78,
-          dropletSpread: 0.72,
-          ringOpacity: 0.13,
-          sparkleOpacity: 0.28,
+          dropletCount: 5,
+          dropletLift: 0.82,
+          dropletSpread: 0.76,
+          ringOpacity: 0.11,
+          sparkleOpacity: 0.42,
           petalChance: 0,
         };
     }
@@ -390,38 +390,39 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
       {ripplesRef.current.map((ripple) => {
         const age = elapsedTimeRef.current - ripple.startTime;
         const progress = Math.min(1, Math.max(0, age / WATER_RIPPLE_LIFETIME));
-        const mainRadius = 0.72 + progress * 3.15;
+        const easeOut = 1 - Math.pow(1 - progress, 2.4);
+        const mainRadius = 0.36 + easeOut * 1.85;
         const mainOpacity = Math.max(0, (1 - progress) * rippleTuning.ringOpacity);
         const impactOpacity = Math.max(0, (1 - progress * 1.9) * rippleTuning.sparkleOpacity * 0.85);
-        const impactScale = 0.16 + progress * 0.55;
+        const impactScale = 0.1 + easeOut * 0.28;
         const trailingProgress = Math.min(1, Math.max(0, (progress - 0.12) / 0.88));
-        const trailingRadius = 0.5 + trailingProgress * 2.7;
-        const trailingOpacity = Math.max(0, (1 - trailingProgress) * rippleTuning.ringOpacity * 0.55);
+        const trailingRadius = 0.24 + trailingProgress * 1.12;
+        const trailingOpacity = Math.max(0, (1 - trailingProgress) * rippleTuning.ringOpacity * 0.4);
         const sparkleOpacity = Math.max(0, (1 - progress) * rippleTuning.sparkleOpacity);
         const sparklePhase = progress * Math.PI * 0.9 + ripple.id * 0.19;
 
         return (
-          <group key={ripple.id} position={[ripple.worldX, ripple.worldY + 0.05, ripple.worldZ]}>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[impactScale, impactScale, 1]} renderOrder={998}>
+          <group key={ripple.id} position={[ripple.worldX, ripple.worldY + 0.018, ripple.worldZ]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[impactScale, impactScale, 1]} renderOrder={18}>
               <primitive object={sparkleGeometry} attach="geometry" />
               <meshBasicMaterial
                 color={ripplePalette.glow}
                 transparent={true}
                 opacity={impactOpacity}
                 depthWrite={false}
-                depthTest={false}
+                depthTest={true}
                 blending={THREE.AdditiveBlending}
               />
             </mesh>
 
-            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[mainRadius, mainRadius, 1]} renderOrder={999}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[mainRadius, mainRadius, 1]} renderOrder={19}>
               <primitive object={rippleRingGeometry} attach="geometry" />
               <meshBasicMaterial
                 color={ripplePalette.ring}
                 transparent={true}
                 opacity={mainOpacity}
                 depthWrite={false}
-                depthTest={false}
+                depthTest={true}
                 blending={THREE.AdditiveBlending}
               />
             </mesh>
@@ -430,7 +431,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
               <mesh
                 rotation={[-Math.PI / 2, 0, 0]}
                 scale={[trailingRadius, trailingRadius, 1]}
-                renderOrder={1000}
+                renderOrder={20}
               >
                 <primitive object={rippleRingGeometry} attach="geometry" />
                 <meshBasicMaterial
@@ -438,7 +439,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
                   transparent={true}
                   opacity={trailingOpacity}
                   depthWrite={false}
-                  depthTest={false}
+                  depthTest={true}
                   blending={THREE.AdditiveBlending}
                 />
               </mesh>
@@ -447,7 +448,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
             {RIPPLE_SPARKLE_INDICES.map((index) => {
               const seed = ripple.id * 17 + index * 31;
               const angle = sparklePhase + pseudoRandom(seed) * Math.PI * 2;
-              const sparkleRadius = 0.24 + progress * (1.8 + pseudoRandom(seed + 1) * 0.9);
+              const sparkleRadius = 0.14 + easeOut * (0.85 + pseudoRandom(seed + 1) * 0.7);
               const sparkleScale = 0.012 + pseudoRandom(seed + 2) * 0.018 + (1 - progress) * 0.008;
               const verticalOffset = (pseudoRandom(seed + 3) - 0.5) * 0.018;
               const dropletRotation = pseudoRandom(seed + 4) * Math.PI;
@@ -461,7 +462,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
                   ]}
                   rotation={[-Math.PI / 2, 0, dropletRotation]}
                   scale={[sparkleScale * 0.7, sparkleScale * 1.35, 1]}
-                  renderOrder={1001}
+                  renderOrder={21}
                 >
                   <primitive object={sparkleGeometry} attach="geometry" />
                   <meshBasicMaterial
@@ -469,7 +470,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
                     transparent={true}
                     opacity={sparkleOpacity}
                     depthWrite={false}
-                    depthTest={false}
+                    depthTest={true}
                     blending={THREE.AdditiveBlending}
                   />
                 </mesh>
@@ -494,7 +495,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
         const petalWobble = droplet.petalLike ? Math.sin(age * 10 + droplet.id) * 0.18 : 0;
 
         return (
-          <group key={droplet.id} position={[x, y, z]} renderOrder={1002}>
+          <group key={droplet.id} position={[x, y, z]} renderOrder={22}>
             <mesh
               rotation={
                 droplet.petalLike
@@ -513,7 +514,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
                 transparent={true}
                 opacity={opacity}
                 depthWrite={false}
-                depthTest={false}
+                depthTest={true}
                 blending={THREE.AdditiveBlending}
               />
             </mesh>
