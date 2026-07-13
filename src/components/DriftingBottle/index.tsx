@@ -29,48 +29,27 @@ interface BottleReadAfterglowProps {
   onComplete: () => void;
 }
 
-const AFTERGLOW_LIFETIME = 3.2;
+const AFTERGLOW_LIFETIME = 1.75;
 
 const afterglowSeeds: readonly {
   angle: number;
   radius: number;
   speed: number;
   size: number;
+  lift: number;
 }[] = [
-  { angle: 0.1, radius: 0.34, speed: 0.82, size: 0.034 },
-  { angle: 1.35, radius: 0.48, speed: 0.68, size: 0.026 },
-  { angle: 2.4, radius: 0.42, speed: 0.75, size: 0.03 },
-  { angle: 3.55, radius: 0.54, speed: 0.61, size: 0.024 },
-  { angle: 4.7, radius: 0.38, speed: 0.88, size: 0.028 },
-  { angle: 5.62, radius: 0.5, speed: 0.7, size: 0.022 },
+  { angle: 0.1, radius: 0.2, speed: 0.82, size: 0.026, lift: 0.1 },
+  { angle: 0.72, radius: 0.34, speed: 0.74, size: 0.018, lift: 0.16 },
+  { angle: 1.35, radius: 0.28, speed: 0.68, size: 0.022, lift: 0.12 },
+  { angle: 2.4, radius: 0.32, speed: 0.75, size: 0.02, lift: 0.18 },
+  { angle: 3.55, radius: 0.38, speed: 0.61, size: 0.018, lift: 0.08 },
+  { angle: 4.7, radius: 0.24, speed: 0.88, size: 0.021, lift: 0.14 },
+  { angle: 5.62, radius: 0.36, speed: 0.7, size: 0.017, lift: 0.11 },
+  { angle: 6.05, radius: 0.3, speed: 0.92, size: 0.015, lift: 0.2 },
 ];
 
 const BottleReadAfterglow = ({ color, onComplete }: BottleReadAfterglowProps) => {
   const groupRef = useRef<THREE.Group>(null);
-  const ringMaterialRef = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: "#f7f0c2",
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-        depthTest: false,
-        blending: THREE.AdditiveBlending,
-      }),
-    []
-  );
-  const coreMaterialRef = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: "#fff7c9",
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-        depthTest: false,
-        blending: THREE.AdditiveBlending,
-      }),
-    []
-  );
   const sparkleMaterialRef = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -78,7 +57,7 @@ const BottleReadAfterglow = ({ color, onComplete }: BottleReadAfterglowProps) =>
         transparent: true,
         opacity: 0,
         depthWrite: false,
-        depthTest: false,
+        depthTest: true,
         blending: THREE.AdditiveBlending,
       }),
     []
@@ -88,17 +67,13 @@ const BottleReadAfterglow = ({ color, onComplete }: BottleReadAfterglowProps) =>
 
   useEffect(() => {
     return () => {
-      ringMaterialRef.dispose();
-      coreMaterialRef.dispose();
       sparkleMaterialRef.dispose();
     };
-  }, [coreMaterialRef, ringMaterialRef, sparkleMaterialRef]);
+  }, [sparkleMaterialRef]);
 
   useEffect(() => {
-    ringMaterialRef.color.set(color);
-    coreMaterialRef.color.set(color);
     sparkleMaterialRef.color.set(color);
-  }, [color, coreMaterialRef, ringMaterialRef, sparkleMaterialRef]);
+  }, [color, sparkleMaterialRef]);
 
   useFrame((state) => {
     if (!groupRef.current) {
@@ -111,14 +86,11 @@ const BottleReadAfterglow = ({ color, onComplete }: BottleReadAfterglowProps) =>
 
     const age = state.clock.getElapsedTime() - startedAtRef.value;
     const progress = Math.min(1, age / AFTERGLOW_LIFETIME);
-    const fade = Math.pow(1 - progress, 1.55);
-    const pulse = 0.82 + Math.sin(age * 5.4) * 0.18;
+    const fade = Math.pow(1 - progress, 1.7);
 
-    groupRef.current.scale.setScalar(1 + progress * 1.9);
-    groupRef.current.rotation.y = age * 0.22;
-    ringMaterialRef.opacity = fade * 0.28;
-    coreMaterialRef.opacity = fade * 0.18 * pulse;
-    sparkleMaterialRef.opacity = fade * 0.64;
+    groupRef.current.scale.setScalar(1 + progress * 0.9);
+    groupRef.current.rotation.y = age * 0.55;
+    sparkleMaterialRef.opacity = fade * 0.72;
 
     if (progress >= 1 && !completedRef.value) {
       completedRef.value = true;
@@ -127,27 +99,19 @@ const BottleReadAfterglow = ({ color, onComplete }: BottleReadAfterglowProps) =>
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.12, 0]} renderOrder={1003}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[0.52, 0.52, 1]}>
-        <ringGeometry args={[0.76, 0.79, 96]} />
-        <primitive object={ringMaterialRef} attach="material" />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[0.18, 0.18, 1]}>
-        <circleGeometry args={[1, 32]} />
-        <primitive object={coreMaterialRef} attach="material" />
-      </mesh>
+    <group ref={groupRef} position={[0, -0.12, 0]} renderOrder={24}>
       {afterglowSeeds.map((seed, index) => (
         <mesh
           key={index}
           position={[
-            Math.cos(seed.angle) * seed.radius,
-            0.035 + index * 0.006,
-            Math.sin(seed.angle) * seed.radius,
+            Math.cos(seed.angle) * seed.radius * (1 + seed.speed * 0.7),
+            0.035 + index * 0.004 + seed.lift,
+            Math.sin(seed.angle) * seed.radius * (1 + seed.speed * 0.7),
           ]}
-          rotation={[-Math.PI / 2, 0, seed.angle]}
-          scale={[seed.size, seed.size * (1.15 + seed.speed * 0.2), 1]}
+          rotation={[0, seed.angle, seed.angle * 0.37]}
+          scale={[seed.size, seed.size * (1.3 + seed.speed * 0.25), seed.size]}
         >
-          <circleGeometry args={[1, 14]} />
+          <sphereGeometry args={[1, 8, 8]} />
           <primitive object={sparkleMaterialRef} attach="material" />
         </mesh>
       ))}
