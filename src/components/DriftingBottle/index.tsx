@@ -10,6 +10,7 @@ import { getTimeOfDay } from "@/utils/time";
 import {
   createDailyLifeLog,
   getBottleDiscoveryLabel,
+  getDailyBottleOmen,
   getLocalDateKey,
   loadBottleJournal,
   loadBottleMemorySigns,
@@ -24,21 +25,27 @@ import { BottleModel } from "./BottleModel";
 import { MessageCard } from "./MessageCard";
 
 interface BottleReadAfterglowProps {
+  color: string;
   onComplete: () => void;
 }
 
 const AFTERGLOW_LIFETIME = 3.2;
 
-const afterglowSeeds = [
+const afterglowSeeds: readonly {
+  angle: number;
+  radius: number;
+  speed: number;
+  size: number;
+}[] = [
   { angle: 0.1, radius: 0.34, speed: 0.82, size: 0.034 },
   { angle: 1.35, radius: 0.48, speed: 0.68, size: 0.026 },
   { angle: 2.4, radius: 0.42, speed: 0.75, size: 0.03 },
   { angle: 3.55, radius: 0.54, speed: 0.61, size: 0.024 },
   { angle: 4.7, radius: 0.38, speed: 0.88, size: 0.028 },
   { angle: 5.62, radius: 0.5, speed: 0.7, size: 0.022 },
-] as const;
+];
 
-const BottleReadAfterglow = ({ onComplete }: BottleReadAfterglowProps) => {
+const BottleReadAfterglow = ({ color, onComplete }: BottleReadAfterglowProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const ringMaterialRef = useMemo(
     () =>
@@ -86,6 +93,12 @@ const BottleReadAfterglow = ({ onComplete }: BottleReadAfterglowProps) => {
       sparkleMaterialRef.dispose();
     };
   }, [coreMaterialRef, ringMaterialRef, sparkleMaterialRef]);
+
+  useEffect(() => {
+    ringMaterialRef.color.set(color);
+    coreMaterialRef.color.set(color);
+    sparkleMaterialRef.color.set(color);
+  }, [color, coreMaterialRef, ringMaterialRef, sparkleMaterialRef]);
 
   useFrame((state) => {
     if (!groupRef.current) {
@@ -165,18 +178,6 @@ const getSignPlacement = (date: string, index: number) => {
 
 const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
   const groupRef = useRef<THREE.Group>(null);
-  const markMaterial = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: "#fff2a8",
-        transparent: true,
-        opacity: 0.62,
-        depthWrite: false,
-        depthTest: false,
-        blending: THREE.AdditiveBlending,
-      }),
-    []
-  );
   const ringMaterial = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -192,10 +193,9 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
 
   useEffect(() => {
     return () => {
-      markMaterial.dispose();
       ringMaterial.dispose();
     };
-  }, [markMaterial, ringMaterial]);
+  }, [ringMaterial]);
 
   useFrame((state) => {
     if (!groupRef.current || signs.length === 0) {
@@ -204,7 +204,6 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
 
     const time = state.clock.getElapsedTime();
     groupRef.current.rotation.y = Math.sin(time * 0.16) * 0.08;
-    markMaterial.opacity = 0.52 + Math.sin(time * 1.4) * 0.08;
     ringMaterial.opacity = 0.24 + Math.sin(time * 0.9) * 0.05;
   });
 
@@ -219,12 +218,20 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
         const x = Math.cos(placement.angle) * placement.radius;
         const z = Math.sin(placement.angle) * placement.radius;
         const scale = placement.size * (1 - index * 0.045);
+        const signColor = sign.omen?.color ?? "#fff2a8";
 
         return (
           <group key={sign.date} position={[x, 0.01 + index * 0.004, z]}>
             <mesh rotation={[-Math.PI / 2, 0, placement.angle]} scale={[scale, scale * 1.55, 1]}>
               <circleGeometry args={[1, 16]} />
-              <primitive object={markMaterial} attach="material" />
+              <meshBasicMaterial
+                color={signColor}
+                transparent={true}
+                opacity={0.58}
+                depthWrite={false}
+                depthTest={false}
+                blending={THREE.AdditiveBlending}
+              />
             </mesh>
             <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[scale * 4.4, scale * 4.4, 1]}>
               <ringGeometry args={[0.82, 1, 40]} />
@@ -293,6 +300,17 @@ export const DriftingBottle = ({
       }),
     [realTime.hours, season, today, weather, windDirection]
   );
+  const bottleOmen = useMemo(
+    () =>
+      getDailyBottleOmen({
+        date: today,
+        season,
+        timeOfDay: getTimeOfDay(realTime.hours),
+        windDirection,
+        weather,
+      }),
+    [realTime.hours, season, today, weather, windDirection]
+  );
 
   // 1日1回、Gemini経由でメッセージを取得
   useEffect(() => {
@@ -333,10 +351,11 @@ export const DriftingBottle = ({
       message: currentMessage,
       sender: currentSender,
       lifeLog: displayedLifeLog,
+      omen: bottleOmen,
       readAt: new Date().toISOString(),
     });
     setJournalEntries(nextJournal);
-  }, [currentMessage, currentSender, displayedLifeLog, showMessage, today]);
+  }, [bottleOmen, currentMessage, currentSender, displayedLifeLog, showMessage, today]);
 
   const handleCloseMessage = () => {
     setShowMessage(false);
@@ -344,6 +363,7 @@ export const DriftingBottle = ({
       saveBottleMemorySign({
         date: today,
         label: getBottleDiscoveryLabel(today),
+        omen: bottleOmen,
         readAt: new Date().toISOString(),
       })
     );
@@ -387,12 +407,14 @@ export const DriftingBottle = ({
           message={currentMessage}
           sender={currentSender}
           currentDate={today}
+          omen={bottleOmen}
           onClose={handleCloseMessage}
         />
       )}
       {readAfterglowId > 0 && (
         <BottleReadAfterglow
           key={readAfterglowId}
+          color={bottleOmen.color}
           onComplete={() => setReadAfterglowId(0)}
         />
       )}
