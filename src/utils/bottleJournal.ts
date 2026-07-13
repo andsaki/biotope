@@ -9,13 +9,30 @@ export interface BottleJournalEntry {
   message: string;
   sender: string;
   lifeLog: string;
+  omen?: BottleOmen;
   readAt: string;
 }
 
 export interface BottleMemorySign {
   date: string;
   label: string;
+  omen?: BottleOmen;
   readAt: string;
+}
+
+export type BottleOmenId =
+  | "fish-gather"
+  | "quiet-ripples"
+  | "firefly-glow"
+  | "deep-current"
+  | "hidden-shore";
+
+export interface BottleOmen {
+  id: BottleOmenId;
+  label: string;
+  description: string;
+  worldNote: string;
+  color: string;
 }
 
 interface LifeLogInput {
@@ -89,14 +106,52 @@ const weatherNotes: Record<WeatherSnapshot["condition"], readonly string[]> = {
     "遠い空が光り、少し遅れて水辺へ響いた",
     "雷の気配に合わせて、水面の影が一瞬揺れた",
   ],
-} as const;
+};
 
 const discoveryLabels = [
   "波紋の発見",
   "風向きのしるし",
   "光の漂着",
   "水面の記録",
-] as const;
+] satisfies readonly string[];
+
+const bottleOmens: readonly BottleOmen[] = [
+  {
+    id: "fish-gather",
+    label: "魚寄せ",
+    description: "しばらく魚影が瓶の近くを横切りやすくなる。",
+    worldNote: "瓶の周りに、魚が通ったあとの淡いしるしが残る。",
+    color: "#b8f1ff",
+  },
+  {
+    id: "quiet-ripples",
+    label: "静かな波紋",
+    description: "水面を触れたときの光が少し細く、長く残る。",
+    worldNote: "水面に細い輪が残り、次の波を待っている。",
+    color: "#f7f0c2",
+  },
+  {
+    id: "firefly-glow",
+    label: "蛍火",
+    description: "夜の水辺に、小さな光の粒が集まりやすくなる。",
+    worldNote: "瓶の口元に、蛍のような点がゆっくり回る。",
+    color: "#d6ff9f",
+  },
+  {
+    id: "deep-current",
+    label: "底流",
+    description: "深いところの流れが少し強まり、影がゆっくり動く。",
+    worldNote: "底から上がる青い粒が、短いあいだ水面へ向かう。",
+    color: "#9fd7ff",
+  },
+  {
+    id: "hidden-shore",
+    label: "隠れ岸",
+    description: "石や葉の影が濃くなり、見落としやすい場所が少し目立つ。",
+    worldNote: "岸辺の影に、古い地図の端のような光が残る。",
+    color: "#ffd5a3",
+  },
+] satisfies readonly BottleOmen[];
 
 const seasonNotes: Record<Season, string[]> = {
   spring: [
@@ -153,6 +208,19 @@ const pick = <T,>(items: readonly T[], seed: number) => items[seed % items.lengt
 
 export const getBottleDiscoveryLabel = (date: string) =>
   pick(discoveryLabels, createSeed(date));
+
+export const getDailyBottleOmen = ({
+  date,
+  season,
+  timeOfDay,
+  windDirection,
+  weather,
+}: LifeLogInput): BottleOmen => {
+  const seed = createSeed(
+    `omen:${date}:${season}:${timeOfDay}:${windDirection}:${weather.condition}:${weather.trend}`
+  );
+  return pick(bottleOmens, seed);
+};
 
 export const getLocalDateKey = (date = new Date()) => {
   const year = date.getFullYear();
@@ -219,6 +287,7 @@ export const loadBottleJournal = (): BottleJournalEntry[] => {
         typeof entry?.message === "string" &&
         typeof entry?.sender === "string" &&
         typeof entry?.lifeLog === "string" &&
+        (entry.omen === undefined || isBottleOmen(entry.omen)) &&
         typeof entry?.readAt === "string"
     );
   } catch (error) {
@@ -263,12 +332,32 @@ export const loadBottleMemorySigns = (): BottleMemorySign[] => {
       (sign): sign is BottleMemorySign =>
         typeof sign?.date === "string" &&
         typeof sign?.label === "string" &&
+        (sign.omen === undefined || isBottleOmen(sign.omen)) &&
         typeof sign?.readAt === "string"
     );
   } catch (error) {
     console.error("Error loading bottle memory signs:", error);
     return [];
   }
+};
+
+const isBottleOmen = (value: unknown): value is BottleOmen => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  return (
+    "id" in value &&
+    "label" in value &&
+    "description" in value &&
+    "worldNote" in value &&
+    "color" in value &&
+    typeof value.id === "string" &&
+    typeof value.label === "string" &&
+    typeof value.description === "string" &&
+    typeof value.worldNote === "string" &&
+    typeof value.color === "string"
+  );
 };
 
 export const saveBottleMemorySign = (sign: BottleMemorySign) => {

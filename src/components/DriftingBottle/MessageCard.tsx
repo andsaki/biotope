@@ -1,7 +1,11 @@
-import { memo } from "react";
+import { memo, type CSSProperties } from "react";
 import { Html } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import { formatJournalDate, getBottleDiscoveryLabel } from "@/utils/bottleJournal";
+import {
+  formatJournalDate,
+  getBottleDiscoveryLabel,
+  type BottleOmen,
+} from "@/utils/bottleJournal";
 
 /** メッセージカードのプロパティ */
 interface MessageCardProps {
@@ -11,6 +15,8 @@ interface MessageCardProps {
   sender: string;
   /** 表示中の便りの日付 */
   currentDate: string;
+  /** 便りを閉じた後に水辺へ残る小さな効き目 */
+  omen: BottleOmen;
   /** 閉じるボタンのクリックハンドラ */
   onClose: () => void;
 }
@@ -26,7 +32,7 @@ const stopCardEvent = (event: CardPointerEvent) => {
 };
 
 /** カードのスタイル定義 */
-const CARD_STYLES = {
+const CARD_STYLES: Record<string, CSSProperties> = {
   container: {
     background:
       "linear-gradient(150deg, rgba(252, 239, 220, 0.98), rgba(238, 216, 186, 0.98))",
@@ -35,25 +41,25 @@ const CARD_STYLES = {
     width: "330px",
     maxWidth: "calc(100vw - 32px)",
     maxHeight: "min(74vh, 560px)",
-    boxSizing: "border-box" as const,
+    boxSizing: "border-box",
     boxShadow:
       "0 18px 42px rgba(20, 12, 4, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
     fontFamily: "'Noto Serif JP', serif",
-    position: "relative" as const,
+    position: "relative",
     border: "2px solid #d4a574",
-    overflow: "hidden" as const,
+    overflow: "hidden",
     display: "flex",
-    flexDirection: "column" as const,
+    flexDirection: "column",
     color: "#4f422f",
-    userSelect: "none" as const,
+    userSelect: "none",
   },
   content: {
-    overflowY: "auto" as const,
+    overflowY: "auto",
     paddingRight: "4px",
-    overscrollBehavior: "contain" as const,
+    overscrollBehavior: "contain",
   },
   closeButton: {
-    position: "absolute" as const,
+    position: "absolute",
     top: "10px",
     right: "10px",
     background: "transparent",
@@ -69,8 +75,8 @@ const CARD_STYLES = {
     padding: "0",
     lineHeight: "1",
     zIndex: 2,
-    pointerEvents: "auto" as const,
-    touchAction: "manipulation" as const,
+    pointerEvents: "auto",
+    touchAction: "manipulation",
   },
   title: {
     margin: "0",
@@ -80,7 +86,7 @@ const CARD_STYLES = {
     letterSpacing: "0.08em",
   },
   header: {
-    position: "relative" as const,
+    position: "relative",
     marginBottom: "14px",
     padding: "0 42px 13px 0",
     borderBottom: "1px solid rgba(160, 112, 64, 0.44)",
@@ -93,7 +99,7 @@ const CARD_STYLES = {
   },
   statusRow: {
     display: "flex",
-    flexWrap: "wrap" as const,
+    flexWrap: "wrap",
     gap: "7px",
     marginBottom: "16px",
   },
@@ -111,14 +117,50 @@ const CARD_STYLES = {
     lineHeight: "1.9",
     color: "#4a4a4a",
     fontSize: "14.5px",
-    whiteSpace: "pre-wrap" as const,
+    whiteSpace: "pre-wrap",
+  },
+  omenBox: {
+    margin: "16px 0 0",
+    padding: "12px 13px",
+    borderRadius: "10px",
+    background: "rgba(255, 250, 239, 0.72)",
+    border: "1px solid rgba(178, 128, 75, 0.28)",
+    boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.55)",
+  },
+  omenHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginBottom: "7px",
+    color: "#6d5132",
+    fontSize: "12px",
+    letterSpacing: "0.12em",
+  },
+  omenDot: {
+    width: "9px",
+    height: "9px",
+    borderRadius: "999px",
+    boxShadow: "0 0 10px currentColor",
+    flexShrink: 0,
+  },
+  omenText: {
+    margin: "0",
+    color: "#5d4e37",
+    fontSize: "12px",
+    lineHeight: "1.7",
+  },
+  omenWorldNote: {
+    margin: "7px 0 0",
+    color: "#8b7355",
+    fontSize: "11px",
+    lineHeight: "1.6",
   },
   sender: {
     marginTop: "15px",
-    textAlign: "right" as const,
+    textAlign: "right",
     fontSize: "12px",
     color: "#8b7355",
-    fontStyle: "italic" as const,
+    fontStyle: "italic",
   },
   footerNote: {
     margin: "18px 0 0 0",
@@ -127,7 +169,7 @@ const CARD_STYLES = {
     color: "#8b7355",
     fontSize: "11px",
     lineHeight: "1.6",
-    textAlign: "center" as const,
+    textAlign: "center",
   },
 };
 
@@ -139,6 +181,7 @@ export const MessageCard = memo(({
   message,
   sender,
   currentDate,
+  omen,
   onClose,
 }: MessageCardProps) => {
   const discoveryLabel = getBottleDiscoveryLabel(currentDate);
@@ -183,8 +226,22 @@ export const MessageCard = memo(({
           </div>
           <p style={CARD_STYLES.message}>{message}</p>
           <div style={CARD_STYLES.sender}>— {sender}</div>
+          <div style={CARD_STYLES.omenBox}>
+            <div style={CARD_STYLES.omenHeader}>
+              <span
+                style={{
+                  ...CARD_STYLES.omenDot,
+                  color: omen.color,
+                  background: omen.color,
+                }}
+              />
+              <span>今日の効き目: {omen.label}</span>
+            </div>
+            <p style={CARD_STYLES.omenText}>{omen.description}</p>
+            <p style={CARD_STYLES.omenWorldNote}>{omen.worldNote}</p>
+          </div>
           <p style={CARD_STYLES.footerNote}>
-            閉じると、今日のしるしが水面に残ります。
+            閉じると、今日の効き目が水面に残ります。
           </p>
         </div>
       </div>
