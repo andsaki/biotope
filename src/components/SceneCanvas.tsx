@@ -79,12 +79,14 @@ interface SceneCanvasProps {
   performanceMonitorEnabled: boolean;
   showBottleHint: boolean;
   bottleSignal: number;
+  lastWaterPoint: [number, number, number] | null;
   weather: WeatherSnapshot;
   windDirection: WindDirection;
+  waterSignal: number;
   onAssetsLoaded: () => void;
   onBottleMessageRead: () => void;
   onProgress: (progress: number, loadingText: string) => void;
-  onWaterInteract: () => void;
+  onWaterInteract: (point: [number, number, number]) => void;
 }
 
 const SceneCanvas = ({
@@ -95,8 +97,10 @@ const SceneCanvas = ({
   performanceMonitorEnabled,
   showBottleHint,
   bottleSignal,
+  lastWaterPoint,
   weather,
   windDirection,
+  waterSignal,
   onAssetsLoaded,
   onBottleMessageRead,
   onProgress,
@@ -213,7 +217,9 @@ const SceneCanvas = ({
         <MemoizedSeasonalEffects
           bottlePosition={DRIFTING_BOTTLE_POSITION}
           bottleSignal={bottleSignal}
+          lastWaterPoint={lastWaterPoint}
           weather={weather}
+          waterSignal={waterSignal}
         />
       </Suspense>
 
