@@ -39,6 +39,14 @@ const AMBIENT_SAMPLE_KEYS: AmbientSampleKey[] = [
 const clamp = (value: number, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
 
+const shouldLogAmbientSampleFailure = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get("audioDebug") === "1";
+};
+
 /**
  * 季節と昼夜に応じた環境音を管理するカスタムフック
  * - Web Audio API を使用して軽量な環境音を生成
@@ -153,7 +161,9 @@ export const useAmbientSound = (): AmbientSoundControls => {
               sampleBuffersRef.current[key] = decoded;
             }
           } catch (error) {
-            console.warn(`Ambient sample load failed: ${key}`, error);
+            if (shouldLogAmbientSampleFailure()) {
+              console.warn(`Ambient sample load failed: ${key}`, error);
+            }
           }
         })
       );
