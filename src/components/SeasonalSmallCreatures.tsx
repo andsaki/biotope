@@ -53,6 +53,28 @@ const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
       drift: 0.38,
       scale: 0.52,
     },
+    {
+      id: "spring-butterfly-4",
+      kind: "butterfly",
+      position: [4.2, 9.0, 2.4],
+      color: "#fff7b8",
+      accentColor: "#d7f8ff",
+      phase: 4.5,
+      speed: 0.78,
+      drift: 0.36,
+      scale: 0.5,
+    },
+    {
+      id: "spring-butterfly-5",
+      kind: "butterfly",
+      position: [-6.1, 9.5, 0.6],
+      color: "#ffe6f1",
+      accentColor: "#f7ffbf",
+      phase: 5.6,
+      speed: 0.86,
+      drift: 0.44,
+      scale: 0.46,
+    },
   ],
   summer: [
     {
@@ -87,6 +109,28 @@ const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
       speed: 0.52,
       drift: 0.28,
       scale: 0.48,
+    },
+    {
+      id: "summer-strider-4",
+      kind: "water-strider",
+      position: [-5.5, 8.19, -2.6],
+      color: "#16242b",
+      accentColor: "#bff8ff",
+      phase: 5.2,
+      speed: 0.5,
+      drift: 0.32,
+      scale: 0.52,
+    },
+    {
+      id: "summer-strider-5",
+      kind: "water-strider",
+      position: [2.4, 8.18, 2.6],
+      color: "#142229",
+      accentColor: "#d5fff6",
+      phase: 6.1,
+      speed: 0.54,
+      drift: 0.28,
+      scale: 0.5,
     },
   ],
   autumn: [
@@ -123,6 +167,28 @@ const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
       drift: 0.42,
       scale: 0.46,
     },
+    {
+      id: "autumn-dragonfly-4",
+      kind: "dragonfly",
+      position: [5.6, 9.3, -2.2],
+      color: "#d07a33",
+      accentColor: "#ffe0b0",
+      phase: 4.8,
+      speed: 0.98,
+      drift: 0.44,
+      scale: 0.5,
+    },
+    {
+      id: "autumn-dragonfly-5",
+      kind: "dragonfly",
+      position: [-2.8, 10.2, 3.4],
+      color: "#a83a25",
+      accentColor: "#ffd7a8",
+      phase: 5.9,
+      speed: 0.92,
+      drift: 0.48,
+      scale: 0.48,
+    },
   ],
   winter: [
     {
@@ -158,6 +224,28 @@ const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
       drift: 0.26,
       scale: 0.34,
     },
+    {
+      id: "winter-midge-4",
+      kind: "snow-midge",
+      position: [-1.8, 9.8, -4.2],
+      color: "#edfaff",
+      accentColor: "#f7fdff",
+      phase: 5.4,
+      speed: 0.36,
+      drift: 0.25,
+      scale: 0.36,
+    },
+    {
+      id: "winter-midge-5",
+      kind: "snow-midge",
+      position: [4.8, 9.3, 1.6],
+      color: "#e1f7ff",
+      accentColor: "#ffffff",
+      phase: 6.2,
+      speed: 0.33,
+      drift: 0.27,
+      scale: 0.34,
+    },
   ],
 } satisfies Record<Season, readonly CreatureSeed[]>;
 
@@ -166,15 +254,15 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
     case "butterfly":
       return (
         <>
-          <mesh rotation={[0, 0, -0.42]} position={[-0.055, 0.018, 0]} scale={[0.11, 0.16, 1]}>
+          <mesh rotation={[0, 0, -0.42]} position={[-0.075, 0.018, 0]} scale={[0.16, 0.22, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.color} transparent opacity={0.72} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.8} side={THREE.DoubleSide} />
           </mesh>
-          <mesh rotation={[0, 0, 0.42]} position={[0.055, 0.018, 0]} scale={[0.11, 0.16, 1]}>
+          <mesh rotation={[0, 0, 0.42]} position={[0.075, 0.018, 0]} scale={[0.16, 0.22, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.66} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.76} side={THREE.DoubleSide} />
           </mesh>
-          <mesh rotation={[Math.PI / 2, 0, 0]} scale={[0.018, 0.12, 0.018]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]} scale={[0.024, 0.15, 0.024]}>
             <capsuleGeometry args={[1, 1.8, 4, 8]} />
             <meshBasicMaterial color="#4f3a2e" />
           </mesh>
@@ -183,7 +271,7 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
     case "water-strider":
       return (
         <>
-          <mesh scale={[0.1, 0.025, 0.035]}>
+          <mesh scale={[0.16, 0.034, 0.05]}>
             <sphereGeometry args={[1, 10, 8]} />
             <meshBasicMaterial color={seed.color} />
           </mesh>
@@ -199,9 +287,9 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
               </mesh>
             </React.Fragment>
           ))}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[0.34, 0.14, 1]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[0.46, 0.2, 1]}>
             <ringGeometry args={[0.92, 1, 32]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.12} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.2} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
@@ -212,26 +300,26 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
             <capsuleGeometry args={[1, 2.6, 4, 8]} />
             <meshBasicMaterial color={seed.color} />
           </mesh>
-          <mesh position={[0.19, 0.02, 0]} rotation={[0, 0, 0.18]} scale={[0.18, 0.045, 1]}>
+          <mesh position={[0.25, 0.02, 0]} rotation={[0, 0, 0.18]} scale={[0.25, 0.064, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.38} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.48} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[-0.19, 0.02, 0]} rotation={[0, 0, -0.18]} scale={[0.18, 0.045, 1]}>
+          <mesh position={[-0.25, 0.02, 0]} rotation={[0, 0, -0.18]} scale={[0.25, 0.064, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.38} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.48} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
     case "snow-midge":
       return (
         <>
-          <mesh scale={[0.035, 0.035, 0.035]}>
+          <mesh scale={[0.058, 0.058, 0.058]}>
             <sphereGeometry args={[1, 10, 8]} />
-            <meshBasicMaterial color={seed.color} transparent opacity={0.82} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.9} />
           </mesh>
-          <mesh position={[0, 0.012, 0]} scale={[0.11, 0.04, 1]}>
+          <mesh position={[0, 0.014, 0]} scale={[0.16, 0.06, 1]}>
             <circleGeometry args={[1, 16]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.26} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.34} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
@@ -279,7 +367,7 @@ export const SeasonalSmallCreatures: React.FC = React.memo(() => {
             }
           }}
           position={seed.position}
-          scale={seed.scale}
+          scale={seed.scale * 1.65}
         >
           <CreatureShape seed={seed} />
         </group>
