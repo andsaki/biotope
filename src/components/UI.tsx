@@ -64,6 +64,13 @@ const UI: React.FC<UIProps> = ({
     winter: "冬",
   };
 
+  const seasonalCreatureNotes = {
+    spring: "水辺の気配: 淡い羽影が葉の間を渡ります",
+    summer: "水辺の気配: 小さな水面の脚が波紋から離れます",
+    autumn: "水辺の気配: 細い羽影が瓶の周りをかすめます",
+    winter: "水辺の気配: 白い点が暗い水面に残ります",
+  };
+
   const handleOpenPanel = () => {
     setIsSeasonPanelOpen(true);
     onPanelOpened?.();
@@ -401,6 +408,23 @@ const UI: React.FC<UIProps> = ({
             >
               {seasonIcons.winter}
             </button>
+          </div>
+
+          <div
+            style={{
+              marginTop: tokens.spacing.sm,
+              padding: isMobile ? "8px 10px" : "8px 12px",
+              borderRadius: "12px",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              background: "rgba(9, 18, 28, 0.34)",
+              color: "rgba(255, 255, 255, 0.72)",
+              fontFamily: tokens.typography.fontFamily.serif,
+              fontSize: isMobile ? "11px" : "12px",
+              lineHeight: 1.5,
+              letterSpacing: "0.04em",
+            }}
+          >
+            {seasonalCreatureNotes[season]}
           </div>
 
           {isJournalOpen && (
