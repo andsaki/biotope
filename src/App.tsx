@@ -61,6 +61,7 @@ const AppContent = () => {
   const [showLoader, setShowLoader] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
+  const [waterSignal, setWaterSignal] = useState(0);
   const performanceMonitorEnabled = useMemo(isPerformanceMonitorRequested, []);
   const isLoading = !(assetsLoaded && minDelayElapsed);
 
@@ -104,6 +105,7 @@ const AppContent = () => {
 
   const handleWaterInteract = useCallback(() => {
     uxHints.markWaterRippled();
+    setWaterSignal((signal) => signal + 1);
   }, [uxHints]);
 
   const appStyle: AppStyle = {
@@ -128,6 +130,7 @@ const AppContent = () => {
         showBottleHint={uxHints.shouldShowBottleHint}
         weather={weather}
         windDirection={windDirection}
+        waterSignal={waterSignal}
         onAssetsLoaded={handleAssetsLoaded}
         onBottleMessageRead={handleBottleMessageRead}
         onProgress={handleProgress}

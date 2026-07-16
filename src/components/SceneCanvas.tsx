@@ -79,6 +79,7 @@ interface SceneCanvasProps {
   showBottleHint: boolean;
   weather: WeatherSnapshot;
   windDirection: WindDirection;
+  waterSignal: number;
   onAssetsLoaded: () => void;
   onBottleMessageRead: () => void;
   onProgress: (progress: number, loadingText: string) => void;
@@ -94,6 +95,7 @@ const SceneCanvas = ({
   showBottleHint,
   weather,
   windDirection,
+  waterSignal,
   onAssetsLoaded,
   onBottleMessageRead,
   onProgress,
@@ -181,7 +183,7 @@ const SceneCanvas = ({
       <MemoizedSundialBase />
 
       <Suspense fallback={null}>
-        <MemoizedFishManager weather={weather} />
+        <MemoizedFishManager weather={weather} waterSignal={waterSignal} />
       </Suspense>
       <Suspense fallback={null}>
         <WaterPlantsLarge />
