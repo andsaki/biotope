@@ -19,7 +19,9 @@ import {
 interface SeasonalEffectsProps {
   bottlePosition: [number, number, number];
   bottleSignal: number;
+  lastWaterPoint: [number, number, number] | null;
   weather: WeatherSnapshot;
+  waterSignal: number;
 }
 
 /**
@@ -28,7 +30,9 @@ interface SeasonalEffectsProps {
 export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({
   bottlePosition,
   bottleSignal,
+  lastWaterPoint,
   weather,
+  waterSignal,
 }) => {
   const { season } = useSeason();
   const isDay = useDayPeriod();
@@ -45,6 +49,8 @@ export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({
       <SeasonalSmallCreatures
         bottlePosition={bottlePosition}
         bottleSignal={bottleSignal}
+        lastWaterPoint={lastWaterPoint}
+        waterSignal={waterSignal}
       />
       {season === 'summer' && !isDay && <Fireflies />}
       {(season === 'autumn' || season === 'winter') && <FallenLeaves />}

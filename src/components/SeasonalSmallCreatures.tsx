@@ -21,9 +21,12 @@ interface CreatureSeed {
 interface SeasonalSmallCreaturesProps {
   bottlePosition: [number, number, number];
   bottleSignal: number;
+  lastWaterPoint: [number, number, number] | null;
+  waterSignal: number;
 }
 
 const BOTTLE_REACTION_SECONDS = 5.5;
+const WATER_REACTION_SECONDS = 2.2;
 const CREATURE_SCALE_MULTIPLIER = 1.65;
 
 const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
@@ -366,16 +369,39 @@ const getReactionTarget = (
   ];
 };
 
+const getWaterScatterTarget = (
+  seed: CreatureSeed,
+  waterPoint: [number, number, number],
+  index: number
+): [number, number, number] => {
+  const dx = seed.position[0] - waterPoint[0];
+  const dz = seed.position[2] - waterPoint[2];
+  const distance = Math.hypot(dx, dz) || 1;
+  const push = seed.kind === "water-strider" ? 1.6 : 1.05 + (index % 3) * 0.24;
+  const lift = seed.kind === "water-strider" ? 0.02 : 0.38;
+
+  return [
+    seed.position[0] + (dx / distance) * push,
+    seed.position[1] + lift,
+    seed.position[2] + (dz / distance) * push,
+  ];
+};
+
 export const SeasonalSmallCreatures: React.FC<SeasonalSmallCreaturesProps> = React.memo(({
   bottlePosition,
   bottleSignal,
+  lastWaterPoint,
+  waterSignal,
 }) => {
   const { season } = useSeason();
   const creatures = useMemo(() => SEASONAL_CREATURES[season], [season]);
   const groupRefs = useRef<THREE.Group[]>([]);
   const previousSignalRef = useRef(bottleSignal);
+  const previousWaterSignalRef = useRef(waterSignal);
   const reactionStartedAtRef = useRef<number | null>(null);
+  const waterReactionStartedAtRef = useRef<number | null>(null);
   const reactionTarget = useMemo(() => new THREE.Vector3(), []);
+  const waterScatterTarget = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
@@ -385,10 +411,22 @@ export const SeasonalSmallCreatures: React.FC<SeasonalSmallCreaturesProps> = Rea
       reactionStartedAtRef.current = time;
     }
 
+    if (waterSignal !== previousWaterSignalRef.current) {
+      previousWaterSignalRef.current = waterSignal;
+      waterReactionStartedAtRef.current = time;
+    }
+
     const reactionAge =
       reactionStartedAtRef.current === null ? BOTTLE_REACTION_SECONDS : time - reactionStartedAtRef.current;
     const reactionStrength = Math.max(0, 1 - reactionAge / BOTTLE_REACTION_SECONDS);
     const easedReaction = reactionStrength * reactionStrength * (3 - 2 * reactionStrength);
+    const waterReactionAge =
+      waterReactionStartedAtRef.current === null
+        ? WATER_REACTION_SECONDS
+        : time - waterReactionStartedAtRef.current;
+    const waterReactionStrength = Math.max(0, 1 - waterReactionAge / WATER_REACTION_SECONDS);
+    const easedWaterReaction =
+      waterReactionStrength * waterReactionStrength * (3 - 2 * waterReactionStrength);
 
     creatures.forEach((seed, index) => {
       const group = groupRefs.current[index];
@@ -409,13 +447,21 @@ export const SeasonalSmallCreatures: React.FC<SeasonalSmallCreaturesProps> = Rea
         group.position.lerp(reactionTarget, easedReaction * 0.72);
       }
 
+      if (lastWaterPoint && easedWaterReaction > 0) {
+        const target = getWaterScatterTarget(seed, lastWaterPoint, index);
+        waterScatterTarget.set(target[0], target[1], target[2]);
+        group.position.lerp(waterScatterTarget, easedWaterReaction * 0.82);
+      }
+
       group.rotation.y = Math.sin(wave * 0.9) * 0.7;
-      group.rotation.z = Math.sin(wave * 2.4) * 0.08;
-      group.scale.setScalar(seed.scale * CREATURE_SCALE_MULTIPLIER * (1 + easedReaction * 0.24));
+      group.rotation.z = Math.sin(wave * 2.4) * (0.08 + easedWaterReaction * 0.22);
+      group.scale.setScalar(
+        seed.scale * CREATURE_SCALE_MULTIPLIER * (1 + easedReaction * 0.24 + easedWaterReaction * 0.18)
+      );
 
       if (seed.kind === "water-strider") {
         group.rotation.y = Math.sin(wave * 0.46) * 0.24;
-        if (easedReaction <= 0) {
+        if (easedReaction <= 0 && easedWaterReaction <= 0) {
           group.position.y = seed.position[1] + Math.sin(wave * 1.2) * 0.02;
         }
       }
