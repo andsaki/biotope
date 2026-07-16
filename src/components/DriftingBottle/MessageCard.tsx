@@ -17,7 +17,7 @@ interface MessageCardProps {
   currentDate: string;
   /** 便りが拾った日の水辺の記録 */
   lifeLog: string;
-  /** 便りを閉じた後に水辺へ残る小さな効き目 */
+  /** 便りを閉じた後に水辺へ残る小さな徴 */
   omen: BottleOmen;
   /** 閉じるボタンのクリックハンドラ */
   onClose: () => void;
@@ -261,13 +261,13 @@ export const MessageCard = memo(({
                   background: omen.color,
                 }}
               />
-              <span>閉じたあとに残るもの: {omen.label}</span>
+              <span>封を切ったあとの徴: {omen.label}</span>
             </div>
             <p style={CARD_STYLES.omenText}>{omen.description}</p>
             <p style={CARD_STYLES.omenWorldNote}>{omen.worldNote}</p>
           </div>
           <p style={CARD_STYLES.footerNote}>
-            閉じると、今日の効き目が水面に残ります。
+            封を戻すと、この徴だけが水面へ帰ります。
           </p>
         </div>
       </div>

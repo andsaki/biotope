@@ -119,7 +119,7 @@ const bottleOmens: readonly BottleOmen[] = [
   {
     id: "fish-gather",
     label: "魚寄せ",
-    description: "しばらく魚影が瓶の近くを横切りやすくなる。",
+    description: "魚影が瓶のそばで一度だけ向きをゆるめる。",
     worldNote: "瓶の周りに、魚が通ったあとの淡いしるしが残る。",
     color: "#b8f1ff",
   },
@@ -133,7 +133,7 @@ const bottleOmens: readonly BottleOmen[] = [
   {
     id: "firefly-glow",
     label: "蛍火",
-    description: "夜の水辺に、小さな光の粒が集まりやすくなる。",
+    description: "夜の水辺で、小さな光の粒が瓶口を見に来る。",
     worldNote: "瓶の口元に、蛍のような点がゆっくり回る。",
     color: "#d6ff9f",
   },
@@ -147,7 +147,7 @@ const bottleOmens: readonly BottleOmen[] = [
   {
     id: "hidden-shore",
     label: "隠れ岸",
-    description: "石や葉の影が濃くなり、見落としやすい場所が少し目立つ。",
+    description: "石や葉の影が濃くなり、岸の端だけがふっと浮く。",
     worldNote: "岸辺の影に、古い地図の端のような光が残る。",
     color: "#ffd5a3",
   },

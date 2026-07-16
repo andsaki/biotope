@@ -48,7 +48,7 @@ export const BottleOmenNotice = ({ isMobile, omen }: BottleOmenNoticeProps) => (
             flexShrink: 0,
           }}
         />
-        水辺に残ったもの: {omen.label}
+        水面へ帰った徴: {omen.label}
       </div>
       <div
         style={{
