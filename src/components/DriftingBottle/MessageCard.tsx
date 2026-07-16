@@ -40,7 +40,7 @@ const CARD_STYLES: Record<string, CSSProperties> = {
       "linear-gradient(150deg, rgba(252, 239, 220, 0.98), rgba(238, 216, 186, 0.98))",
     padding: "18px 20px 20px",
     borderRadius: "8px",
-    width: "330px",
+    width: "360px",
     maxWidth: "calc(100vw - 32px)",
     maxHeight: "min(74vh, 560px)",
     boxSizing: "border-box",
@@ -241,7 +241,7 @@ export const MessageCard = memo(({
           <p style={CARD_STYLES.eyebrow}>WATERLOG / BOTTLE No. 1</p>
           <h3 style={CARD_STYLES.title}>漂着した観察記録</h3>
         </div>
-        <div style={CARD_STYLES.content}>
+        <div className="message-card-scroll" style={CARD_STYLES.content}>
           <div style={CARD_STYLES.statusRow}>
             <span style={CARD_STYLES.statusChip}>{formatJournalDate(currentDate)}</span>
             <span style={CARD_STYLES.statusChip}>封蝋: {discoveryLabel}</span>
