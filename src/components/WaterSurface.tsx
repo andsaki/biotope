@@ -86,7 +86,7 @@ const RIPPLE_SPARKLE_INDICES = [0, 1, 2, 3, 4, 5, 6] as const;
  * 波紋アニメーションと光の反射を持つ透明な水面を表示
  */
 interface WaterSurfaceProps {
-  onInteract?: (point: [number, number, number]) => void;
+  onInteract?: () => void;
   weather: WeatherSnapshot;
 }
 
@@ -249,7 +249,7 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
     dropletsRef.current = [...dropletsRef.current, ...dropletParticles].slice(-24);
     setRenderTick((tick) => tick + 1);
     if (notifyInteraction) {
-      onInteract?.([worldPoint.x, worldPoint.y, worldPoint.z]);
+      onInteract?.();
     }
   }, [
     onInteract,

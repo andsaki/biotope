@@ -61,9 +61,6 @@ const AppContent = () => {
   const [showLoader, setShowLoader] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
-  const [bottleSignal, setBottleSignal] = useState(0);
-  const [waterSignal, setWaterSignal] = useState(0);
-  const [lastWaterPoint, setLastWaterPoint] = useState<[number, number, number] | null>(null);
   const performanceMonitorEnabled = useMemo(isPerformanceMonitorRequested, []);
   const isLoading = !(assetsLoaded && minDelayElapsed);
 
@@ -103,13 +100,10 @@ const AppContent = () => {
 
   const handleBottleMessageRead = useCallback(() => {
     uxHints.markBottleOpened();
-    setBottleSignal((signal) => signal + 1);
   }, [uxHints]);
 
-  const handleWaterInteract = useCallback((point: [number, number, number]) => {
+  const handleWaterInteract = useCallback(() => {
     uxHints.markWaterRippled();
-    setLastWaterPoint(point);
-    setWaterSignal((signal) => signal + 1);
   }, [uxHints]);
 
   const appStyle: AppStyle = {
@@ -132,11 +126,8 @@ const AppContent = () => {
         isMobile={isMobile}
         performanceMonitorEnabled={performanceMonitorEnabled}
         showBottleHint={uxHints.shouldShowBottleHint}
-        bottleSignal={bottleSignal}
-        lastWaterPoint={lastWaterPoint}
         weather={weather}
         windDirection={windDirection}
-        waterSignal={waterSignal}
         onAssetsLoaded={handleAssetsLoaded}
         onBottleMessageRead={handleBottleMessageRead}
         onProgress={handleProgress}

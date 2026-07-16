@@ -26,7 +26,6 @@ import type { WeatherSnapshot } from "@/utils/weather";
 
 const PRELOADED_MODEL_KEYS = ["flatfish", "leaf", "lily", "pottedPlant", "frog"] as const;
 PRELOADED_MODEL_KEYS.forEach(preloadModel);
-const DRIFTING_BOTTLE_POSITION: [number, number, number] = [-3, 8.2, 2];
 
 const WaterPlantsLarge = React.lazy(() => import("./WaterPlantsLarge"));
 const PottedPlant = React.lazy(() => import("./PottedPlant"));
@@ -78,15 +77,12 @@ interface SceneCanvasProps {
   isMobile: boolean;
   performanceMonitorEnabled: boolean;
   showBottleHint: boolean;
-  bottleSignal: number;
-  lastWaterPoint: [number, number, number] | null;
   weather: WeatherSnapshot;
   windDirection: WindDirection;
-  waterSignal: number;
   onAssetsLoaded: () => void;
   onBottleMessageRead: () => void;
   onProgress: (progress: number, loadingText: string) => void;
-  onWaterInteract: (point: [number, number, number]) => void;
+  onWaterInteract: () => void;
 }
 
 const SceneCanvas = ({
@@ -96,11 +92,8 @@ const SceneCanvas = ({
   isMobile,
   performanceMonitorEnabled,
   showBottleHint,
-  bottleSignal,
-  lastWaterPoint,
   weather,
   windDirection,
-  waterSignal,
   onAssetsLoaded,
   onBottleMessageRead,
   onProgress,
@@ -198,7 +191,7 @@ const SceneCanvas = ({
       </Suspense>
       <Suspense fallback={null}>
         <MemoizedDriftingBottle
-          position={DRIFTING_BOTTLE_POSITION}
+          position={[-3, 8.2, 2]}
           onMessageRead={onBottleMessageRead}
           showHint={!isLoading && showBottleHint}
           windDirection={windDirection}
@@ -214,13 +207,7 @@ const SceneCanvas = ({
       </Suspense>
 
       <Suspense fallback={null}>
-        <MemoizedSeasonalEffects
-          bottlePosition={DRIFTING_BOTTLE_POSITION}
-          bottleSignal={bottleSignal}
-          lastWaterPoint={lastWaterPoint}
-          weather={weather}
-          waterSignal={waterSignal}
-        />
+        <MemoizedSeasonalEffects weather={weather} />
       </Suspense>
 
       {performanceMonitorEnabled && <PerformanceMonitorCollector />}
