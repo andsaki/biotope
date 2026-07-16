@@ -300,7 +300,7 @@ const Frog: React.FC<FrogProps> = ({
           color="#f1ffd1"
           transparent
           opacity={0}
-          depthTest={false}
+          depthTest={true}
           depthWrite={false}
         />
       </mesh>
@@ -310,7 +310,7 @@ const Frog: React.FC<FrogProps> = ({
           color="#9ffff2"
           transparent
           opacity={0}
-          depthTest={false}
+          depthTest={true}
           depthWrite={false}
         />
       </mesh>
