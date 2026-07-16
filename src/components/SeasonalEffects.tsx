@@ -6,6 +6,7 @@ import FallenLeaves from './FallenLeaves';
 import SnowEffect from './SnowEffect';
 import RainEffect from './RainEffect';
 import { Fireflies } from './Fireflies';
+import { SeasonalSmallCreatures } from './SeasonalSmallCreatures';
 import {
   getRainIntensity,
   getGustIntensity,
@@ -35,6 +36,7 @@ export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({ weather }) => 
     <>
       {season === 'spring' && <CherryBlossoms />}
       {season === 'summer' && <SummerEffects />}
+      <SeasonalSmallCreatures />
       {season === 'summer' && !isDay && <Fireflies />}
       {(season === 'autumn' || season === 'winter') && <FallenLeaves />}
       {showSnow && <SnowEffect intensity={snowIntensity} />}
