@@ -20,8 +20,12 @@ import { SceneLights } from "./SceneLights";
 import { SeasonalEffects } from "./SeasonalEffects";
 import { PerformanceMonitorCollector } from "./PerformanceMonitor";
 import { SIMULATED_SECONDS_PER_REAL_SECOND } from "@/constants/core";
+import { preloadModel } from "@/hooks/useModelScene";
 import type { WindDirection } from "@/utils/bottleJournal";
 import type { WeatherSnapshot } from "@/utils/weather";
+
+const PRELOADED_MODEL_KEYS = ["flatfish", "leaf", "lily", "pottedPlant", "frog"] as const;
+PRELOADED_MODEL_KEYS.forEach(preloadModel);
 
 const WaterPlantsLarge = React.lazy(() => import("./WaterPlantsLarge"));
 const PottedPlant = React.lazy(() => import("./PottedPlant"));
