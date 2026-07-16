@@ -26,6 +26,7 @@ import type { WeatherSnapshot } from "@/utils/weather";
 
 const PRELOADED_MODEL_KEYS = ["flatfish", "leaf", "lily", "pottedPlant", "frog"] as const;
 PRELOADED_MODEL_KEYS.forEach(preloadModel);
+const DRIFTING_BOTTLE_POSITION: [number, number, number] = [-3, 8.2, 2];
 
 const WaterPlantsLarge = React.lazy(() => import("./WaterPlantsLarge"));
 const PottedPlant = React.lazy(() => import("./PottedPlant"));
@@ -77,6 +78,7 @@ interface SceneCanvasProps {
   isMobile: boolean;
   performanceMonitorEnabled: boolean;
   showBottleHint: boolean;
+  bottleSignal: number;
   weather: WeatherSnapshot;
   windDirection: WindDirection;
   onAssetsLoaded: () => void;
@@ -92,6 +94,7 @@ const SceneCanvas = ({
   isMobile,
   performanceMonitorEnabled,
   showBottleHint,
+  bottleSignal,
   weather,
   windDirection,
   onAssetsLoaded,
@@ -191,7 +194,7 @@ const SceneCanvas = ({
       </Suspense>
       <Suspense fallback={null}>
         <MemoizedDriftingBottle
-          position={[-3, 8.2, 2]}
+          position={DRIFTING_BOTTLE_POSITION}
           onMessageRead={onBottleMessageRead}
           showHint={!isLoading && showBottleHint}
           windDirection={windDirection}
@@ -207,7 +210,11 @@ const SceneCanvas = ({
       </Suspense>
 
       <Suspense fallback={null}>
-        <MemoizedSeasonalEffects weather={weather} />
+        <MemoizedSeasonalEffects
+          bottlePosition={DRIFTING_BOTTLE_POSITION}
+          bottleSignal={bottleSignal}
+          weather={weather}
+        />
       </Suspense>
 
       {performanceMonitorEnabled && <PerformanceMonitorCollector />}

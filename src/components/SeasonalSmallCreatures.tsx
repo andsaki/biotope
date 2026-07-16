@@ -18,6 +18,14 @@ interface CreatureSeed {
   scale: number;
 }
 
+interface SeasonalSmallCreaturesProps {
+  bottlePosition: [number, number, number];
+  bottleSignal: number;
+}
+
+const BOTTLE_REACTION_SECONDS = 5.5;
+const CREATURE_SCALE_MULTIPLIER = 1.65;
+
 const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
   spring: [
     {
@@ -338,13 +346,49 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
   }
 };
 
-export const SeasonalSmallCreatures: React.FC = React.memo(() => {
+const getReactionTarget = (
+  seed: CreatureSeed,
+  bottlePosition: [number, number, number],
+  index: number,
+  time: number
+): [number, number, number] => {
+  const angle = seed.phase + index * 0.9 + time * 0.35;
+  const radius = seed.kind === "water-strider" ? 0.78 : 1.05 + (index % 2) * 0.28;
+  const y =
+    seed.kind === "water-strider"
+      ? bottlePosition[1] - 0.02
+      : bottlePosition[1] + 1.0 + Math.sin(time * 1.4 + seed.phase) * 0.18;
+
+  return [
+    bottlePosition[0] + Math.cos(angle) * radius,
+    y,
+    bottlePosition[2] + Math.sin(angle) * radius,
+  ];
+};
+
+export const SeasonalSmallCreatures: React.FC<SeasonalSmallCreaturesProps> = React.memo(({
+  bottlePosition,
+  bottleSignal,
+}) => {
   const { season } = useSeason();
   const creatures = useMemo(() => SEASONAL_CREATURES[season], [season]);
   const groupRefs = useRef<THREE.Group[]>([]);
+  const previousSignalRef = useRef(bottleSignal);
+  const reactionStartedAtRef = useRef<number | null>(null);
+  const reactionTarget = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
+
+    if (bottleSignal !== previousSignalRef.current) {
+      previousSignalRef.current = bottleSignal;
+      reactionStartedAtRef.current = time;
+    }
+
+    const reactionAge =
+      reactionStartedAtRef.current === null ? BOTTLE_REACTION_SECONDS : time - reactionStartedAtRef.current;
+    const reactionStrength = Math.max(0, 1 - reactionAge / BOTTLE_REACTION_SECONDS);
+    const easedReaction = reactionStrength * reactionStrength * (3 - 2 * reactionStrength);
 
     creatures.forEach((seed, index) => {
       const group = groupRefs.current[index];
@@ -358,12 +402,22 @@ export const SeasonalSmallCreatures: React.FC = React.memo(() => {
         seed.position[1] + Math.sin(wave * 1.5) * seed.drift * 0.22,
         seed.position[2] + Math.cos(wave * 0.58) * seed.drift
       );
+
+      if (easedReaction > 0) {
+        const target = getReactionTarget(seed, bottlePosition, index, time);
+        reactionTarget.set(target[0], target[1], target[2]);
+        group.position.lerp(reactionTarget, easedReaction * 0.72);
+      }
+
       group.rotation.y = Math.sin(wave * 0.9) * 0.7;
       group.rotation.z = Math.sin(wave * 2.4) * 0.08;
+      group.scale.setScalar(seed.scale * CREATURE_SCALE_MULTIPLIER * (1 + easedReaction * 0.24));
 
       if (seed.kind === "water-strider") {
         group.rotation.y = Math.sin(wave * 0.46) * 0.24;
-        group.position.y = seed.position[1] + Math.sin(wave * 1.2) * 0.02;
+        if (easedReaction <= 0) {
+          group.position.y = seed.position[1] + Math.sin(wave * 1.2) * 0.02;
+        }
       }
     });
   });
@@ -379,7 +433,7 @@ export const SeasonalSmallCreatures: React.FC = React.memo(() => {
             }
           }}
           position={seed.position}
-          scale={seed.scale * 1.65}
+          scale={seed.scale * CREATURE_SCALE_MULTIPLIER}
         >
           <CreatureShape seed={seed} />
         </group>
