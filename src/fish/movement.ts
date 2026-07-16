@@ -15,6 +15,7 @@ interface FishMotionContext {
   elapsedTime: number;
   weatherDepthOffset: number;
   weatherSpeedMultiplier: number;
+  waterReactionStrength: number;
 }
 
 const normalizeAngle = (angle: number) =>
@@ -45,7 +46,7 @@ const steerTowardCenterIfNeeded = (fish: Fish, margin: number) => {
 };
 
 const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
-  const { delta, weatherSpeedMultiplier } = context;
+  const { delta, weatherSpeedMultiplier, waterReactionStrength } = context;
   let newWaitTime = fish.waitTime ?? 0;
   let newIsMoving = fish.isMoving ?? false;
   let newX = fish.x;
@@ -77,7 +78,11 @@ const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
     );
 
     const travelDistance =
-      fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+      fish.speed *
+      weatherSpeedMultiplier *
+      (1 + waterReactionStrength * 0.16) *
+      delta *
+      FISH_MOVEMENT.FRAME_MULTIPLIER;
     newX = THREE.MathUtils.clamp(
       fish.x + Math.cos(fish.directionX) * travelDistance,
       FISH_BOUNDARY.X_MIN,
@@ -101,12 +106,13 @@ const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
 };
 
 const updateNormalFishMovement = (fish: Fish, context: FishMotionContext) => {
-  const { delta, elapsedTime, weatherDepthOffset, weatherSpeedMultiplier } = context;
+  const { delta, elapsedTime, weatherDepthOffset, weatherSpeedMultiplier, waterReactionStrength } = context;
 
   fish.directionChangeTime -= delta;
   if (fish.directionChangeTime <= 0) {
     fish.targetDirectionX +=
-      (Math.random() - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
+      (Math.random() - 0.5) *
+      FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
     fish.directionChangeTime = createDirectionChangeTime();
   }
 
@@ -122,7 +128,11 @@ const updateNormalFishMovement = (fish: Fish, context: FishMotionContext) => {
   );
 
   const travelDistance =
-    fish.speed * weatherSpeedMultiplier * delta * FISH_MOVEMENT.FRAME_MULTIPLIER;
+    fish.speed *
+    weatherSpeedMultiplier *
+    (1 + waterReactionStrength * 0.38) *
+    delta *
+    FISH_MOVEMENT.FRAME_MULTIPLIER;
   const newX = THREE.MathUtils.clamp(
     fish.x + Math.cos(fish.directionX) * travelDistance,
     FISH_BOUNDARY.X_MIN,

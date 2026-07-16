@@ -29,9 +29,12 @@ import { updateFishMovement } from "@/fish/movement";
  */
 interface FishManagerProps {
   weather: WeatherSnapshot;
+  waterSignal: number;
 }
 
-const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
+const WATER_REACTION_SECONDS = 2.2;
+
+const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const { season } = useSeason();
   const rainIntensity = getRainIntensity(weather);
   const cloudIntensity = getCloudIntensity(weather);
@@ -42,6 +45,8 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   const fishList = useMemo(() => createFishList(season), [season]);
 
   const timeRef = useRef(0);
+  const previousWaterSignalRef = useRef(waterSignal);
+  const waterReactionStartedAtRef = useRef<number | null>(null);
 
   const normalFishMaterials = useLoader(MTLLoader, normalFishMtlUrl);
   normalFishMaterials.preload();
@@ -70,6 +75,23 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
   useThrottledFrame((_, delta) => {
     timeRef.current += delta;
 
+    if (waterSignal !== previousWaterSignalRef.current) {
+      previousWaterSignalRef.current = waterSignal;
+      waterReactionStartedAtRef.current = timeRef.current;
+      fishList.forEach((fish, index) => {
+        const directionJolt = fish.type === "flatfish" ? 0.22 : 0.58;
+        const directionSign = index % 2 === 0 ? 1 : -1;
+        fish.targetDirectionX += directionSign * directionJolt;
+        fish.directionChangeTime = Math.min(fish.directionChangeTime, 0.8);
+      });
+    }
+
+    const waterReactionAge =
+      waterReactionStartedAtRef.current === null
+        ? WATER_REACTION_SECONDS
+        : timeRef.current - waterReactionStartedAtRef.current;
+    const waterReactionStrength = Math.max(0, 1 - waterReactionAge / WATER_REACTION_SECONDS);
+
     // fishListの参照を直接変更（再レンダリングを避ける）
     fishList.forEach((fish, index) => {
       updateFishMovement(fish, {
@@ -77,6 +99,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather }) => {
         elapsedTime: timeRef.current,
         weatherDepthOffset,
         weatherSpeedMultiplier,
+        waterReactionStrength,
       });
 
       const ref = fishRefs.current[index];
