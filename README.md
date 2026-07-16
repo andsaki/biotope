@@ -564,18 +564,17 @@ if (!response) {
 - すべてのリクエストに適切なCORSヘッダーを付与
 - プリフライトリクエスト（OPTIONS）にも対応
 
-## 開発プロセス（start-impl）
+## 開発プロセス
 
-Codex / Claude どちらであっても、新機能実装を開始するときは `.claude/commands/start-impl.md` に定義された手順を必ず踏むこと:
+変更は小さなブランチとPRに分け、実装・検証・レビューしやすい単位で進めます。
 
-1. `tmp/` 直下の最新番号を確認し、`tmp/{連番}_<feature>/` を新規作成して `plan.md` / `prompt.md` を初期化。
-2. `plan.md` には目的 / スコープ / 手順 / 技術詳細 / テスト計画 / 完了条件 / 見積もりをテンプレートどおりに記述。
-3. `prompt.md` に開始日時・タスク概要・進捗・ユーザー指示を記録。
-4. `plan.md` の全文をユーザーへ提示し、承認を得るまでコード変更禁止。
-5. 承認後に `prompt.md` を更新し、計画に沿って作業・テストを進める。
+1. 作業前に `git status --short --branch` で作業ツリーを確認。
+2. 目的が1つに絞れるブランチを作成。
+3. コード変更後、影響範囲に応じて `npx tsc --noEmit` / `npm run lint` / `npm run build` / `npm run smoke:browser` を実行。
+4. PR本文はGit履歴から生成し、一時ファイルを作らない。
+5. CIが通ったPRだけをマージ。
 
-※ Codex は `.claude/commands/start-impl.md` を自動読込しないため、README のこの節を参照し、常に start-impl の要件を満たすこと。  
-※ `auto-implement-issue` などの全自動コマンドを実行する場合でも、開始前に start-impl を実行して `tmp/{連番}_feature/plan.md`・`prompt.md` を作成し、進捗を記録すること。
+`tmp/` や `temp/` は過去作業のメモ・検証成果物置き場です。新規実装の開始条件として、連番ディレクトリや `plan.md` / `prompt.md` を作成する必要はありません。
 
 ## ドキュメント
 

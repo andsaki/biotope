@@ -318,7 +318,7 @@ const matrix: THREE.Matrix4 = new THREE.Matrix4();
 
 **非推奨**:
 ```typescript
-const matrix = new THREE.Matrix4() as THREE.Matrix4;
+const matrix: THREE.Matrix4 = new THREE.Matrix4();
 ```
 
 ---
@@ -326,17 +326,17 @@ const matrix = new THREE.Matrix4() as THREE.Matrix4;
 ## 開発フロー関連
 
 ### セッションディレクトリ
-`tmp/XXX_feature-name/`形式のディレクトリ。各開発タスクごとに作成し、計画（plan.md）と履歴（prompt.md）を記録。
+過去作業のメモや検証成果物を残すための任意ディレクトリ。現在の標準フローでは、新規実装の開始条件として作成しない。
 
 **命名規則**:
-- `tmp/{連番}_{機能名}/`
+- 必要な場合だけ `tmp/{連番}_{機能名}/` または `temp/{連番}_{機能名}/`
 - 例: `tmp/001_rain-effect/`, `tmp/002_star-constellation/`
 
 ### plan.md
-実装計画を記録するマークダウンファイル。セッション開始時に作成し、ユーザーの承認を得てから実装開始。
+過去フローで使っていた実装計画ファイル。現在は必須ではない。
 
 ### prompt.md
-AIとのやりとり履歴を記録するファイル。ユーザーからの指示、作業内容、課題を時系列で記録。
+過去フローで使っていたやりとり履歴ファイル。現在は必須ではない。
 
 ---
 
