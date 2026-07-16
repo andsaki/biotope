@@ -199,6 +199,60 @@ const cleanGeneratedMessage = (message: string) =>
     .replace(/^["「]|["」]$/g, "")
     .trim();
 
+const BANNED_MESSAGE_PATTERNS = [
+  '頑張',
+  '素敵な1日',
+  '良い日',
+  'お疲れ',
+  '休んで',
+  'お休み',
+  'あなた',
+  '自分らしく',
+  '幸せ',
+  '応援',
+];
+
+const REQUIRED_WATERSIDE_PATTERNS = [
+  '水',
+  '波',
+  '瓶',
+  '蓮',
+  '魚',
+  '岸',
+  '泡',
+  '影',
+  '光',
+  '風',
+  '底',
+  '葉',
+];
+
+const isBottleMessage = (message: string) => {
+  const compactMessage = message.replace(/\s/g, '');
+  if (compactMessage.length < 40 || compactMessage.length > 140) {
+    return false;
+  }
+
+  const hasBannedPattern = BANNED_MESSAGE_PATTERNS.some((pattern) =>
+    compactMessage.includes(pattern)
+  );
+  if (hasBannedPattern) {
+    return false;
+  }
+
+  return REQUIRED_WATERSIDE_PATTERNS.some((pattern) =>
+    compactMessage.includes(pattern)
+  );
+};
+
+const validateBottleMessage = (message: string) => {
+  const cleanedMessage = cleanGeneratedMessage(message);
+  if (!isBottleMessage(cleanedMessage)) {
+    throw new Error('Generated message did not match bottle-letter tone');
+  }
+  return cleanedMessage;
+};
+
 /**
  * Gemini APIを呼び出してメッセージを生成
  */
@@ -236,7 +290,7 @@ async function generateGeminiMessage(apiKey: string, dateStr: string): Promise<s
   }
 
   const data: GeminiResponse = await response.json();
-  return cleanGeneratedMessage(data.candidates[0].content.parts[0].text);
+  return validateBottleMessage(data.candidates[0].content.parts[0].text);
 }
 
 /**
@@ -249,12 +303,7 @@ async function generateCloudflareAiMessage(ai: Ai, dateStr: string): Promise<str
     max_tokens: 160,
   });
 
-  const message = cleanGeneratedMessage(output.response ?? "");
-  if (!message) {
-    throw new Error("Cloudflare AI returned an empty message");
-  }
-
-  return message;
+  return validateBottleMessage(output.response ?? "");
 }
 
 /**
@@ -282,7 +331,7 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
       now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' })
     );
     const timeOfDay = getTimeOfDayEnglish(japanTime.getHours());
-    const dateKey = `v2-${japanTime.getFullYear()}-${String(japanTime.getMonth() + 1).padStart(2, '0')}-${String(japanTime.getDate()).padStart(2, '0')}-${timeOfDay}`;
+    const dateKey = `v3-${japanTime.getFullYear()}-${String(japanTime.getMonth() + 1).padStart(2, '0')}-${String(japanTime.getDate()).padStart(2, '0')}-${timeOfDay}`;
     const dateDescription = getDateDescription(japanTime);
 
     // KVキャッシュをチェック
