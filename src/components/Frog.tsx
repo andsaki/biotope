@@ -33,7 +33,7 @@ const scheduleNextAction = () =>
 const FROG_COMBO_WINDOW_SECONDS = 1.2;
 const FROG_TRICK_DURATION_SECONDS = 0.95;
 const FROG_ATTENTION_SECONDS = 2.8;
-const FROG_LANDING_RIPPLE_SECONDS = 0.65;
+const FROG_LANDING_RIPPLE_SECONDS = 0.48;
 
 /**
  * 蓮の葉に乗る小さなカエル。
@@ -241,17 +241,17 @@ const Frog: React.FC<FrogProps> = ({
           rippleOuter.visible = false;
           rippleInner.visible = false;
         } else {
-          const opacity = (1 - rippleProgress) * 0.52;
+          const opacity = (1 - rippleProgress) * 0.24;
 
           rippleOuter.visible = true;
           rippleOuter.position.y = -0.78;
-          const outerScale = (0.85 + rippleProgress * 3.6) / scale;
+          const outerScale = (0.62 + rippleProgress * 2.2) / scale;
           rippleOuter.scale.set(outerScale, outerScale, outerScale);
           outerMaterial.opacity = opacity;
 
           rippleInner.visible = true;
           rippleInner.position.y = -0.76;
-          const innerScale = (0.46 + rippleProgress * 2.1) / scale;
+          const innerScale = (0.36 + rippleProgress * 1.35) / scale;
           rippleInner.scale.set(innerScale, innerScale, innerScale);
           innerMaterial.opacity = opacity * 0.45;
         }
@@ -294,23 +294,23 @@ const Frog: React.FC<FrogProps> = ({
       }}
     >
       <primitive ref={modelRef} object={frogModel} />
-      <mesh ref={rippleOuterRef} renderOrder={20} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <torusGeometry args={[0.18, 0.01, 8, 80]} />
+      <mesh ref={rippleOuterRef} renderOrder={11} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <torusGeometry args={[0.18, 0.005, 8, 80]} />
         <meshBasicMaterial
           color="#f1ffd1"
           transparent
           opacity={0}
-          depthTest={false}
+          depthTest
           depthWrite={false}
         />
       </mesh>
-      <mesh ref={rippleInnerRef} renderOrder={21} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <torusGeometry args={[0.16, 0.007, 8, 72]} />
+      <mesh ref={rippleInnerRef} renderOrder={12} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <torusGeometry args={[0.16, 0.004, 8, 72]} />
         <meshBasicMaterial
           color="#9ffff2"
           transparent
           opacity={0}
-          depthTest={false}
+          depthTest
           depthWrite={false}
         />
       </mesh>
