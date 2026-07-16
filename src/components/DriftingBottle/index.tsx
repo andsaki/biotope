@@ -376,6 +376,7 @@ export const DriftingBottle = ({
           message={currentMessage}
           sender={currentSender}
           currentDate={today}
+          lifeLog={displayedLifeLog}
           omen={bottleOmen}
           onClose={handleCloseMessage}
         />

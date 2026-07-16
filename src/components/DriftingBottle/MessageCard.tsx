@@ -15,6 +15,8 @@ interface MessageCardProps {
   sender: string;
   /** 表示中の便りの日付 */
   currentDate: string;
+  /** 便りが拾った日の水辺の記録 */
+  lifeLog: string;
   /** 便りを閉じた後に水辺へ残る小さな効き目 */
   omen: BottleOmen;
   /** 閉じるボタンのクリックハンドラ */
@@ -119,6 +121,25 @@ const CARD_STYLES: Record<string, CSSProperties> = {
     fontSize: "14.5px",
     whiteSpace: "pre-wrap",
   },
+  lifeLogBox: {
+    margin: "14px 0 0",
+    padding: "11px 13px",
+    borderRadius: "10px",
+    background: "rgba(87, 119, 126, 0.11)",
+    border: "1px solid rgba(103, 129, 130, 0.22)",
+  },
+  lifeLogHeader: {
+    margin: "0 0 6px",
+    color: "#6d5132",
+    fontSize: "11px",
+    letterSpacing: "0.14em",
+  },
+  lifeLogText: {
+    margin: "0",
+    color: "#5d4e37",
+    fontSize: "12px",
+    lineHeight: "1.75",
+  },
   omenBox: {
     margin: "16px 0 0",
     padding: "12px 13px",
@@ -181,6 +202,7 @@ export const MessageCard = memo(({
   message,
   sender,
   currentDate,
+  lifeLog,
   omen,
   onClose,
 }: MessageCardProps) => {
@@ -225,6 +247,10 @@ export const MessageCard = memo(({
             <span style={CARD_STYLES.statusChip}>今日のしるし: {discoveryLabel}</span>
           </div>
           <p style={CARD_STYLES.message}>{message}</p>
+          <div style={CARD_STYLES.lifeLogBox}>
+            <p style={CARD_STYLES.lifeLogHeader}>瓶が覚えていた水辺</p>
+            <p style={CARD_STYLES.lifeLogText}>{lifeLog}</p>
+          </div>
           <div style={CARD_STYLES.sender}>— {sender}</div>
           <div style={CARD_STYLES.omenBox}>
             <div style={CARD_STYLES.omenHeader}>
