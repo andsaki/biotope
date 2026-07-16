@@ -147,9 +147,9 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
       new THREE.MeshBasicMaterial({
         color: "#f9ffd2",
         transparent: true,
-        opacity: 0.28,
+        opacity: 0.12,
         depthWrite: false,
-        depthTest: false,
+        depthTest: true,
         blending: THREE.AdditiveBlending,
       }),
     []
@@ -168,7 +168,7 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
 
     const time = state.clock.getElapsedTime();
     groupRef.current.rotation.y = Math.sin(time * 0.16) * 0.08;
-    ringMaterial.opacity = 0.24 + Math.sin(time * 0.9) * 0.05;
+    ringMaterial.opacity = 0.1 + Math.sin(time * 0.9) * 0.025;
   });
 
   if (signs.length === 0) {
@@ -176,7 +176,7 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
   }
 
   return (
-    <group ref={groupRef} position={[0, 0.86, 0]} renderOrder={996}>
+    <group ref={groupRef} position={[0, 0.86, 0]} renderOrder={23}>
       {signs.slice(0, 7).map((sign, index) => {
         const placement = getSignPlacement(sign.date, index);
         const x = Math.cos(placement.angle) * placement.radius;
@@ -191,13 +191,13 @@ const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
               <meshBasicMaterial
                 color={signColor}
                 transparent={true}
-                opacity={0.58}
+                opacity={0.34}
                 depthWrite={false}
-                depthTest={false}
+                depthTest={true}
                 blending={THREE.AdditiveBlending}
               />
             </mesh>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[scale * 4.4, scale * 4.4, 1]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[scale * 2.7, scale * 2.7, 1]}>
               <ringGeometry args={[0.82, 1, 40]} />
               <primitive object={ringMaterial} attach="material" />
             </mesh>
