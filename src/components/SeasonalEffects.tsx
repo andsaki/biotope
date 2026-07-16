@@ -17,13 +17,19 @@ import {
 } from '@/utils/weather';
 
 interface SeasonalEffectsProps {
+  bottlePosition: [number, number, number];
+  bottleSignal: number;
   weather: WeatherSnapshot;
 }
 
 /**
  * 季節ごとのエフェクトを統合管理するコンポーネント
  */
-export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({ weather }) => {
+export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({
+  bottlePosition,
+  bottleSignal,
+  weather,
+}) => {
   const { season } = useSeason();
   const isDay = useDayPeriod();
   const showRain = shouldShowRain(weather);
@@ -36,7 +42,10 @@ export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({ weather }) => 
     <>
       {season === 'spring' && <CherryBlossoms />}
       {season === 'summer' && <SummerEffects />}
-      <SeasonalSmallCreatures />
+      <SeasonalSmallCreatures
+        bottlePosition={bottlePosition}
+        bottleSignal={bottleSignal}
+      />
       {season === 'summer' && !isDay && <Fireflies />}
       {(season === 'autumn' || season === 'winter') && <FallenLeaves />}
       {showSnow && <SnowEffect intensity={snowIntensity} />}
