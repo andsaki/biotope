@@ -7,9 +7,14 @@ export interface DailyMessageResponse {
   dateDescription: string;
   message: string;
   generatedAt: string;
-  source?: 'gemini' | 'fallback';
+  source?: 'gemini' | 'cloudflare-ai' | 'fallback';
   cacheTtl?: number;
 }
+
+const isTodayCache = (dateKey: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  return dateKey === today || dateKey.includes(today);
+};
 
 /**
  * 毎日のメッセージをAPIから取得
@@ -24,10 +29,8 @@ export async function fetchDailyMessage(): Promise<string | null> {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       const cachedData: DailyMessageResponse = JSON.parse(cached);
-      const today = new Date().toISOString().split('T')[0];
-
       // 日付が同じならキャッシュを返す
-      if (cachedData.date === today) {
+      if (isTodayCache(cachedData.date)) {
         return cachedData.message;
       }
     }
