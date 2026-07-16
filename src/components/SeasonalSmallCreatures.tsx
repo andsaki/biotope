@@ -27,7 +27,7 @@ interface SeasonalSmallCreaturesProps {
 
 const BOTTLE_REACTION_SECONDS = 5.5;
 const WATER_REACTION_SECONDS = 2.2;
-const CREATURE_SCALE_MULTIPLIER = 1.65;
+const CREATURE_SCALE_MULTIPLIER = 0.72;
 
 const SEASONAL_CREATURES: Record<Season, readonly CreatureSeed[]> = {
   spring: [
@@ -265,84 +265,84 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
     case "butterfly":
       return (
         <>
-          <mesh rotation={[0, 0, -0.42]} position={[-0.075, 0.018, 0]} scale={[0.16, 0.22, 1]}>
+          <mesh rotation={[0, 0, -0.42]} position={[-0.032, 0.01, 0]} scale={[0.07, 0.1, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.color} transparent opacity={0.8} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.56} side={THREE.DoubleSide} />
           </mesh>
-          <mesh rotation={[0, 0, 0.42]} position={[0.075, 0.018, 0]} scale={[0.16, 0.22, 1]}>
+          <mesh rotation={[0, 0, 0.42]} position={[0.032, 0.01, 0]} scale={[0.07, 0.1, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.76} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.5} side={THREE.DoubleSide} />
           </mesh>
-          <mesh rotation={[Math.PI / 2, 0, 0]} scale={[0.024, 0.15, 0.024]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]} scale={[0.009, 0.07, 0.009]}>
             <capsuleGeometry args={[1, 1.8, 4, 8]} />
-            <meshBasicMaterial color="#4f3a2e" />
+            <meshBasicMaterial color="#5e4a38" transparent opacity={0.78} />
           </mesh>
         </>
       );
     case "water-strider":
       return (
         <>
-          <mesh scale={[0.16, 0.034, 0.05]}>
+          <mesh scale={[0.08, 0.018, 0.026]}>
             <sphereGeometry args={[1, 10, 8]} />
-            <meshBasicMaterial color={seed.color} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.72} />
           </mesh>
           {[-0.12, 0, 0.12].map((offset) => (
             <React.Fragment key={offset}>
-              <mesh position={[offset, -0.01, -0.12]} rotation={[0, 0.1, -0.88]} scale={[0.006, 0.18, 0.006]}>
+              <mesh position={[offset * 0.55, -0.006, -0.064]} rotation={[0, 0.1, -0.88]} scale={[0.003, 0.1, 0.003]}>
                 <cylinderGeometry args={[1, 1, 1, 6]} />
-                <meshBasicMaterial color={seed.color} />
+                <meshBasicMaterial color={seed.color} transparent opacity={0.62} />
               </mesh>
-              <mesh position={[offset, -0.01, 0.12]} rotation={[0, -0.1, 0.88]} scale={[0.006, 0.18, 0.006]}>
+              <mesh position={[offset * 0.55, -0.006, 0.064]} rotation={[0, -0.1, 0.88]} scale={[0.003, 0.1, 0.003]}>
                 <cylinderGeometry args={[1, 1, 1, 6]} />
-                <meshBasicMaterial color={seed.color} />
+                <meshBasicMaterial color={seed.color} transparent opacity={0.62} />
               </mesh>
             </React.Fragment>
           ))}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[0.46, 0.2, 1]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[0.26, 0.11, 1]}>
             <ringGeometry args={[0.92, 1, 32]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.2} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.12} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
     case "dragonfly":
       return (
         <>
-          <mesh position={[0, 0, 0]} scale={[0.42, 0.026, 0.026]}>
+          <mesh position={[0, 0, 0]} scale={[0.18, 0.012, 0.012]}>
             <sphereGeometry args={[1, 14, 8]} />
-            <meshBasicMaterial color={seed.color} transparent opacity={0.92} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.74} />
           </mesh>
-          <mesh position={[0.46, 0, 0]} scale={[0.07, 0.07, 0.055]}>
+          <mesh position={[0.2, 0, 0]} scale={[0.026, 0.026, 0.022]}>
             <sphereGeometry args={[1, 12, 8]} />
-            <meshBasicMaterial color="#3a2119" transparent opacity={0.96} />
+            <meshBasicMaterial color="#3a2119" transparent opacity={0.76} />
           </mesh>
-          <mesh position={[0.14, 0.032, 0.14]} rotation={[0.28, 0, 0.18]} scale={[0.22, 0.055, 1]}>
+          <mesh position={[0.055, 0.016, 0.062]} rotation={[0.28, 0, 0.18]} scale={[0.09, 0.024, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.44} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.28} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[0.14, 0.032, -0.14]} rotation={[-0.28, 0, 0.18]} scale={[0.22, 0.055, 1]}>
+          <mesh position={[0.055, 0.016, -0.062]} rotation={[-0.28, 0, 0.18]} scale={[0.09, 0.024, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.44} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.28} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[-0.08, 0.026, 0.12]} rotation={[0.22, 0, -0.16]} scale={[0.18, 0.046, 1]}>
+          <mesh position={[-0.04, 0.014, 0.052]} rotation={[0.22, 0, -0.16]} scale={[0.075, 0.02, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.34} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.22} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[-0.08, 0.026, -0.12]} rotation={[-0.22, 0, -0.16]} scale={[0.18, 0.046, 1]}>
+          <mesh position={[-0.04, 0.014, -0.052]} rotation={[-0.22, 0, -0.16]} scale={[0.075, 0.02, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.34} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.22} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
     case "snow-midge":
       return (
         <>
-          <mesh scale={[0.058, 0.058, 0.058]}>
+          <mesh scale={[0.026, 0.026, 0.026]}>
             <sphereGeometry args={[1, 10, 8]} />
-            <meshBasicMaterial color={seed.color} transparent opacity={0.9} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.62} />
           </mesh>
-          <mesh position={[0, 0.014, 0]} scale={[0.16, 0.06, 1]}>
+          <mesh position={[0, 0.008, 0]} scale={[0.07, 0.026, 1]}>
             <circleGeometry args={[1, 16]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.34} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.18} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
@@ -456,7 +456,7 @@ export const SeasonalSmallCreatures: React.FC<SeasonalSmallCreaturesProps> = Rea
       group.rotation.y = Math.sin(wave * 0.9) * 0.7;
       group.rotation.z = Math.sin(wave * 2.4) * (0.08 + easedWaterReaction * 0.22);
       group.scale.setScalar(
-        seed.scale * CREATURE_SCALE_MULTIPLIER * (1 + easedReaction * 0.24 + easedWaterReaction * 0.18)
+        seed.scale * CREATURE_SCALE_MULTIPLIER * (1 + easedReaction * 0.12 + easedWaterReaction * 0.1)
       );
 
       if (seed.kind === "water-strider") {
