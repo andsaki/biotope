@@ -336,8 +336,7 @@ export const fetchWeather = async (options: FetchWeatherOptions = {}): Promise<W
       trend: getTrend(data.condition, forecast),
     };
     return directWeatherSnapshot(snapshot);
-  } catch (error) {
-    console.error("Error fetching weather:", error);
+  } catch {
     return null;
   }
 };
