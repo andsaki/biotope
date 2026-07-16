@@ -16,7 +16,7 @@ export interface DailyMessageResponse {
  * localStorageでキャッシュして1日1回のみ取得
  */
 export async function fetchDailyMessage(): Promise<string | null> {
-  const CACHE_KEY = 'daily_message_cache';
+  const CACHE_KEY = 'daily_message_cache_v2';
   const API_ENDPOINT = '/api/daily-message';
 
   try {
