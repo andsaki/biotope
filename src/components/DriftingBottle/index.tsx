@@ -342,6 +342,11 @@ export const DriftingBottle = ({
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
     >
+      {/* 見た目は変えず、漂流瓶を少し雑に押しても反応するようにする */}
+      <mesh position={[0, 0.1, 0]} scale={[0.72, 1.18, 0.72]}>
+        <sphereGeometry args={[1, 16, 12]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
       <BottleModel hovered={hovered} />
       <BottleMemoryMarks signs={memorySigns} />
       {showHint && !showMessage && (
