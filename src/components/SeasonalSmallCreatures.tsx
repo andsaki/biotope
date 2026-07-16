@@ -296,17 +296,29 @@ const CreatureShape = ({ seed }: { seed: CreatureSeed }) => {
     case "dragonfly":
       return (
         <>
-          <mesh rotation={[Math.PI / 2, 0, Math.PI / 2]} scale={[0.018, 0.22, 0.018]}>
-            <capsuleGeometry args={[1, 2.6, 4, 8]} />
-            <meshBasicMaterial color={seed.color} />
+          <mesh position={[0, 0, 0]} scale={[0.42, 0.026, 0.026]}>
+            <sphereGeometry args={[1, 14, 8]} />
+            <meshBasicMaterial color={seed.color} transparent opacity={0.92} />
           </mesh>
-          <mesh position={[0.25, 0.02, 0]} rotation={[0, 0, 0.18]} scale={[0.25, 0.064, 1]}>
-            <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.48} side={THREE.DoubleSide} />
+          <mesh position={[0.46, 0, 0]} scale={[0.07, 0.07, 0.055]}>
+            <sphereGeometry args={[1, 12, 8]} />
+            <meshBasicMaterial color="#3a2119" transparent opacity={0.96} />
           </mesh>
-          <mesh position={[-0.25, 0.02, 0]} rotation={[0, 0, -0.18]} scale={[0.25, 0.064, 1]}>
+          <mesh position={[0.14, 0.032, 0.14]} rotation={[0.28, 0, 0.18]} scale={[0.22, 0.055, 1]}>
             <circleGeometry args={[1, 18]} />
-            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.48} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.44} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[0.14, 0.032, -0.14]} rotation={[-0.28, 0, 0.18]} scale={[0.22, 0.055, 1]}>
+            <circleGeometry args={[1, 18]} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.44} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[-0.08, 0.026, 0.12]} rotation={[0.22, 0, -0.16]} scale={[0.18, 0.046, 1]}>
+            <circleGeometry args={[1, 18]} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.34} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[-0.08, 0.026, -0.12]} rotation={[-0.22, 0, -0.16]} scale={[0.18, 0.046, 1]}>
+            <circleGeometry args={[1, 18]} />
+            <meshBasicMaterial color={seed.accentColor} transparent opacity={0.34} side={THREE.DoubleSide} />
           </mesh>
         </>
       );
