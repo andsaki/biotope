@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -251,6 +251,7 @@ export const DriftingBottle = ({
   const [, setJournalEntries] = useState<BottleJournalEntry[]>(() =>
     loadBottleJournal()
   );
+  const closeHandledRef = useRef(false);
   const isMobile = useIsMobile();
 
   const bottleRef = useBottleAnimation(position);
@@ -302,6 +303,7 @@ export const DriftingBottle = ({
 
   const handleClick = () => {
     // 1日中同じGemini生成メッセージを表示
+    closeHandledRef.current = false;
     setDisplayedLifeLog(lifeLog);
     setShowMessage(true);
     onMessageRead?.();
@@ -323,7 +325,12 @@ export const DriftingBottle = ({
     setJournalEntries(nextJournal);
   }, [bottleOmen, currentMessage, currentSender, displayedLifeLog, showMessage, today]);
 
-  const handleCloseMessage = () => {
+  const handleCloseMessage = useCallback(() => {
+    if (closeHandledRef.current) {
+      return;
+    }
+
+    closeHandledRef.current = true;
     setShowMessage(false);
     setShowOmenNotice(true);
     setMemorySigns(
@@ -335,7 +342,23 @@ export const DriftingBottle = ({
       })
     );
     setReadAfterglowId((id) => id + 1);
-  };
+  }, [bottleOmen, today]);
+
+  useEffect(() => {
+    if (!showMessage) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleCloseMessage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleCloseMessage, showMessage]);
 
   useEffect(() => {
     if (!showOmenNotice) {
