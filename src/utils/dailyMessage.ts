@@ -50,8 +50,7 @@ export async function fetchDailyMessage(): Promise<string | null> {
     localStorage.setItem(CACHE_KEY, JSON.stringify(data));
 
     return data.message;
-  } catch (error) {
-    console.error('Error fetching daily message:', error);
+  } catch {
     return null;
   }
 }
