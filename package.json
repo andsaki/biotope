@@ -8,7 +8,9 @@
     "dev:wrangler": "concurrently \"vite --port 5173\" \"wrangler pages dev --port 8788 --proxy 5173\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "smoke:browser": "node scripts/browser-smoke.mjs",
+    "smoke:browser:strict": "SMOKE_STRICT=1 node scripts/browser-smoke.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.4.2",
