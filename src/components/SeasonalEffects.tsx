@@ -6,7 +6,6 @@ import FallenLeaves from './FallenLeaves';
 import SnowEffect from './SnowEffect';
 import RainEffect from './RainEffect';
 import { Fireflies } from './Fireflies';
-import { SeasonalSmallCreatures } from './SeasonalSmallCreatures';
 import {
   getRainIntensity,
   getGustIntensity,
@@ -17,23 +16,13 @@ import {
 } from '@/utils/weather';
 
 interface SeasonalEffectsProps {
-  bottlePosition: [number, number, number];
-  bottleSignal: number;
-  lastWaterPoint: [number, number, number] | null;
   weather: WeatherSnapshot;
-  waterSignal: number;
 }
 
 /**
  * 季節ごとのエフェクトを統合管理するコンポーネント
  */
-export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({
-  bottlePosition,
-  bottleSignal,
-  lastWaterPoint,
-  weather,
-  waterSignal,
-}) => {
+export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({ weather }) => {
   const { season } = useSeason();
   const isDay = useDayPeriod();
   const showRain = shouldShowRain(weather);
@@ -46,12 +35,6 @@ export const SeasonalEffects: React.FC<SeasonalEffectsProps> = ({
     <>
       {season === 'spring' && <CherryBlossoms />}
       {season === 'summer' && <SummerEffects />}
-      <SeasonalSmallCreatures
-        bottlePosition={bottlePosition}
-        bottleSignal={bottleSignal}
-        lastWaterPoint={lastWaterPoint}
-        waterSignal={waterSignal}
-      />
       {season === 'summer' && !isDay && <Fireflies />}
       {(season === 'autumn' || season === 'winter') && <FallenLeaves />}
       {showSnow && <SnowEffect intensity={snowIntensity} />}
