@@ -238,17 +238,17 @@ export const MessageCard = memo(({
           ×
         </button>
         <div style={CARD_STYLES.header}>
-          <p style={CARD_STYLES.eyebrow}>DRIFTING NOTE</p>
-          <h3 style={CARD_STYLES.title}>海からの便り</h3>
+          <p style={CARD_STYLES.eyebrow}>WATERLOG / BOTTLE No. 1</p>
+          <h3 style={CARD_STYLES.title}>漂着した観察記録</h3>
         </div>
         <div style={CARD_STYLES.content}>
           <div style={CARD_STYLES.statusRow}>
             <span style={CARD_STYLES.statusChip}>{formatJournalDate(currentDate)}</span>
-            <span style={CARD_STYLES.statusChip}>今日のしるし: {discoveryLabel}</span>
+            <span style={CARD_STYLES.statusChip}>封蝋: {discoveryLabel}</span>
           </div>
           <p style={CARD_STYLES.message}>{message}</p>
           <div style={CARD_STYLES.lifeLogBox}>
-            <p style={CARD_STYLES.lifeLogHeader}>瓶が覚えていた水辺</p>
+            <p style={CARD_STYLES.lifeLogHeader}>採取時の水辺</p>
             <p style={CARD_STYLES.lifeLogText}>{lifeLog}</p>
           </div>
           <div style={CARD_STYLES.sender}>— {sender}</div>
@@ -261,7 +261,7 @@ export const MessageCard = memo(({
                   background: omen.color,
                 }}
               />
-              <span>今日の効き目: {omen.label}</span>
+              <span>閉じたあとに残るもの: {omen.label}</span>
             </div>
             <p style={CARD_STYLES.omenText}>{omen.description}</p>
             <p style={CARD_STYLES.omenWorldNote}>{omen.worldNote}</p>
