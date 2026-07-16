@@ -359,25 +359,19 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
     let message: string;
     let source: DailyMessagePayload['source'] = 'fallback';
 
-    if (!apiKey) {
-      console.warn('[DAILY_MESSAGE] GEMINI_API_KEY is not configured.');
-    } else {
-      console.log('[DAILY_MESSAGE] GEMINI_API_KEY found, calling Gemini API...');
+    if (apiKey) {
       try {
         message = await generateGeminiMessage(apiKey, dateDescription);
         source = 'gemini';
-        console.log('[DAILY_MESSAGE] Gemini API succeeded');
       } catch (error) {
         console.error('[DAILY_MESSAGE] Gemini API failed:', error);
       }
     }
 
     if (!message && context.env.AI) {
-      console.log('[DAILY_MESSAGE] Calling Cloudflare Workers AI fallback...');
       try {
         message = await generateCloudflareAiMessage(context.env.AI, dateDescription);
         source = 'cloudflare-ai';
-        console.log('[DAILY_MESSAGE] Cloudflare Workers AI succeeded');
       } catch (error) {
         console.error('[DAILY_MESSAGE] Cloudflare Workers AI failed:', error);
       }
