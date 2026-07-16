@@ -10,6 +10,10 @@ binding = "DAILY_MESSAGE_CACHE"
 id = "6d357255175a4663aa62a61c3fdd365d"
 preview_id = "83be06ac9d264c69a32e8ef89926649f"
 
+# Workers AI fallback for daily bottle letters
+[ai]
+binding = "AI"
+
 # Environment variables for local development
 [vars]
 # GEMINI_API_KEY will be loaded from .dev.vars

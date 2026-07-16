@@ -6,7 +6,8 @@
 /// <reference types="@cloudflare/workers-types" />
 
 interface Env {
-  GEMINI_API_KEY: string;
+  GEMINI_API_KEY?: string;
+  AI?: Ai;
   DAILY_MESSAGE_CACHE: KVNamespace;
 }
 
@@ -25,7 +26,7 @@ interface DailyMessagePayload {
   dateDescription: string;
   message: string;
   generatedAt: string;
-  source: 'gemini' | 'fallback';
+  source: 'gemini' | 'cloudflare-ai' | 'fallback';
   cacheTtl: number;
 }
 
@@ -163,10 +164,10 @@ function buildFallbackMessage(date: Date, dateDescription: string): string {
 }
 
 /**
- * Gemini APIを呼び出してメッセージを生成
+ * 便り生成用プロンプト
  */
-async function generateDailyMessage(apiKey: string, dateStr: string): Promise<string> {
-  const prompt = `あなたは静かな水辺の漂流瓶に入っている、少し不思議な観察記録を書く存在です。今日は${dateStr}です。
+function buildBottlePrompt(dateStr: string): string {
+  return `あなたは静かな水辺の漂流瓶に入っている、少し不思議な観察記録を書く存在です。今日は${dateStr}です。
 
 プレイヤーへの励ましではなく、このアプリ内の水辺で「何かが起きている」と感じる短い便りを書いてください。
 
@@ -190,6 +191,19 @@ async function generateDailyMessage(apiKey: string, dateStr: string): Promise<st
 - 「あなた」「私」を中心にした文章
 - 日記風の一般論
 - 時間帯に合わない表現（夜なのに「朝」と言うなど）`;
+}
+
+const cleanGeneratedMessage = (message: string) =>
+  message
+    .trim()
+    .replace(/^["「]|["」]$/g, "")
+    .trim();
+
+/**
+ * Gemini APIを呼び出してメッセージを生成
+ */
+async function generateGeminiMessage(apiKey: string, dateStr: string): Promise<string> {
+  const prompt = buildBottlePrompt(dateStr);
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -222,7 +236,25 @@ async function generateDailyMessage(apiKey: string, dateStr: string): Promise<st
   }
 
   const data: GeminiResponse = await response.json();
-  return data.candidates[0].content.parts[0].text.trim();
+  return cleanGeneratedMessage(data.candidates[0].content.parts[0].text);
+}
+
+/**
+ * Cloudflare Workers AIを呼び出してメッセージを生成
+ */
+async function generateCloudflareAiMessage(ai: Ai, dateStr: string): Promise<string> {
+  const output = await ai.run("@cf/meta/llama-3.1-8b-instruct-fp8", {
+    prompt: buildBottlePrompt(dateStr),
+    temperature: 0.85,
+    max_tokens: 160,
+  });
+
+  const message = cleanGeneratedMessage(output.response ?? "");
+  if (!message) {
+    throw new Error("Cloudflare AI returned an empty message");
+  }
+
+  return message;
 }
 
 /**
@@ -276,26 +308,38 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
     // Gemini APIキーを取得
     const apiKey = context.env.GEMINI_API_KEY;
     let message: string;
-    let usedFallback = false;
+    let source: DailyMessagePayload['source'] = 'fallback';
 
     if (!apiKey) {
-      console.error('[DAILY_MESSAGE] GEMINI_API_KEY is not configured. Using fallback message.');
-      message = buildFallbackMessage(japanTime, dateDescription);
-      usedFallback = true;
+      console.warn('[DAILY_MESSAGE] GEMINI_API_KEY is not configured.');
     } else {
       console.log('[DAILY_MESSAGE] GEMINI_API_KEY found, calling Gemini API...');
       try {
-        // メッセージを生成
-        message = await generateDailyMessage(apiKey, dateDescription);
+        message = await generateGeminiMessage(apiKey, dateDescription);
+        source = 'gemini';
         console.log('[DAILY_MESSAGE] Gemini API succeeded');
       } catch (error) {
         console.error('[DAILY_MESSAGE] Gemini API failed:', error);
-        message = buildFallbackMessage(japanTime, dateDescription);
-        usedFallback = true;
       }
     }
 
-    const cacheTtl = usedFallback ? FALLBACK_CACHE_TTL_SECONDS : CACHE_TTL_SECONDS;
+    if (!message && context.env.AI) {
+      console.log('[DAILY_MESSAGE] Calling Cloudflare Workers AI fallback...');
+      try {
+        message = await generateCloudflareAiMessage(context.env.AI, dateDescription);
+        source = 'cloudflare-ai';
+        console.log('[DAILY_MESSAGE] Cloudflare Workers AI succeeded');
+      } catch (error) {
+        console.error('[DAILY_MESSAGE] Cloudflare Workers AI failed:', error);
+      }
+    }
+
+    if (!message) {
+      message = buildFallbackMessage(japanTime, dateDescription);
+      source = 'fallback';
+    }
+
+    const cacheTtl = source === 'fallback' ? FALLBACK_CACHE_TTL_SECONDS : CACHE_TTL_SECONDS;
 
     // レスポンスデータを作成
     const responseData: DailyMessagePayload = {
@@ -303,7 +347,7 @@ export const onRequest = async (context: EventContext<Env, string, Record<string
       dateDescription,
       message,
       generatedAt: new Date().toISOString(),
-      source: usedFallback ? 'fallback' : 'gemini',
+      source,
       cacheTtl,
     };
 
