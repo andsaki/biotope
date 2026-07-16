@@ -13,8 +13,14 @@ import { useWeather } from "./hooks/useWeather";
 import { useUxHints } from "./hooks/useUxHints";
 import type { WindDirection } from "./utils/bottleJournal";
 
-// const DEBUG_MODE = false; // デバッグヘルパーの表示切替 - 削除
-const PERFORMANCE_MONITOR = import.meta.env.DEV; // 開発モードで自動的に有効化
+const isPerformanceMonitorRequested = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return params.get("perf") === "1";
+};
 
 const getWindDirectionFromDegrees = (
   degrees: number | null,
@@ -55,6 +61,7 @@ const AppContent = () => {
   const [showLoader, setShowLoader] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
+  const performanceMonitorEnabled = useMemo(isPerformanceMonitorRequested, []);
   const isLoading = !(assetsLoaded && minDelayElapsed);
 
   // 背景色をメモ化
@@ -109,7 +116,7 @@ const AppContent = () => {
         isDay={isDay}
         isLoading={isLoading}
         isMobile={isMobile}
-        performanceMonitorEnabled={PERFORMANCE_MONITOR}
+        performanceMonitorEnabled={performanceMonitorEnabled}
         showBottleHint={uxHints.shouldShowBottleHint}
         weather={weather}
         windDirection={windDirection}
@@ -119,7 +126,9 @@ const AppContent = () => {
         onWaterInteract={uxHints.markWaterRippled}
       />
       {/* パフォーマンスモニター - 表示（Canvas外） - ローディング完了後のみ表示 */}
-      {PERFORMANCE_MONITOR && !isLoading && <PerformanceMonitorDisplay enabled={PERFORMANCE_MONITOR} />}
+      {performanceMonitorEnabled && !isLoading && (
+        <PerformanceMonitorDisplay enabled={performanceMonitorEnabled} />
+      )}
       <UI
         showHints={!isLoading && uxHints.showHints}
         showUiHint={!isLoading && uxHints.shouldShowUiHint}
