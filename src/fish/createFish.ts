@@ -19,18 +19,37 @@ import {
 import { createDirectionChangeTime } from "./movement";
 import type { Fish } from "./types";
 
-export const getSeasonFishProfile = (season: Season) => {
-  switch (season) {
-    case "spring":
-      return { fishSpeed: FISH_SPEED.SPRING, fishColor: FISH_COLOR.SPRING, fishAccentColor: FISH_ACCENT_COLOR.SPRING };
-    case "summer":
-      return { fishSpeed: FISH_SPEED.SUMMER, fishColor: FISH_COLOR.SUMMER, fishAccentColor: FISH_ACCENT_COLOR.SUMMER };
-    case "autumn":
-      return { fishSpeed: FISH_SPEED.AUTUMN, fishColor: FISH_COLOR.AUTUMN, fishAccentColor: FISH_ACCENT_COLOR.AUTUMN };
-    case "winter":
-      return { fishSpeed: FISH_SPEED.WINTER, fishColor: FISH_COLOR.WINTER, fishAccentColor: FISH_ACCENT_COLOR.WINTER };
-  }
+interface SeasonFishProfile {
+  fishSpeed: number;
+  fishColor: string;
+  fishAccentColor: string;
+}
+
+const SEASON_FISH_PROFILES: Record<Season, SeasonFishProfile> = {
+  spring: {
+    fishSpeed: FISH_SPEED.SPRING,
+    fishColor: FISH_COLOR.SPRING,
+    fishAccentColor: FISH_ACCENT_COLOR.SPRING,
+  },
+  summer: {
+    fishSpeed: FISH_SPEED.SUMMER,
+    fishColor: FISH_COLOR.SUMMER,
+    fishAccentColor: FISH_ACCENT_COLOR.SUMMER,
+  },
+  autumn: {
+    fishSpeed: FISH_SPEED.AUTUMN,
+    fishColor: FISH_COLOR.AUTUMN,
+    fishAccentColor: FISH_ACCENT_COLOR.AUTUMN,
+  },
+  winter: {
+    fishSpeed: FISH_SPEED.WINTER,
+    fishColor: FISH_COLOR.WINTER,
+    fishAccentColor: FISH_ACCENT_COLOR.WINTER,
+  },
 };
+
+export const getSeasonFishProfile = (season: Season) =>
+  SEASON_FISH_PROFILES[season];
 
 const randomBetween = (min: number, max: number) =>
   Math.random() * (max - min) + min;
