@@ -28,7 +28,7 @@ const isTodayCache = (dateKey: string) => {
  * localStorageでキャッシュして1日1回のみ取得
  */
 export async function fetchDailyMessage(): Promise<string | null> {
-  const CACHE_KEY = 'daily_message_cache_v3';
+  const CACHE_KEY = 'daily_message_cache_v4';
   const API_ENDPOINT = '/api/daily-message';
 
   try {
