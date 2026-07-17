@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useSeason } from "../contexts";
 import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
@@ -20,7 +20,11 @@ import {
   type WeatherSnapshot,
 } from "@/utils/weather";
 import { createFishList, getSeasonFishProfile } from "@/fish/createFish";
-import { applyLowPolyFlatfishMaterial, applyLowPolyNormalFishMaterial } from "@/fish/materials";
+import {
+  applyLowPolyFlatfishMaterial,
+  applyLowPolyNormalFishMaterial,
+  disposeObjectMaterials,
+} from "@/fish/materials";
 import { updateFishMovement } from "@/fish/movement";
 
 /**
@@ -76,6 +80,18 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       return clone;
     });
   }, [flatfishScene]);
+
+  useEffect(() => {
+    return () => {
+      normalFishClones.forEach(disposeObjectMaterials);
+    };
+  }, [normalFishClones]);
+
+  useEffect(() => {
+    return () => {
+      flatfishClones.forEach(disposeObjectMaterials);
+    };
+  }, [flatfishClones]);
 
   // 各魚モデルの位置を動的に更新するための参照を作成する
   const fishRefs = useRef<THREE.Group[]>([]);
