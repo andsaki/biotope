@@ -7,6 +7,7 @@ import { useClockTime, useSeason } from "@/contexts";
 import { getTimeOfDay } from "@/utils/time";
 import {
   createDailyLifeLog,
+  createLocalBottleMessage,
   getBottleDiscoveryLabel,
   getDailyBottleOmen,
   getLocalDateKey,
@@ -103,9 +104,15 @@ export const DriftingBottle = ({
         setCurrentMessage(message);
         setCurrentSender("海からの便り");
       } else {
-        // APIが失敗した場合のフォールバック
         setCurrentMessage(
-          "瓶の中の紙は、まだ少し湿っています。\n\n文字は読めないけれど、縁に残った潮の跡だけが今日の水辺を覚えています。"
+          createLocalBottleMessage({
+            date: today,
+            season,
+            timeOfDay: getTimeOfDay(realTime.hours),
+            windDirection,
+            weather,
+            omen: bottleOmen,
+          })
         );
         setCurrentSender("海からの便り");
       }
@@ -115,7 +122,7 @@ export const DriftingBottle = ({
       loadDailyMessage();
       setDailyMessageFetched(true);
     }
-  }, [dailyMessageFetched]);
+  }, [bottleOmen, dailyMessageFetched, realTime.hours, season, today, weather, windDirection]);
 
   const handleClick = () => {
     // 1日中同じGemini生成メッセージを表示
