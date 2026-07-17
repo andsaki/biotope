@@ -19,8 +19,8 @@ import {
   getRainIntensity,
   type WeatherSnapshot,
 } from "@/utils/weather";
-import { createFishList } from "@/fish/createFish";
-import { applyLowPolyFlatfishMaterial } from "@/fish/materials";
+import { createFishList, getSeasonFishProfile } from "@/fish/createFish";
+import { applyLowPolyFlatfishMaterial, applyLowPolyNormalFishMaterial } from "@/fish/materials";
 import { updateFishMovement } from "@/fish/movement";
 
 /**
@@ -43,6 +43,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const weatherDepthOffset = -(rainIntensity * 0.55 + cloudIntensity * 0.18) + temperatureDepthOffset;
 
   const fishList = useMemo(() => createFishList(season), [season]);
+  const fishProfile = useMemo(() => getSeasonFishProfile(season), [season]);
 
   const timeRef = useRef(0);
   const previousWaterSignalRef = useRef(waterSignal);
@@ -56,8 +57,17 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const flatfishScene = useModelScene("flatfish");
 
   const normalFishClones = useMemo(() => {
-    return Array.from({ length: NORMAL_FISH_COUNT }, () => normalFishScene.clone());
-  }, [normalFishScene]);
+    return Array.from({ length: NORMAL_FISH_COUNT }, (_, index) => {
+      const clone = normalFishScene.clone();
+      applyLowPolyNormalFishMaterial(
+        clone,
+        fishProfile.fishColor,
+        fishProfile.fishAccentColor,
+        index
+      );
+      return clone;
+    });
+  }, [fishProfile.fishAccentColor, fishProfile.fishColor, normalFishScene]);
 
   const flatfishClones = useMemo(() => {
     return Array.from({ length: FLATFISH_COUNT }, (_, index) => {

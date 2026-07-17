@@ -19,11 +19,19 @@ export const FISH_SPEED = {
 
 // 季節ごとの魚の色
 export const FISH_COLOR = {
-  SPRING: "#FF6347", // トマト
-  SUMMER: "#FF4500", // オレンジレッド
-  AUTUMN: "#DAA520", // ゴールデンロッド
-  WINTER: "#4682B4", // スティールブルー
-  DEFAULT: "#FF6347",
+  SPRING: "#d8a78f",
+  SUMMER: "#8fb7ad",
+  AUTUMN: "#b8915a",
+  WINTER: "#7894ad",
+  DEFAULT: "#d8a78f",
+} as const;
+
+export const FISH_ACCENT_COLOR = {
+  SPRING: "#f0c8b4",
+  SUMMER: "#b8d6cc",
+  AUTUMN: "#d0ad72",
+  WINTER: "#a8bdd1",
+  DEFAULT: "#f0c8b4",
 } as const;
 
 // 通常の魚の配置範囲
