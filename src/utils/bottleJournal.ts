@@ -48,6 +48,14 @@ const MEMORY_SIGNS_STORAGE_KEY = "mizube_bottle_memory_signs";
 const MAX_JOURNAL_ENTRIES = 14;
 const MAX_MEMORY_SIGNS = 10;
 
+const clearInvalidStorage = (key: string) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(key);
+};
+
 const seasonLabels: Record<Season, string> = {
   spring: "春",
   summer: "夏",
@@ -278,6 +286,7 @@ export const loadBottleJournal = (): BottleJournalEntry[] => {
 
     const parsed = JSON.parse(rawJournal);
     if (!Array.isArray(parsed)) {
+      clearInvalidStorage(JOURNAL_STORAGE_KEY);
       return [];
     }
 
@@ -290,8 +299,8 @@ export const loadBottleJournal = (): BottleJournalEntry[] => {
         (entry.omen === undefined || isBottleOmen(entry.omen)) &&
         typeof entry?.readAt === "string"
     );
-  } catch (error) {
-    console.error("Error loading bottle journal:", error);
+  } catch {
+    clearInvalidStorage(JOURNAL_STORAGE_KEY);
     return [];
   }
 };
@@ -325,6 +334,7 @@ export const loadBottleMemorySigns = (): BottleMemorySign[] => {
 
     const parsed = JSON.parse(rawSigns);
     if (!Array.isArray(parsed)) {
+      clearInvalidStorage(MEMORY_SIGNS_STORAGE_KEY);
       return [];
     }
 
@@ -335,8 +345,8 @@ export const loadBottleMemorySigns = (): BottleMemorySign[] => {
         (sign.omen === undefined || isBottleOmen(sign.omen)) &&
         typeof sign?.readAt === "string"
     );
-  } catch (error) {
-    console.error("Error loading bottle memory signs:", error);
+  } catch {
+    clearInvalidStorage(MEMORY_SIGNS_STORAGE_KEY);
     return [];
   }
 };
