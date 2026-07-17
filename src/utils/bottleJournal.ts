@@ -43,6 +43,10 @@ interface LifeLogInput {
   weather: WeatherSnapshot;
 }
 
+interface LocalBottleMessageInput extends LifeLogInput {
+  omen: BottleOmen;
+}
+
 const JOURNAL_STORAGE_KEY = "mizube_bottle_journal";
 const MEMORY_SIGNS_STORAGE_KEY = "mizube_bottle_memory_signs";
 const MAX_JOURNAL_ENTRIES = 14;
@@ -161,6 +165,29 @@ const bottleOmens: readonly BottleOmen[] = [
   },
 ] satisfies readonly BottleOmen[];
 
+const omenLetterClues: Record<BottleOmenId, readonly string[]> = {
+  "fish-gather": [
+    "瓶の影へ魚が一度だけ寄る。群れの向きがそろったら、底の線を見ておくといい。",
+    "魚影が瓶の下を横切る。追うより待つほうが、今日のしるしは長く見える。",
+  ],
+  "quiet-ripples": [
+    "水面の輪がいつもより細く残る。消えきる前に、次の波が内側から来る。",
+    "触れた場所に薄い輪が残る。閉じたあと、その輪だけが少し遅れて動く。",
+  ],
+  "firefly-glow": [
+    "瓶口の近くに小さな光が戻る。星と違って、これは水面を避けて飛ぶ。",
+    "蛍火のような粒が瓶の周りを測る。光った数だけ、岸の影が短くなる。",
+  ],
+  "deep-current": [
+    "底から青い粒が上がる。水面へ届く前に、魚影だけが先に向きを変える。",
+    "深い流れが紙の折り目を引いた。見える波より下で、今日の向きが変わる。",
+  ],
+  "hidden-shore": [
+    "岸の影に細い光が残る。石の輪郭が浮いたら、そこが今日の端になる。",
+    "見えない岸が少し近づく。葉の影だけが地図の端みたいに濃く残る。",
+  ],
+};
+
 const seasonNotes: Record<Season, string[]> = {
   spring: [
     "水面に花びらが一枚、輪を描いて流れた",
@@ -271,6 +298,25 @@ export const createDailyLifeLog = ({
           : "";
 
   return `${formatJournalDate(date)}、${seasonLabels[season]}の${timeLabels[timeOfDay]}。${weatherSourceText}${seasonalText}。${weatherText}。${eventText}${forecastText}${timeText}。${windText}`;
+};
+
+export const createLocalBottleMessage = ({
+  date,
+  season,
+  timeOfDay,
+  windDirection,
+  weather,
+  omen,
+}: LocalBottleMessageInput) => {
+  const seed = createSeed(
+    `local-message:${date}:${season}:${timeOfDay}:${windDirection}:${weather.condition}:${weather.trend}:${omen.id}`
+  );
+  const seasonalText = pick(seasonNotes[season], seed).replace(/。$/, "");
+  const weatherText = pick(weatherNotes[weather.condition], seed >>> 4);
+  const omenText = pick(omenLetterClues[omen.id], seed >>> 7);
+  const windText = `${windLabels[windDirection]}からの風が、瓶の中で紙の端を少し乾かした`;
+
+  return `${seasonLabels[season]}の${timeLabels[timeOfDay]}、${seasonalText}。\n${weatherText}。${windText}。\n閉じたあと、${omenText}`;
 };
 
 export const loadBottleJournal = (): BottleJournalEntry[] => {
