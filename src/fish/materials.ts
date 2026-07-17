@@ -1,6 +1,21 @@
 import * as THREE from "three";
 import { FLATFISH_LOW_POLY_MATERIAL } from "@/constants/fish";
 
+export const disposeObjectMaterials = (scene: THREE.Object3D) => {
+  scene.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) {
+      return;
+    }
+
+    if (Array.isArray(object.material)) {
+      object.material.forEach((material) => material.dispose());
+      return;
+    }
+
+    object.material.dispose();
+  });
+};
+
 export const applyLowPolyNormalFishMaterial = (
   scene: THREE.Object3D,
   baseColor: string,
