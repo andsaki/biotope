@@ -1,5 +1,6 @@
 import type { Season } from "@/contexts";
 import {
+  FISH_ACCENT_COLOR,
   FISH_COLOR,
   FISH_SPEED,
   FLATFISH_COUNT,
@@ -18,16 +19,16 @@ import {
 import { createDirectionChangeTime } from "./movement";
 import type { Fish } from "./types";
 
-const getSeasonFishProfile = (season: Season) => {
+export const getSeasonFishProfile = (season: Season) => {
   switch (season) {
     case "spring":
-      return { fishSpeed: FISH_SPEED.SPRING, fishColor: FISH_COLOR.SPRING };
+      return { fishSpeed: FISH_SPEED.SPRING, fishColor: FISH_COLOR.SPRING, fishAccentColor: FISH_ACCENT_COLOR.SPRING };
     case "summer":
-      return { fishSpeed: FISH_SPEED.SUMMER, fishColor: FISH_COLOR.SUMMER };
+      return { fishSpeed: FISH_SPEED.SUMMER, fishColor: FISH_COLOR.SUMMER, fishAccentColor: FISH_ACCENT_COLOR.SUMMER };
     case "autumn":
-      return { fishSpeed: FISH_SPEED.AUTUMN, fishColor: FISH_COLOR.AUTUMN };
+      return { fishSpeed: FISH_SPEED.AUTUMN, fishColor: FISH_COLOR.AUTUMN, fishAccentColor: FISH_ACCENT_COLOR.AUTUMN };
     case "winter":
-      return { fishSpeed: FISH_SPEED.WINTER, fishColor: FISH_COLOR.WINTER };
+      return { fishSpeed: FISH_SPEED.WINTER, fishColor: FISH_COLOR.WINTER, fishAccentColor: FISH_ACCENT_COLOR.WINTER };
   }
 };
 
