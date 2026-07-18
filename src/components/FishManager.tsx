@@ -39,6 +39,16 @@ const NORMAL_FISH_MARK_POSITION: [number, number, number] = [0.05, 0.08, 0];
 const NORMAL_FISH_MARK_ROTATION: [number, number, number] = [0, 0, Math.PI / 4];
 const FLATFISH_MARK_POSITION: [number, number, number] = [0.02, 0.015, 0];
 const FLATFISH_MARK_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
+const NORMAL_FISH_EYE_POSITIONS: [number, number, number][] = [
+  [0.18, 0.075, 0.045],
+  [0.18, 0.075, -0.045],
+];
+const FLATFISH_EYE_POSITIONS: [number, number, number][] = [
+  [0.08, 0.042, 0.055],
+  [0.08, 0.042, -0.055],
+];
+const FISH_EYE_COLOR = "#08131b";
+const FISH_EYE_HIGHLIGHT_COLOR = "#dff7ff";
 
 const getFishAccentBaseOpacity = (isFlatfish: boolean, colorPattern: string) => {
   if (isFlatfish) {
@@ -72,6 +82,35 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   );
   const flatfishAccentGeometry = useMemo(
     () => new THREE.CircleGeometry(0.16, 6),
+    []
+  );
+  const fishEyeGeometry = useMemo(
+    () => new THREE.SphereGeometry(0.025, 6, 4),
+    []
+  );
+  const fishEyeMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: FISH_EYE_COLOR,
+        emissive: FISH_EYE_COLOR,
+        emissiveIntensity: 0.08,
+        flatShading: true,
+        metalness: 0,
+        roughness: 0.68,
+      }),
+    []
+  );
+  const fishEyeHighlightGeometry = useMemo(
+    () => new THREE.SphereGeometry(0.008, 5, 3),
+    []
+  );
+  const fishEyeHighlightMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: FISH_EYE_HIGHLIGHT_COLOR,
+        transparent: true,
+        opacity: 0.82,
+      }),
     []
   );
 
@@ -123,8 +162,19 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
     return () => {
       normalAccentGeometry.dispose();
       flatfishAccentGeometry.dispose();
+      fishEyeGeometry.dispose();
+      fishEyeHighlightGeometry.dispose();
+      fishEyeMaterial.dispose();
+      fishEyeHighlightMaterial.dispose();
     };
-  }, [flatfishAccentGeometry, normalAccentGeometry]);
+  }, [
+    fishEyeGeometry,
+    fishEyeHighlightGeometry,
+    fishEyeHighlightMaterial,
+    fishEyeMaterial,
+    flatfishAccentGeometry,
+    normalAccentGeometry,
+  ]);
 
   // 各魚モデルの位置を動的に更新するための参照を作成する
   const fishRefs = useRef<THREE.Group[]>([]);
@@ -210,6 +260,8 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
         const accentScale: [number, number, number] = isFlatfish
           ? [fish.size * 0.95, fish.size * 0.42, fish.size * 0.95]
           : [fish.size * 0.68, fish.size * 0.32, fish.size * 0.68];
+        const eyePositions = isFlatfish ? FLATFISH_EYE_POSITIONS : NORMAL_FISH_EYE_POSITIONS;
+        const eyeScale = fish.size * (isFlatfish ? 0.92 : 0.66);
 
         return (
           <group
@@ -257,6 +309,16 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
                 depthWrite={false}
               />
             </mesh>
+            {eyePositions.map((eyePosition, eyeIndex) => (
+              <group key={eyeIndex} position={eyePosition} scale={eyeScale}>
+                <mesh geometry={fishEyeGeometry} material={fishEyeMaterial} />
+                <mesh
+                  position={[0.008, 0.006, eyePosition[2] > 0 ? 0.006 : -0.006]}
+                  geometry={fishEyeHighlightGeometry}
+                  material={fishEyeHighlightMaterial}
+                />
+              </group>
+            ))}
           </group>
         );
       })}
