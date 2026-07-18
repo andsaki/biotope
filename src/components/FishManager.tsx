@@ -35,6 +35,10 @@ interface FishManagerProps {
 }
 
 const WATER_REACTION_SECONDS = 2.2;
+const NORMAL_FISH_MARK_POSITION: [number, number, number] = [0.05, 0.08, 0];
+const NORMAL_FISH_MARK_ROTATION: [number, number, number] = [0, 0, Math.PI / 4];
+const FLATFISH_MARK_POSITION: [number, number, number] = [0.02, 0.015, 0];
+const FLATFISH_MARK_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
 
 const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const { season } = useSeason();
@@ -46,6 +50,14 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
 
   const fishList = useMemo(() => createFishList(season), [season]);
   const fishProfile = useMemo(() => getSeasonFishProfile(season), [season]);
+  const normalAccentGeometry = useMemo(
+    () => new THREE.ConeGeometry(0.12, 0.34, 3),
+    []
+  );
+  const flatfishAccentGeometry = useMemo(
+    () => new THREE.CircleGeometry(0.16, 6),
+    []
+  );
 
   const timeRef = useRef(0);
   const previousWaterSignalRef = useRef(waterSignal);
@@ -90,6 +102,13 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       flatfishClones.forEach(disposeObjectMaterials);
     };
   }, [flatfishClones]);
+
+  useEffect(() => {
+    return () => {
+      normalAccentGeometry.dispose();
+      flatfishAccentGeometry.dispose();
+    };
+  }, [flatfishAccentGeometry, normalAccentGeometry]);
 
   // 各魚モデルの位置を動的に更新するための参照を作成する
   const fishRefs = useRef<THREE.Group[]>([]);
@@ -151,6 +170,10 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
         const rotation: [number, number, number] = isFlatfish
           ? [FISH_MODEL_ROTATION.FLATFISH, 0, 0]
           : [FISH_MODEL_ROTATION.NORMAL, 0, 0];
+        const accentOpacity = isFlatfish ? 0.42 : fish.colorPattern === "flash" ? 0.92 : 0.72;
+        const accentScale: [number, number, number] = isFlatfish
+          ? [fish.size * 0.95, fish.size * 0.42, fish.size * 0.95]
+          : [fish.size * 0.68, fish.size * 0.32, fish.size * 0.68];
 
         return (
           <group
@@ -175,6 +198,24 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
               scale={scale}
               rotation={rotation}
             />
+            <mesh
+              position={isFlatfish ? FLATFISH_MARK_POSITION : NORMAL_FISH_MARK_POSITION}
+              rotation={isFlatfish ? FLATFISH_MARK_ROTATION : NORMAL_FISH_MARK_ROTATION}
+              scale={accentScale}
+              geometry={isFlatfish ? flatfishAccentGeometry : normalAccentGeometry}
+            >
+              <meshStandardMaterial
+                color={fish.accentColor}
+                emissive={fish.accentColor}
+                emissiveIntensity={isFlatfish ? 0.08 : 0.18}
+                flatShading
+                metalness={0}
+                roughness={0.72}
+                transparent
+                opacity={accentOpacity}
+                depthWrite={false}
+              />
+            </mesh>
           </group>
         );
       })}
