@@ -47,7 +47,11 @@ const SundialGnomon: React.FC = () => {
         castShadow={true}
       >
         <cylinderGeometry args={[0.2, 0.2, 1, 8]} />
-        <meshStandardMaterial color="#8B4513" />
+        <meshStandardMaterial
+          color="#1f3341"
+          roughness={0.92}
+          metalness={0}
+        />
       </mesh>
 
       {/* 影のマーカー（線） */}
@@ -58,11 +62,11 @@ const SundialGnomon: React.FC = () => {
       >
         <boxGeometry args={[0.15, 0.05, 2.5]} />
         <meshStandardMaterial
-          color="#1a1a1a"
+          color="#06111b"
           transparent={true}
-          opacity={0.8}
-          emissive="#1a1a1a"
-          emissiveIntensity={0.3}
+          opacity={0.5}
+          emissive="#071724"
+          emissiveIntensity={0.12}
         />
       </mesh>
     </group>
