@@ -131,20 +131,24 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
     ripplesRef.current = [...ripplesRef.current.slice(-(WATER_RIPPLE_MAX_COUNT - 1)), ripplePoint];
 
     const dropletParticles = Array.from({ length: rippleTuning.dropletCount }, (_, index) => {
-      const angle = (Math.PI * 2 * index) / rippleTuning.dropletCount + Math.random() * 0.35;
-      const speed = (0.08 + Math.random() * 0.08) * rippleTuning.dropletSpread;
+      const seed = ripplePoint.id * 1009 + index * 37;
+      const angle =
+        (Math.PI * 2 * index) / rippleTuning.dropletCount +
+        pseudoRandom(seed) * 0.35;
+      const speed = (0.08 + pseudoRandom(seed + 1) * 0.08) * rippleTuning.dropletSpread;
+      const spinDirection = pseudoRandom(seed + 6) > 0.5 ? 1 : -1;
       return {
         id: nextDropletIdRef.current++,
         worldX: worldPoint.x,
         worldY: worldPoint.y + 0.05,
         worldZ: worldPoint.z,
         velocityX: Math.cos(angle) * speed,
-        velocityY: (0.14 + Math.random() * 0.08) * rippleTuning.dropletLift,
+        velocityY: (0.14 + pseudoRandom(seed + 2) * 0.08) * rippleTuning.dropletLift,
         velocityZ: Math.sin(angle) * speed,
-        size: 0.035 + Math.random() * 0.02,
-        petalLike: Math.random() < rippleTuning.petalChance,
-        petalRotation: Math.random() * Math.PI,
-        petalSpin: (Math.random() * 1.6 + 0.8) * (Math.random() > 0.5 ? 1 : -1),
+        size: 0.035 + pseudoRandom(seed + 3) * 0.02,
+        petalLike: pseudoRandom(seed + 4) < rippleTuning.petalChance,
+        petalRotation: pseudoRandom(seed + 5) * Math.PI,
+        petalSpin: (pseudoRandom(seed + 7) * 1.6 + 0.8) * spinDirection,
         startTime: elapsedTimeRef.current,
       } satisfies DropletParticle;
     });
