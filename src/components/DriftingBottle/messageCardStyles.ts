@@ -81,11 +81,10 @@ export const CARD_STYLES: Record<string, CSSProperties> = {
     letterSpacing: "0.04em",
   },
   message: {
-    margin: "0",
+    margin: "0 0 8px",
     lineHeight: "1.9",
     color: "#4a4a4a",
     fontSize: "14.5px",
-    whiteSpace: "pre-wrap",
   },
   lifeLogBox: {
     margin: "14px 0 0",
