@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useSeason } from "../contexts";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { createRng, randomBetween } from "../utils/random";
 import {
   PETAL_COUNT,
   PETAL_SPAWN_X_RANGE,
@@ -69,26 +70,28 @@ const createPetalTexture = (() => {
 const CherryBlossoms: React.FC = React.memo(() => {
   const { season } = useSeason();
   const particlesRef = useRef<THREE.Points>(null);
+  const rngRef = useRef(createRng(0xc4e771a));
 
   // 花びらのパーティクル生成
   const particles = useMemo(() => {
     const positions = new Float32Array(PETAL_COUNT * 3);
     const velocities = new Float32Array(PETAL_COUNT * 3);
     const rotations = new Float32Array(PETAL_COUNT);
+    const rng = rngRef.current;
 
     for (let i = 0; i < PETAL_COUNT; i++) {
       // 初期位置（上空からランダムに）
-      positions[i * 3] = (Math.random() - 0.5) * PETAL_SPAWN_X_RANGE;
-      positions[i * 3 + 1] = PETAL_SPAWN_Y_BASE + Math.random() * PETAL_SPAWN_Y_RANGE;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * PETAL_SPAWN_Z_RANGE;
+      positions[i * 3] = randomBetween(rng, -PETAL_SPAWN_X_RANGE / 2, PETAL_SPAWN_X_RANGE / 2);
+      positions[i * 3 + 1] = randomBetween(rng, PETAL_SPAWN_Y_BASE, PETAL_SPAWN_Y_BASE + PETAL_SPAWN_Y_RANGE);
+      positions[i * 3 + 2] = randomBetween(rng, -PETAL_SPAWN_Z_RANGE / 2, PETAL_SPAWN_Z_RANGE / 2);
 
       // 落下速度（ゆっくり）
-      velocities[i * 3] = (Math.random() - 0.5) * PETAL_VELOCITY_X_DRIFT; // X方向のドリフト
-      velocities[i * 3 + 1] = PETAL_VELOCITY_Y_BASE - Math.random() * PETAL_VELOCITY_Y_RANGE; // Y方向（下向き）
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * PETAL_VELOCITY_Z_DRIFT; // Z方向のドリフト
+      velocities[i * 3] = randomBetween(rng, -PETAL_VELOCITY_X_DRIFT / 2, PETAL_VELOCITY_X_DRIFT / 2); // X方向のドリフト
+      velocities[i * 3 + 1] = PETAL_VELOCITY_Y_BASE - randomBetween(rng, 0, PETAL_VELOCITY_Y_RANGE); // Y方向（下向き）
+      velocities[i * 3 + 2] = randomBetween(rng, -PETAL_VELOCITY_Z_DRIFT / 2, PETAL_VELOCITY_Z_DRIFT / 2); // Z方向のドリフト
 
       // 回転
-      rotations[i] = Math.random() * Math.PI * 2;
+      rotations[i] = randomBetween(rng, 0, Math.PI * 2);
     }
 
     return { positions, velocities, rotations };
@@ -115,9 +118,10 @@ const CherryBlossoms: React.FC = React.memo(() => {
 
       // 地面に達したらリセット
       if (positions[i * 3 + 1] < PETAL_RESET_Y_THRESHOLD) {
-        positions[i * 3] = (Math.random() - 0.5) * PETAL_RESET_X_RANGE;
+        const rng = rngRef.current;
+        positions[i * 3] = randomBetween(rng, -PETAL_RESET_X_RANGE / 2, PETAL_RESET_X_RANGE / 2);
         positions[i * 3 + 1] = PETAL_RESET_Y;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * PETAL_RESET_Z_RANGE;
+        positions[i * 3 + 2] = randomBetween(rng, -PETAL_RESET_Z_RANGE / 2, PETAL_RESET_Z_RANGE / 2);
       }
     }
 
