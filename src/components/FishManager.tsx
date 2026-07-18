@@ -9,8 +9,6 @@ import { useThrottledFrame } from "../hooks/useThrottledFrame";
 import normalFishObjUrl from "../assets/Quaternius Fish/Fish1.obj?url";
 import normalFishMtlUrl from "../assets/Quaternius Fish/Fish1.mtl?url";
 import {
-  NORMAL_FISH_COUNT,
-  FLATFISH_COUNT,
   FISH_MODEL_SCALE,
   FISH_MODEL_ROTATION,
 } from "../constants/fish";
@@ -61,7 +59,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const flatfishScene = useModelScene("flatfish");
 
   const normalFishClones = useMemo(() => {
-    return Array.from({ length: NORMAL_FISH_COUNT }, (_, index) => {
+    return Array.from({ length: fishProfile.normalCount }, (_, index) => {
       const clone = normalFishScene.clone();
       applyLowPolyNormalFishMaterial(
         clone,
@@ -71,15 +69,15 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       );
       return clone;
     });
-  }, [fishProfile.fishAccentColor, fishProfile.fishColor, normalFishScene]);
+  }, [fishProfile.fishAccentColor, fishProfile.fishColor, fishProfile.normalCount, normalFishScene]);
 
   const flatfishClones = useMemo(() => {
-    return Array.from({ length: FLATFISH_COUNT }, (_, index) => {
+    return Array.from({ length: fishProfile.flatfishCount }, (_, index) => {
       const clone = flatfishScene.clone();
       applyLowPolyFlatfishMaterial(clone, index);
       return clone;
     });
-  }, [flatfishScene]);
+  }, [fishProfile.flatfishCount, flatfishScene]);
 
   useEffect(() => {
     return () => {
@@ -145,7 +143,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       {fishList.map((fish, index) => {
         const isFlatfish = fish.type === "flatfish";
         const clonedModel = isFlatfish
-          ? flatfishClones[index - NORMAL_FISH_COUNT]
+          ? flatfishClones[index - fishProfile.normalCount]
           : normalFishClones[index];
 
         const scaleMultiplier = isFlatfish ? FISH_MODEL_SCALE.FLATFISH : FISH_MODEL_SCALE.NORMAL;
