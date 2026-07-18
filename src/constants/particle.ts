@@ -6,7 +6,7 @@
 export const PARTICLE_COUNT = {
   SPRING: 15,
   SUMMER: 10,
-  AUTUMN: 5,
+  AUTUMN: 4,
   WINTER: 20,
   DEFAULT: 15,
 } as const;
@@ -15,7 +15,7 @@ export const PARTICLE_COUNT = {
 export const PARTICLE_COLOR = {
   SPRING: "#FFB6C1", // ライトピンク (花びら)
   SUMMER: "#98FB98", // ペールグリーン (葉)
-  AUTUMN: "#FFA500", // オレンジ (落ち葉)
+  AUTUMN: "#B66A2A", // 鈍い橙 (落ち葉)
   WINTER: "#FFFFFF", // ホワイト (雪)
   DEFAULT: "#FFB6C1",
 } as const;
@@ -36,7 +36,7 @@ export const PARTICLE_SPEED_Y: Record<ParticleSeasonKey, ParticleSpeedRange> = {
 export const PARTICLE_SIZE_MODIFIER = {
   SPRING: 1.0,
   SUMMER: 0.5,
-  AUTUMN: 1.2,
+  AUTUMN: 0.85,
   WINTER: 0.5,
   DEFAULT: 1.0,
 } as const;
@@ -80,8 +80,8 @@ export const PARTICLE_OPACITY = 0.8;
 export const PARTICLE_GEOMETRY_SIZE = {
   SPRING_WIDTH: 0.15,  // 桜の花びら (幅)
   SPRING_HEIGHT: 0.10, // 桜の花びら (高さ)
-  AUTUMN_WIDTH: 0.12,  // 落ち葉 (幅)
-  AUTUMN_HEIGHT: 0.18, // 落ち葉 (高さ)
+  AUTUMN_WIDTH: 0.1,  // 落ち葉 (幅)
+  AUTUMN_HEIGHT: 0.13, // 落ち葉 (高さ)
   WINTER_SEGMENTS: 8, // 雪の球体の分割数
   SUMMER_SEGMENTS: 6, // 夏の球体の分割数
 } as const;
