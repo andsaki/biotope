@@ -46,6 +46,14 @@ interface Particle {
   size: number;
   /** パーティクルの寿命 */
   life: number;
+  /** X軸回転 */
+  rotationX: number;
+  /** Y軸回転 */
+  rotationY: number;
+  /** Z軸回転 */
+  rotationZ: number;
+  /** 回転速度 */
+  spin: number;
 }
 
 /**
@@ -147,6 +155,10 @@ const ParticleLayerInstanced: React.FC = () => {
         color: particleColor,
         size: finalSize,
         life: randomInRange(PARTICLE_LIFE_MIN, PARTICLE_LIFE_MIN + PARTICLE_LIFE_VARIATION),
+        rotationX: randomInRange(-Math.PI * 0.35, Math.PI * 0.35),
+        rotationY: randomInRange(0, Math.PI * 2),
+        rotationZ: randomInRange(0, Math.PI * 2),
+        spin: randomInRange(-0.018, 0.018),
       });
     }
     particlesRef.current = newParticles;
@@ -187,11 +199,18 @@ const ParticleLayerInstanced: React.FC = () => {
         particle.z = randomInRange(PARTICLE_SPAWN.Z_MIN, PARTICLE_SPAWN.Z_MAX);
         particle.life = randomInRange(PARTICLE_LIFE_MIN, PARTICLE_LIFE_MIN + PARTICLE_LIFE_VARIATION);
         particle.speedY = randomInRange(speedYRange[0], speedYRange[1]);
+        particle.rotationX = randomInRange(-Math.PI * 0.35, Math.PI * 0.35);
+        particle.rotationY = randomInRange(0, Math.PI * 2);
+        particle.rotationZ = randomInRange(0, Math.PI * 2);
+        particle.spin = randomInRange(-0.018, 0.018);
       }
+
+      particle.rotationY += particle.spin * PARTICLE_SPEED_MULTIPLIER;
+      particle.rotationZ += particle.spin * 0.7 * PARTICLE_SPEED_MULTIPLIER;
 
       dummyObject.position.set(particle.x, particle.y, particle.z);
       dummyObject.scale.set(particle.size, particle.size, particle.size);
-      dummyObject.rotation.set(0, 0, 0);
+      dummyObject.rotation.set(particle.rotationX, particle.rotationY, particle.rotationZ);
       dummyObject.updateMatrix();
       mesh.setMatrixAt(i, dummyObject.matrix);
     }
@@ -204,10 +223,11 @@ const ParticleLayerInstanced: React.FC = () => {
       new THREE.MeshStandardMaterial({
         color: particleConfig.particleColor,
         transparent: true,
-        opacity: PARTICLE_OPACITY,
+        opacity: season === "autumn" ? 0.58 : PARTICLE_OPACITY,
         side: THREE.DoubleSide,
+        roughness: 0.95,
       }),
-    [particleConfig.particleColor]
+    [particleConfig.particleColor, season]
   );
 
   useEffect(() => {
