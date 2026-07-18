@@ -34,6 +34,42 @@ const FROG_COMBO_WINDOW_SECONDS = 1.2;
 const FROG_TRICK_DURATION_SECONDS = 0.95;
 const FROG_ATTENTION_SECONDS = 2.8;
 const FROG_LANDING_RIPPLE_SECONDS = 0.65;
+const FROG_LOW_POLY_COLORS = {
+  body: "#294b2f",
+  back: "#19341f",
+  belly: "#6f8a55",
+  accent: "#0f2416",
+};
+
+const applyLowPolyFrogMaterial = (model: THREE.Object3D) => {
+  let meshIndex = 0;
+
+  model.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) {
+      return;
+    }
+
+    const color =
+      meshIndex === 0
+        ? FROG_LOW_POLY_COLORS.body
+        : meshIndex % 4 === 0
+          ? FROG_LOW_POLY_COLORS.belly
+          : meshIndex % 3 === 0
+            ? FROG_LOW_POLY_COLORS.back
+            : FROG_LOW_POLY_COLORS.accent;
+
+    object.castShadow = false;
+    object.receiveShadow = false;
+    object.material = new THREE.MeshStandardMaterial({
+      color,
+      flatShading: true,
+      metalness: 0,
+      roughness: 1,
+      envMapIntensity: 0.08,
+    });
+    meshIndex += 1;
+  });
+};
 
 /**
  * 蓮の葉に乗る小さなカエル。
@@ -54,6 +90,7 @@ const Frog: React.FC<FrogProps> = ({
   const frogModel = useMemo(() => {
     const model = frogScene.clone(true);
     model.rotation.set(0, -Math.PI / 2, 0);
+    applyLowPolyFrogMaterial(model);
     return model;
   }, [frogScene]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
