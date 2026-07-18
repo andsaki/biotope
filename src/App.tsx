@@ -66,7 +66,7 @@ const AppContent = () => {
   const isLoading = !(assetsLoaded && minDelayElapsed);
 
   // 背景色をメモ化
-  const backgroundColor = useMemo(() => isDay ? "#4A90E2" : "#2A2A4E", [isDay]);
+  const backgroundColor = useMemo(() => isDay ? "#376FAF" : "#2A2A4E", [isDay]);
 
   // 最低表示時間を確保
   useEffect(() => {

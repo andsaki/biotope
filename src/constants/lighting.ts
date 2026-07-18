@@ -8,13 +8,13 @@ export const LIGHTING_TRANSITION_SPEED = 2;
 // 昼夜の基本強度
 export const DAY_INTENSITY = {
   directional: {
-    default: 5.0,
-    summer: 6.0,
-    winter: 4.0,
+    default: 4.2,
+    summer: 4.8,
+    winter: 3.5,
   },
-  ambient: 0.5,
-  point: 0.5,
-  spot: 1.0,
+  ambient: 0.42,
+  point: 0.42,
+  spot: 0.82,
 } as const;
 
 export const NIGHT_INTENSITY = {
@@ -42,8 +42,8 @@ export const SEASON_COLORS = {
   },
   summer: {
     day: {
-      directional: "#FFE55C",
-      ambient: "#87CEEB",
+      directional: "#F4D96A",
+      ambient: "#78B8D6",
     },
     night: {
       directional: "#B0C4DE",
@@ -108,8 +108,8 @@ export const SCENE_LIGHTS: {
   };
 } = {
   ambient: {
-    intensity: 0.5,
-    color: "#87CEEB",
+    intensity: 0.42,
+    color: "#78B8D6",
   },
   point: {
     position: [10, 10, 10],
@@ -117,8 +117,8 @@ export const SCENE_LIGHTS: {
     color: "#FFFFFF",
   },
   directional: {
-    intensity: 8.0,
-    color: "#FFD700",
+    intensity: 5.8,
+    color: "#F4D96A",
     shadowMapSize: DIRECTIONAL_SHADOW_MAP_SIZE.day,
     shadowCameraNear: 0.5,
     shadowCameraFar: 50,
@@ -131,7 +131,7 @@ export const SCENE_LIGHTS: {
     position: [5, 8, 5],
     angle: 0.5,
     penumbra: 0.2,
-    intensity: 1.0,
+    intensity: 0.82,
     color: "#FFFFFF",
   },
 };
