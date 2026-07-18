@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { createRng, randomBetween } from "../utils/random";
 import {
   BUBBLE_COUNT,
   BUBBLE_SIZE_MIN,
@@ -27,11 +28,14 @@ interface BubbleData {
 const BubbleEffect: React.FC = () => {
   const bubbleRefs = useRef<THREE.Mesh[]>([]);
   const bubbleDataRef = useRef<BubbleData[]>([]);
+  const rngRef = useRef(createRng(0xb0bb1e5));
 
   const createBubble = (): BubbleData => {
-    const size = Math.random() * (BUBBLE_SIZE_MAX - BUBBLE_SIZE_MIN) + BUBBLE_SIZE_MIN;
-    const speed = Math.random() * (BUBBLE_SPEED_MAX - BUBBLE_SPEED_MIN) + BUBBLE_SPEED_MIN;
-    const location = BUBBLE_LOCATIONS[Math.floor(Math.random() * BUBBLE_LOCATIONS.length)];
+    const rng = rngRef.current;
+    const size = randomBetween(rng, BUBBLE_SIZE_MIN, BUBBLE_SIZE_MAX);
+    const speed = randomBetween(rng, BUBBLE_SPEED_MIN, BUBBLE_SPEED_MAX);
+    const locationIndex = Math.floor(rng() * BUBBLE_LOCATIONS.length);
+    const location = BUBBLE_LOCATIONS[locationIndex] ?? BUBBLE_LOCATIONS[0];
 
     return {
       x: location.x,
