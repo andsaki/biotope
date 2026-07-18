@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 import { useDayPeriod } from "../contexts";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { createRng, randomBetween } from "../utils/random";
 import {
   STAR_COUNT,
   STAR_POSITION_RANGE,
@@ -43,17 +44,18 @@ const Stars: React.FC = () => {
     const colors = [];
     const sizes = [];
     const color = new THREE.Color();
+    const rng = createRng(0x57a75eed);
 
     for (let i = 0; i < STAR_COUNT; i++) {
-      const x = (Math.random() - 0.5) * STAR_POSITION_RANGE;
-      const y = (Math.random() - 0.5) * STAR_POSITION_RANGE;
-      const z = (Math.random() - 0.5) * STAR_POSITION_RANGE;
+      const x = randomBetween(rng, -STAR_POSITION_RANGE / 2, STAR_POSITION_RANGE / 2);
+      const y = randomBetween(rng, -STAR_POSITION_RANGE / 2, STAR_POSITION_RANGE / 2);
+      const z = randomBetween(rng, -STAR_POSITION_RANGE / 2, STAR_POSITION_RANGE / 2);
       positions.push(x, y, z);
 
-      color.setHSL(STAR_HUE, STAR_SATURATION, Math.random() * (STAR_LIGHTNESS_MAX - STAR_LIGHTNESS_MIN) + STAR_LIGHTNESS_MIN);
+      color.setHSL(STAR_HUE, STAR_SATURATION, randomBetween(rng, STAR_LIGHTNESS_MIN, STAR_LIGHTNESS_MAX));
       colors.push(color.r, color.g, color.b);
 
-      sizes.push(Math.random() * (STAR_SIZE_MAX - STAR_SIZE_MIN) + STAR_SIZE_MIN);
+      sizes.push(randomBetween(rng, STAR_SIZE_MIN, STAR_SIZE_MAX));
     }
 
     return {

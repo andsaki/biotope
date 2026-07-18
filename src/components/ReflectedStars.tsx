@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { PointMaterial } from "@react-three/drei";
 import { useDayPeriod } from "../contexts";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { createRng, randomBetween } from "../utils/random";
 import {
   REFLECTED_STAR_COUNT,
   STAR_DISPLAY_DELAY,
@@ -39,10 +40,11 @@ const ReflectedStars: React.FC = () => {
 
   const particles = useMemo(() => {
     const positions = new Float32Array(REFLECTED_STAR_COUNT * 3);
+    const rng = createRng(0x5ea51de);
     for (let i = 0; i < positions.length; i += 3) {
-      positions[i] = (Math.random() - 0.5) * REFLECTED_STAR_SPREAD_X;
+      positions[i] = randomBetween(rng, -REFLECTED_STAR_SPREAD_X / 2, REFLECTED_STAR_SPREAD_X / 2);
       positions[i + 1] = 0;
-      positions[i + 2] = (Math.random() - 0.5) * REFLECTED_STAR_SPREAD_Z;
+      positions[i + 2] = randomBetween(rng, -REFLECTED_STAR_SPREAD_Z / 2, REFLECTED_STAR_SPREAD_Z / 2);
     }
     return positions;
   }, []);
