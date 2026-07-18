@@ -1,4 +1,5 @@
 import type { Season } from "@/contexts/SeasonContext/context";
+import { createSeedFromString } from "@/utils/random";
 import type { WeatherSnapshot } from "@/utils/weather";
 import type { TimeOfDay } from "./time";
 
@@ -236,19 +237,10 @@ const timeNotes: Record<TimeOfDay, string[]> = {
   ],
 };
 
-const createSeed = (value: string) => {
-  let hash = 2166136261;
-  for (let i = 0; i < value.length; i += 1) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-};
-
 const pick = <T,>(items: readonly T[], seed: number) => items[seed % items.length];
 
 export const getBottleDiscoveryLabel = (date: string) =>
-  pick(discoveryLabels, createSeed(date));
+  pick(discoveryLabels, createSeedFromString(date));
 
 export const getDailyBottleOmen = ({
   date,
@@ -257,7 +249,7 @@ export const getDailyBottleOmen = ({
   windDirection,
   weather,
 }: LifeLogInput): BottleOmen => {
-  const seed = createSeed(
+  const seed = createSeedFromString(
     `omen:${date}:${season}:${timeOfDay}:${windDirection}:${weather.condition}:${weather.trend}`
   );
   return pick(bottleOmens, seed);
@@ -282,7 +274,7 @@ export const createDailyLifeLog = ({
   windDirection,
   weather,
 }: LifeLogInput) => {
-  const seed = createSeed(
+  const seed = createSeedFromString(
     `${date}:${season}:${timeOfDay}:${windDirection}:${weather.condition}`
   );
   const seasonalText = pick(seasonNotes[season], seed);
@@ -314,7 +306,7 @@ export const createLocalBottleMessage = ({
   weather,
   omen,
 }: LocalBottleMessageInput) => {
-  const seed = createSeed(
+  const seed = createSeedFromString(
     `local-message:${date}:${season}:${timeOfDay}:${windDirection}:${weather.condition}:${weather.trend}:${omen.id}`
   );
   const seasonalText = pick(seasonNotes[season], seed).replace(/。$/, "");
