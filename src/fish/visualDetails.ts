@@ -16,6 +16,10 @@ export const FLATFISH_EYE_POSITIONS: [number, number, number][] = [
 
 export const FISH_EYE_COLOR = "#08131b";
 export const FISH_EYE_HIGHLIGHT_COLOR = "#dff7ff";
+export const FISH_UNDERBODY_SHADOW_COLOR = "#07141d";
+export const FISH_UNDERBODY_SHADOW_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
+export const NORMAL_FISH_UNDERBODY_SHADOW_POSITION: [number, number, number] = [0, -0.13, 0];
+export const FLATFISH_UNDERBODY_SHADOW_POSITION: [number, number, number] = [0, -0.018, 0];
 
 export const getFishAccentBaseOpacity = (
   isFlatfish: boolean,
