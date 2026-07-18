@@ -47,6 +47,10 @@ export const MessageCard = memo(({
   onClose,
 }: MessageCardProps) => {
   const discoveryLabel = getBottleDiscoveryLabel(currentDate);
+  const messageParagraphs = message
+    .split(/\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
   const { size } = useThree();
   const distanceFactor = size.width < 520 ? 6.2 : 10;
   const handleClose = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -86,7 +90,11 @@ export const MessageCard = memo(({
             <span style={CARD_STYLES.statusChip}>{formatJournalDate(currentDate)}</span>
             <span style={CARD_STYLES.statusChip}>封蝋: {discoveryLabel}</span>
           </div>
-          <p style={CARD_STYLES.message}>{message}</p>
+          {messageParagraphs.map((paragraph) => (
+            <p key={paragraph} style={CARD_STYLES.message}>
+              {paragraph}
+            </p>
+          ))}
           <div style={CARD_STYLES.lifeLogBox}>
             <p style={CARD_STYLES.lifeLogHeader}>採取時の水辺</p>
             <p style={CARD_STYLES.lifeLogText}>{lifeLog}</p>
