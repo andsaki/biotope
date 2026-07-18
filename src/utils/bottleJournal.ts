@@ -32,6 +32,7 @@ export interface BottleOmen {
   label: string;
   description: string;
   worldNote: string;
+  observation?: string;
   color: string;
 }
 
@@ -133,6 +134,7 @@ const bottleOmens: readonly BottleOmen[] = [
     label: "魚寄せ",
     description: "魚影が瓶のそばで一度だけ向きをゆるめる。",
     worldNote: "瓶の周りに、魚が通ったあとの淡いしるしが残る。",
+    observation: "便りを閉じたあと、瓶の下を通る魚影の向きがそろう瞬間を待つ。",
     color: "#b8f1ff",
   },
   {
@@ -140,6 +142,7 @@ const bottleOmens: readonly BottleOmen[] = [
     label: "静かな波紋",
     description: "水面を触れたときの光が少し細く、長く残る。",
     worldNote: "水面に細い輪が残り、次の波を待っている。",
+    observation: "水面を一度だけ触れて、消えかけの輪がどこへ流れるかを見る。",
     color: "#f7f0c2",
   },
   {
@@ -147,6 +150,7 @@ const bottleOmens: readonly BottleOmen[] = [
     label: "蛍火",
     description: "夜の水辺で、小さな光の粒が瓶口を見に来る。",
     worldNote: "瓶の口元に、蛍のような点がゆっくり回る。",
+    observation: "夜に瓶の口元を見て、星ではない小さな光が戻るか確かめる。",
     color: "#d6ff9f",
   },
   {
@@ -154,6 +158,7 @@ const bottleOmens: readonly BottleOmen[] = [
     label: "底流",
     description: "深いところの流れが少し強まり、影がゆっくり動く。",
     worldNote: "底から上がる青い粒が、短いあいだ水面へ向かう。",
+    observation: "底の泡と魚影を追って、水面より下で先に動く流れを探す。",
     color: "#9fd7ff",
   },
   {
@@ -161,6 +166,7 @@ const bottleOmens: readonly BottleOmen[] = [
     label: "隠れ岸",
     description: "石や葉の影が濃くなり、岸の端だけがふっと浮く。",
     worldNote: "岸辺の影に、古い地図の端のような光が残る。",
+    observation: "石と葉の境目を眺めて、影の輪郭だけが濃くなる場所を探す。",
     color: "#ffd5a3",
   },
 ] satisfies readonly BottleOmen[];
@@ -417,6 +423,7 @@ const isBottleOmen = (value: unknown): value is BottleOmen => {
     typeof value.label === "string" &&
     typeof value.description === "string" &&
     typeof value.worldNote === "string" &&
+    (!("observation" in value) || typeof value.observation === "string") &&
     typeof value.color === "string"
   );
 };
