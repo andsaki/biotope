@@ -35,8 +35,13 @@ const loadStoredCoordinates = (): StoredCoordinates | null => {
     const raw = window.sessionStorage.getItem(LOCATION_SESSION_KEY);
     if (!raw) return null;
     const value = JSON.parse(raw);
-    return isStoredCoordinates(value) ? value : null;
+    if (isStoredCoordinates(value)) {
+      return value;
+    }
+    window.sessionStorage.removeItem(LOCATION_SESSION_KEY);
+    return null;
   } catch {
+    window.sessionStorage.removeItem(LOCATION_SESSION_KEY);
     return null;
   }
 };
