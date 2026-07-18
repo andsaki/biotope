@@ -34,6 +34,23 @@ export const BottleJournalPanel: React.FC<BottleJournalPanelProps> = ({
         boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.08)",
       }}
     >
+      {entries.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: tokens.spacing.sm,
+            fontFamily: tokens.typography.fontFamily.serif,
+            fontSize: isMobile ? "11px" : "12px",
+            color: "rgba(255, 255, 255, 0.68)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          <span>採集帳</span>
+          <span>{entries.length}通</span>
+        </div>
+      )}
       {entries.length === 0 ? (
         <div
           style={{
@@ -46,7 +63,7 @@ export const BottleJournalPanel: React.FC<BottleJournalPanelProps> = ({
           まだ採集帳は白紙です。漂流瓶を読むと、水辺に残った徴がここへ写ります。
         </div>
       ) : (
-        entries.slice(0, 3).map((entry) => (
+        entries.map((entry) => (
           <article
             key={entry.date}
             style={{
