@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { BottleMemorySign } from "@/utils/bottleJournal";
+import { createSeedFromString } from "@/utils/random";
 
 interface BottleMemoryMarksProps {
   signs: BottleMemorySign[];
@@ -9,17 +10,8 @@ interface BottleMemoryMarksProps {
 
 const MAX_VISIBLE_MEMORY_SIGNS = 10;
 
-const createSignSeed = (value: string) => {
-  let hash = 2166136261;
-  for (let i = 0; i < value.length; i += 1) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-};
-
 const getSignPlacement = (date: string, index: number) => {
-  const seed = createSignSeed(date);
+  const seed = createSeedFromString(date);
   const angle = ((seed % 360) / 180) * Math.PI + index * 0.53;
   const radius = 0.66 + ((seed >>> 4) % 7) * 0.11;
   const size = 0.12 + ((seed >>> 8) % 5) * 0.014;

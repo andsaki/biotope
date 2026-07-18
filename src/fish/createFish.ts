@@ -16,7 +16,7 @@ import {
   NORMAL_FISH_SPAWN,
   NORMAL_FISH_SPEED_VARIATION,
 } from "@/constants/fish";
-import { createRng, randomBetween, type RngFunction } from "@/utils/random";
+import { createRng, createSeedFromString, randomBetween, type RngFunction } from "@/utils/random";
 import { createDirectionChangeTime } from "./movement";
 import type { Fish } from "./types";
 
@@ -114,10 +114,7 @@ const createFlatfish = (id: number, fishColor: string, rng: RngFunction): Fish =
 
 export const createFishList = (season: Season): Fish[] => {
   const { fishSpeed, fishColor, normalCount, flatfishCount } = getSeasonFishProfile(season);
-  const rng = createRng(`fish:${season}`.split("").reduce(
-    (seed, char) => Math.imul(seed ^ char.charCodeAt(0), 16777619),
-    2166136261
-  ));
+  const rng = createRng(createSeedFromString(`fish:${season}`));
   const normalFish = Array.from({ length: normalCount }, (_, index) =>
     createNormalFish(index, fishSpeed, fishColor, rng)
   );
