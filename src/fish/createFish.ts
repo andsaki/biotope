@@ -18,7 +18,7 @@ import {
 } from "@/constants/fish";
 import { createRng, createSeedFromString, randomBetween, type RngFunction } from "@/utils/random";
 import { createDirectionChangeTime } from "./movement";
-import type { Fish } from "./types";
+import type { Fish, FishColorPattern } from "./types";
 
 interface SeasonFishProfile {
   fishSpeed: number;
@@ -62,14 +62,20 @@ const SEASON_FISH_PROFILES: Record<Season, SeasonFishProfile> = {
 export const getSeasonFishProfile = (season: Season) =>
   SEASON_FISH_PROFILES[season];
 
+const FISH_COLOR_PATTERNS: FishColorPattern[] = ["back", "belly", "flash"];
+
 const createNormalFish = (
   id: number,
   fishSpeed: number,
   fishColor: string,
+  fishAccentColor: string,
   rng: RngFunction
 ): Fish => {
   const direction = randomBetween(rng, 0, Math.PI * 2);
   const cruiseY = randomBetween(rng, NORMAL_FISH_SPAWN.Y_MIN, NORMAL_FISH_SPAWN.Y_MAX);
+  const colorPattern =
+    FISH_COLOR_PATTERNS[Math.floor(randomBetween(rng, 0, FISH_COLOR_PATTERNS.length))] ??
+    FISH_COLOR_PATTERNS[0];
 
   return {
     id,
@@ -86,12 +92,19 @@ const createNormalFish = (
     movementSeed: Math.floor(randomBetween(rng, 0, 0xffffffff)),
     movementStep: 0,
     color: fishColor,
+    accentColor: fishAccentColor,
+    colorPattern,
     size: randomBetween(rng, NORMAL_FISH_SIZE_MIN, NORMAL_FISH_SIZE_MIN + NORMAL_FISH_SIZE_VARIATION),
     type: "normal",
   };
 };
 
-const createFlatfish = (id: number, fishColor: string, rng: RngFunction): Fish => {
+const createFlatfish = (
+  id: number,
+  fishColor: string,
+  fishAccentColor: string,
+  rng: RngFunction
+): Fish => {
   const direction = randomBetween(rng, 0, Math.PI * 2);
 
   return {
@@ -109,6 +122,8 @@ const createFlatfish = (id: number, fishColor: string, rng: RngFunction): Fish =
     movementSeed: Math.floor(randomBetween(rng, 0, 0xffffffff)),
     movementStep: 0,
     color: fishColor,
+    accentColor: fishAccentColor,
+    colorPattern: "back",
     size: randomBetween(rng, FLATFISH_SIZE_MIN, FLATFISH_SIZE_MIN + FLATFISH_SIZE_VARIATION),
     type: "flatfish",
     waitTime: randomBetween(rng, FLATFISH_WAIT_TIME_MIN, FLATFISH_WAIT_TIME_MIN + FLATFISH_WAIT_TIME_VARIATION),
@@ -117,13 +132,14 @@ const createFlatfish = (id: number, fishColor: string, rng: RngFunction): Fish =
 };
 
 export const createFishList = (season: Season): Fish[] => {
-  const { fishSpeed, fishColor, normalCount, flatfishCount } = getSeasonFishProfile(season);
+  const { fishSpeed, fishColor, fishAccentColor, normalCount, flatfishCount } =
+    getSeasonFishProfile(season);
   const rng = createRng(createSeedFromString(`fish:${season}`));
   const normalFish = Array.from({ length: normalCount }, (_, index) =>
-    createNormalFish(index, fishSpeed, fishColor, rng)
+    createNormalFish(index, fishSpeed, fishColor, fishAccentColor, rng)
   );
   const flatfish = Array.from({ length: flatfishCount }, (_, index) =>
-    createFlatfish(normalCount + index, fishColor, rng)
+    createFlatfish(normalCount + index, fishColor, fishAccentColor, rng)
   );
 
   return [...normalFish, ...flatfish];

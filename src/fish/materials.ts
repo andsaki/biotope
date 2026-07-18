@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { FLATFISH_LOW_POLY_MATERIAL } from "@/constants/fish";
+import type { FishColorPattern } from "./types";
 
 export const disposeObjectMaterials = (scene: THREE.Object3D) => {
   scene.traverse((object) => {
@@ -20,20 +21,29 @@ export const applyLowPolyNormalFishMaterial = (
   scene: THREE.Object3D,
   baseColor: string,
   accentColor: string,
-  index: number
+  pattern: FishColorPattern
 ) => {
+  let meshIndex = 0;
   scene.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) {
       return;
     }
 
+    const useAccent =
+      pattern === "flash"
+        ? meshIndex % 2 === 0
+        : pattern === "belly"
+          ? meshIndex % 3 === 1
+          : meshIndex % 3 === 0;
+
     object.material = new THREE.MeshStandardMaterial({
-      color: index % 3 === 0 ? accentColor : baseColor,
+      color: useAccent ? accentColor : baseColor,
       flatShading: true,
       metalness: 0,
-      roughness: 0.94,
-      envMapIntensity: 0.18,
+      roughness: pattern === "flash" ? 0.86 : 0.92,
+      envMapIntensity: pattern === "flash" ? 0.28 : 0.2,
     });
+    meshIndex += 1;
   });
 };
 

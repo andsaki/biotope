@@ -1,6 +1,9 @@
 /** 魚の種類 */
 export type FishType = "normal" | "flatfish";
 
+/** 通常魚の配色パターン */
+export type FishColorPattern = "back" | "belly" | "flash";
+
 /** 魚の状態データ */
 export interface Fish {
   /** 魚のID */
@@ -31,6 +34,10 @@ export interface Fish {
   movementStep: number;
   /** 魚の色 */
   color: string;
+  /** 魚の差し色 */
+  accentColor: string;
+  /** 魚の配色パターン */
+  colorPattern: FishColorPattern;
   /** 魚のサイズ */
   size: number;
   /** 魚の種類 */
