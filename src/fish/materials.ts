@@ -31,7 +31,8 @@ export const applyLowPolyNormalFishMaterial = (
       color: index % 3 === 0 ? accentColor : baseColor,
       flatShading: true,
       metalness: 0,
-      roughness: 0.82,
+      roughness: 0.94,
+      envMapIntensity: 0.18,
     });
   });
 };
@@ -50,6 +51,7 @@ export const applyLowPolyFlatfishMaterial = (scene: THREE.Object3D, index: numbe
       flatShading: true,
       metalness: 0,
       roughness: FLATFISH_LOW_POLY_MATERIAL.ROUGHNESS,
+      envMapIntensity: 0.12,
     });
   });
 };
