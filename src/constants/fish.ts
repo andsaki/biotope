@@ -115,13 +115,3 @@ export const FLATFISH_LOW_POLY_MATERIAL = {
   ACCENT_COLOR: "#9a805b",
   ROUGHNESS: 1,
 } as const;
-
-// フラットフィッシュの透明度
-export const FLATFISH_OPACITY = {
-  MOVING_DAY: 0.9, // 移動中・昼
-  WAITING_DAY: 0.6, // 待機中・昼（砂に擬態）
-  NIGHT: 0.3, // 夜間
-} as const;
-
-// 通常の魚の透明度
-export const NORMAL_FISH_OPACITY = 1.0;
