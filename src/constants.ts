@@ -9,12 +9,12 @@ export const INITIAL_TIME_MINUTES = 1020; // 午後5時（17 * 60）
 
 // カラー定数
 export const COLORS = {
-  dayBackground: "#4A90E2",
+  dayBackground: "#376FAF",
   nightBackground: "#2A2A4E",
   sunColor: "#FFD700",
-  waterColor: "#4A90E2",
-  ambientLightDay: "#87CEEB",
+  waterColor: "#2F6FA8",
+  ambientLightDay: "#78B8D6",
   ambientLightNight: "#333333",
-  directionalLightDay: "#FFD700",
+  directionalLightDay: "#F4D96A",
   directionalLightNight: "#CCCCCC",
 } as const;
