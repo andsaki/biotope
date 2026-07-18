@@ -8,6 +8,7 @@ import {
   FLATFISH_WAIT_TIME_MIN,
   FLATFISH_WAIT_TIME_VARIATION,
 } from "@/constants/fish";
+import { createRng, randomBetween, type RngFunction } from "@/utils/random";
 import type { Fish } from "./types";
 
 interface FishMotionContext {
@@ -24,9 +25,19 @@ const normalizeAngle = (angle: number) =>
 const dampAngle = (current: number, target: number, damping: number, delta: number) =>
   current + normalizeAngle(target - current) * (1 - Math.exp(-damping * delta));
 
-export const createDirectionChangeTime = () =>
-  FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
-  Math.random() * FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION;
+export const createDirectionChangeTime = (rng: RngFunction) =>
+  randomBetween(
+    rng,
+    FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN,
+    FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
+      FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION
+  );
+
+const nextFishRandom = (fish: Fish) => {
+  const rng = createRng(fish.movementSeed + fish.movementStep * 0x9e3779b1);
+  fish.movementStep += 1;
+  return rng();
+};
 
 const steerTowardCenterIfNeeded = (fish: Fish, margin: number) => {
   const nearBoundary =
@@ -59,11 +70,15 @@ const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
       newIsMoving = true;
       fish.targetDirectionX =
         fish.directionX +
-        (Math.random() - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
-      newWaitTime = FLATFISH_MOVE_TIME_MIN + Math.random() * FLATFISH_MOVE_TIME_VARIATION;
+        (nextFishRandom(fish) - 0.5) * FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
+      newWaitTime =
+        FLATFISH_MOVE_TIME_MIN +
+        nextFishRandom(fish) * FLATFISH_MOVE_TIME_VARIATION;
     } else {
       newIsMoving = false;
-      newWaitTime = FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION;
+      newWaitTime =
+        FLATFISH_WAIT_TIME_MIN +
+        nextFishRandom(fish) * FLATFISH_WAIT_TIME_VARIATION;
     }
   }
 
@@ -111,13 +126,17 @@ const updateNormalFishMovement = (fish: Fish, context: FishMotionContext) => {
   fish.directionChangeTime -= delta;
   if (fish.directionChangeTime <= 0) {
     fish.targetDirectionX +=
-      (Math.random() - 0.5) *
+      (nextFishRandom(fish) - 0.5) *
       FISH_MOVEMENT.DIRECTION_CHANGE_ANGLE_RANGE;
-    fish.directionChangeTime = createDirectionChangeTime();
+    fish.directionChangeTime =
+      FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
+      nextFishRandom(fish) * FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION;
   }
 
   if (steerTowardCenterIfNeeded(fish, FISH_MOVEMENT.BOUNDARY_MARGIN)) {
-    fish.directionChangeTime = createDirectionChangeTime();
+    fish.directionChangeTime =
+      FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_MIN +
+      nextFishRandom(fish) * FISH_MOVEMENT.DIRECTION_CHANGE_INTERVAL_VARIATION;
   }
 
   fish.directionX = dampAngle(

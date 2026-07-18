@@ -25,6 +25,10 @@ export interface Fish {
   swimPhase: number;
   /** 次に進路を変更するまでの時間（秒） */
   directionChangeTime: number;
+  /** 行動の揺らぎを再現可能にするためのseed */
+  movementSeed: number;
+  /** 行動乱数の進行位置 */
+  movementStep: number;
   /** 魚の色 */
   color: string;
   /** 魚のサイズ */
