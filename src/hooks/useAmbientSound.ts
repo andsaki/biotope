@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDayPeriod, useSeason, type Season } from "@/contexts";
+import {
+  AMBIENT_SAMPLE_GAIN_MULTIPLIERS,
+  AMBIENT_SAMPLE_KEYS,
+  AMBIENT_SAMPLE_URLS,
+  getAmbientSampleKey,
+  type AmbientSampleKey,
+} from "./ambientSamples";
 
 declare global {
   interface Window {
@@ -16,25 +23,6 @@ interface AmbientSoundControls {
   setMuted: (next: boolean) => void;
   setVolume: (next: number) => void;
 }
-
-type AmbientSampleKey =
-  | "spring-day"
-  | "spring-night"
-  | "summer-day"
-  | "summer-night"
-  | "autumn-day"
-  | "autumn-night"
-  | "winter-night";
-
-const AMBIENT_SAMPLE_KEYS: AmbientSampleKey[] = [
-  "spring-day",
-  "spring-night",
-  "summer-day",
-  "summer-night",
-  "autumn-day",
-  "autumn-night",
-  "winter-night",
-];
 
 const clamp = (value: number, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
@@ -296,49 +284,6 @@ export const useAmbientSound = (): AmbientSoundControls => {
     setMuted,
     setVolume,
   };
-};
-
-const AMBIENT_SAMPLE_URLS: Record<AmbientSampleKey, string> = {
-  "spring-day": "/audio/ambient/spring-birds-day.ogg",
-  "spring-night": "/audio/ambient/spring-frogs-night.ogg",
-  "summer-day": "/audio/ambient/summer-cicada-day.ogg",
-  "summer-night": "/audio/ambient/summer-cricket-night.ogg",
-  "autumn-day": "/audio/ambient/autumn-garden-day.ogg",
-  "autumn-night": "/audio/ambient/suzumushi-night.ogg",
-  "winter-night": "/audio/ambient/winter-snow-night.wav",
-};
-
-const AMBIENT_SAMPLE_GAIN_MULTIPLIERS: Record<AmbientSampleKey, number> = {
-  "spring-day": 0.8,
-  "spring-night": 0.7,
-  "summer-day": 0.72,
-  "summer-night": 0.68,
-  "autumn-day": 0.52,
-  "autumn-night": 0.62,
-  "winter-night": 0.16,
-};
-
-const getAmbientSampleKey = (
-  season: Season,
-  isDay: boolean
-): AmbientSampleKey | null => {
-  if (season === "spring") {
-    return isDay ? "spring-day" : "spring-night";
-  }
-
-  if (season === "summer") {
-    return isDay ? "summer-day" : "summer-night";
-  }
-
-  if (season === "autumn") {
-    return isDay ? "autumn-day" : "autumn-night";
-  }
-
-  if (season === "winter") {
-    return isDay ? null : "winter-night";
-  }
-
-  return null;
 };
 
 const createWaterTexture = (context: AudioContext) => {
