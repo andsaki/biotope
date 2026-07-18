@@ -70,6 +70,8 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
   const rainIntensity = getRainIntensity(weather);
   const reflectionIntensity = getWaterReflectionIntensity(weather);
   const waterTurbulence = getWeatherWaterTurbulence(weather);
+  const waterBaseColor = useMemo(() => new THREE.Color(WATER_COLOR), []);
+  const waterStormColor = useMemo(() => new THREE.Color("#16334d"), []);
 
   // マテリアルをメモ化してパフォーマンス向上
   const material = useMemo(
@@ -182,12 +184,18 @@ const WaterSurface: React.FC<WaterSurfaceProps> = ({ onInteract, weather }) => {
 
     const time = state.clock.getElapsedTime();
     elapsedTimeRef.current = time;
-    material.roughness = THREE.MathUtils.clamp(
-      WATER_ROUGHNESS + (1 - reflectionIntensity) * 0.52,
-      0.08,
-      0.72
+    const weatherDarkening = THREE.MathUtils.clamp(
+      rainIntensity * 0.52 + (1 - reflectionIntensity) * 0.24,
+      0,
+      0.58
     );
-    material.envMapIntensity = WATER_ENV_MAP_INTENSITY * (0.55 + reflectionIntensity * 0.55);
+    material.color.lerpColors(waterBaseColor, waterStormColor, weatherDarkening);
+    material.roughness = THREE.MathUtils.clamp(
+      WATER_ROUGHNESS + (1 - reflectionIntensity) * 0.48 + rainIntensity * 0.16,
+      0.16,
+      0.78
+    );
+    material.envMapIntensity = WATER_ENV_MAP_INTENSITY * (0.48 + reflectionIntensity * 0.42);
     material.opacity = THREE.MathUtils.clamp(
       WATER_OPACITY + rainIntensity * 0.08,
       0.22,
