@@ -363,7 +363,12 @@ export const saveBottleJournalEntry = (entry: BottleJournalEntry) => {
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, MAX_JOURNAL_ENTRIES);
 
-  window.localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(nextJournal));
+  try {
+    window.localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(nextJournal));
+  } catch {
+    // 保存に失敗しても、読み終えた便りのUI更新は継続する
+  }
+
   return nextJournal;
 };
 
@@ -428,6 +433,11 @@ export const saveBottleMemorySign = (sign: BottleMemorySign) => {
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, MAX_MEMORY_SIGNS);
 
-  window.localStorage.setItem(MEMORY_SIGNS_STORAGE_KEY, JSON.stringify(nextSigns));
+  try {
+    window.localStorage.setItem(MEMORY_SIGNS_STORAGE_KEY, JSON.stringify(nextSigns));
+  } catch {
+    // 保存に失敗しても、読了後の余韻表示は継続する
+  }
+
   return nextSigns;
 };

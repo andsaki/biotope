@@ -23,6 +23,23 @@ const isTodayCache = (dateKey: string) => {
   return dateKey === today || dateKey.includes(today);
 };
 
+const isDailyMessageResponse = (value: unknown): value is DailyMessageResponse => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  return (
+    'date' in value &&
+    'dateDescription' in value &&
+    'message' in value &&
+    'generatedAt' in value &&
+    typeof value.date === 'string' &&
+    typeof value.dateDescription === 'string' &&
+    typeof value.message === 'string' &&
+    typeof value.generatedAt === 'string'
+  );
+};
+
 const readCachedMessage = (cacheKey: string): string | null => {
   if (typeof window === 'undefined') {
     return null;
@@ -34,7 +51,12 @@ const readCachedMessage = (cacheKey: string): string | null => {
       return null;
     }
 
-    const cachedData: DailyMessageResponse = JSON.parse(cached);
+    const cachedData: unknown = JSON.parse(cached);
+    if (!isDailyMessageResponse(cachedData)) {
+      window.localStorage.removeItem(cacheKey);
+      return null;
+    }
+
     return isTodayCache(cachedData.date) ? cachedData.message : null;
   } catch {
     try {
@@ -84,7 +106,10 @@ export async function fetchDailyMessage(): Promise<string | null> {
       return null;
     }
 
-    const data: DailyMessageResponse = await response.json();
+    const data: unknown = await response.json();
+    if (!isDailyMessageResponse(data)) {
+      return null;
+    }
 
     writeCachedMessage(CACHE_KEY, data);
 
