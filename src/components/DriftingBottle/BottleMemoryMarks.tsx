@@ -7,6 +7,8 @@ interface BottleMemoryMarksProps {
   signs: BottleMemorySign[];
 }
 
+const MAX_VISIBLE_MEMORY_SIGNS = 10;
+
 const createSignSeed = (value: string) => {
   let hash = 2166136261;
   for (let i = 0; i < value.length; i += 1) {
@@ -18,10 +20,11 @@ const createSignSeed = (value: string) => {
 
 const getSignPlacement = (date: string, index: number) => {
   const seed = createSignSeed(date);
-  const angle = ((seed % 360) / 180) * Math.PI + index * 0.46;
-  const radius = 0.72 + ((seed >>> 4) % 5) * 0.12;
-  const size = 0.13 + ((seed >>> 8) % 4) * 0.016;
-  return { angle, radius, size };
+  const angle = ((seed % 360) / 180) * Math.PI + index * 0.53;
+  const radius = 0.66 + ((seed >>> 4) % 7) * 0.11;
+  const size = 0.12 + ((seed >>> 8) % 5) * 0.014;
+  const lift = 0.008 + (index % 5) * 0.004;
+  return { angle, radius, size, lift };
 };
 
 export const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
@@ -61,21 +64,22 @@ export const BottleMemoryMarks = ({ signs }: BottleMemoryMarksProps) => {
 
   return (
     <group ref={groupRef} position={[0, 0.86, 0]} renderOrder={23}>
-      {signs.slice(0, 7).map((sign, index) => {
+      {signs.slice(0, MAX_VISIBLE_MEMORY_SIGNS).map((sign, index) => {
         const placement = getSignPlacement(sign.date, index);
         const x = Math.cos(placement.angle) * placement.radius;
         const z = Math.sin(placement.angle) * placement.radius;
-        const scale = placement.size * (1 - index * 0.045);
+        const ageFade = Math.max(0.48, 1 - index * 0.052);
+        const scale = placement.size * ageFade;
         const signColor = sign.omen?.color ?? "#fff2a8";
 
         return (
-          <group key={sign.date} position={[x, 0.01 + index * 0.004, z]}>
+          <group key={sign.date} position={[x, placement.lift, z]}>
             <mesh rotation={[-Math.PI / 2, 0, placement.angle]} scale={[scale, scale * 1.55, 1]}>
               <circleGeometry args={[1, 16]} />
               <meshBasicMaterial
                 color={signColor}
                 transparent={true}
-                opacity={0.34}
+                opacity={0.24 + ageFade * 0.12}
                 depthWrite={false}
                 depthTest={true}
                 blending={THREE.AdditiveBlending}

@@ -28,8 +28,8 @@ export const WATER_RIPPLE_DECAY = 0.16;
 export const WATER_RIPPLE_TIME_DECAY = 1.65;
 
 // マテリアル設定
-export const WATER_COLOR = "#4A90E2";
-export const WATER_OPACITY = 0.3;
-export const WATER_METALNESS = 0.9;
-export const WATER_ROUGHNESS = 0.1;
-export const WATER_ENV_MAP_INTENSITY = 1.5;
+export const WATER_COLOR = "#2F6FA8";
+export const WATER_OPACITY = 0.34;
+export const WATER_METALNESS = 0.68;
+export const WATER_ROUGHNESS = 0.22;
+export const WATER_ENV_MAP_INTENSITY = 0.9;
