@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSeason } from "../contexts";
 import SimulationClock from "./SimulationClock";
 import { BottleJournalPanel } from "./BottleJournalPanel";
@@ -83,6 +83,25 @@ const UI: React.FC<UIProps> = ({
     ambientControls.toggleMute();
     onAmbientToggle?.();
   };
+
+  useEffect(() => {
+    if (!isSeasonPanelOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      event.preventDefault();
+      setIsJournalOpen(false);
+      setIsSeasonPanelOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSeasonPanelOpen]);
 
   const guideItems = [
     {
