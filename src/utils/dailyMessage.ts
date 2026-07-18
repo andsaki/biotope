@@ -23,6 +23,41 @@ const isTodayCache = (dateKey: string) => {
   return dateKey === today || dateKey.includes(today);
 };
 
+const readCachedMessage = (cacheKey: string): string | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const cached = window.localStorage.getItem(cacheKey);
+    if (!cached) {
+      return null;
+    }
+
+    const cachedData: DailyMessageResponse = JSON.parse(cached);
+    return isTodayCache(cachedData.date) ? cachedData.message : null;
+  } catch {
+    try {
+      window.localStorage.removeItem(cacheKey);
+    } catch {
+      // 破損キャッシュの削除に失敗しても、API取得へ進めばよい
+    }
+    return null;
+  }
+};
+
+const writeCachedMessage = (cacheKey: string, data: DailyMessageResponse) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(cacheKey, JSON.stringify(data));
+  } catch {
+    // キャッシュできなくても、取得した本文は返す
+  }
+};
+
 /**
  * 毎日のメッセージをAPIから取得
  * localStorageでキャッシュして1日1回のみ取得
@@ -32,14 +67,9 @@ export async function fetchDailyMessage(): Promise<string | null> {
   const API_ENDPOINT = '/api/daily-message';
 
   try {
-    // キャッシュチェック
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const cachedData: DailyMessageResponse = JSON.parse(cached);
-      // 日付が同じならキャッシュを返す
-      if (isTodayCache(cachedData.date)) {
-        return cachedData.message;
-      }
+    const cachedMessage = readCachedMessage(CACHE_KEY);
+    if (cachedMessage) {
+      return cachedMessage;
     }
 
     // APIから取得。Vite単体のdev serverではFunctions APIがなくHTMLが返るため、
@@ -56,8 +86,7 @@ export async function fetchDailyMessage(): Promise<string | null> {
 
     const data: DailyMessageResponse = await response.json();
 
-    // キャッシュに保存
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    writeCachedMessage(CACHE_KEY, data);
 
     return data.message;
   } catch {

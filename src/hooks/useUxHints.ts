@@ -21,7 +21,11 @@ const readDismissedState = () => {
     return false;
   }
 
-  return window.localStorage.getItem(HINTS_STORAGE_KEY) === "true";
+  try {
+    return window.localStorage.getItem(HINTS_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
 };
 
 const writeDismissedState = () => {
@@ -29,7 +33,11 @@ const writeDismissedState = () => {
     return;
   }
 
-  window.localStorage.setItem(HINTS_STORAGE_KEY, "true");
+  try {
+    window.localStorage.setItem(HINTS_STORAGE_KEY, "true");
+  } catch {
+    // ヒントは永続化できなくても、その場のUI状態だけ更新できればよい
+  }
 };
 
 export const useUxHints = () => {
