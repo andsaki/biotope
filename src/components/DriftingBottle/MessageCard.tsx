@@ -113,6 +113,9 @@ export const MessageCard = memo(({
             </div>
             <p style={CARD_STYLES.omenText}>{omen.description}</p>
             <p style={CARD_STYLES.omenWorldNote}>{omen.worldNote}</p>
+            {omen.observation && (
+              <p style={CARD_STYLES.omenWorldNote}>観察: {omen.observation}</p>
+            )}
           </div>
           <p style={CARD_STYLES.footerNote}>
             封を戻すと、この徴だけが水面へ帰ります。
