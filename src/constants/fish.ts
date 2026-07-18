@@ -19,19 +19,19 @@ export const FISH_SPEED = {
 
 // 季節ごとの魚の色
 export const FISH_COLOR = {
-  SPRING: "#d8a78f",
-  SUMMER: "#8fb7ad",
-  AUTUMN: "#b8915a",
-  WINTER: "#7894ad",
-  DEFAULT: "#d8a78f",
+  SPRING: "#b78372",
+  SUMMER: "#668f86",
+  AUTUMN: "#927247",
+  WINTER: "#5f7890",
+  DEFAULT: "#b78372",
 } as const;
 
 export const FISH_ACCENT_COLOR = {
-  SPRING: "#f0c8b4",
-  SUMMER: "#b8d6cc",
-  AUTUMN: "#d0ad72",
-  WINTER: "#a8bdd1",
-  DEFAULT: "#f0c8b4",
+  SPRING: "#d4aa93",
+  SUMMER: "#8fb9ad",
+  AUTUMN: "#b9965f",
+  WINTER: "#86a1b8",
+  DEFAULT: "#d4aa93",
 } as const;
 
 // 通常の魚の配置範囲
@@ -111,9 +111,9 @@ export const FISH_MODEL_ROTATION = {
 
 // ヒラメモデルのローポリ風マテリアル
 export const FLATFISH_LOW_POLY_MATERIAL = {
-  BASE_COLOR: "#b58c5d",
-  ACCENT_COLOR: "#d1b07a",
-  ROUGHNESS: 0.95,
+  BASE_COLOR: "#7d6a4f",
+  ACCENT_COLOR: "#9a805b",
+  ROUGHNESS: 1,
 } as const;
 
 // フラットフィッシュの透明度
