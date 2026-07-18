@@ -2,7 +2,7 @@ import React from "react";
 
 /**
  * ビオトープの地面コンポーネント
- * 池の底をシミュレートする茶色の平面を表示
+ * 池の底をシミュレートする湿った泥色の平面を表示
  */
 const Ground: React.FC = () => {
   return (
@@ -16,7 +16,9 @@ const Ground: React.FC = () => {
         <planeGeometry args={[80, 80, 4, 4]} />{" "}
         {/* パフォーマンス向上のために分割数を減らす */}
         <meshStandardMaterial
-          color="#8B4513" // より濃い茶色に変更（サドルブラウン）
+          color="#3c3029"
+          roughness={0.96}
+          metalness={0}
           transparent={false}
           opacity={1.0}
         />
