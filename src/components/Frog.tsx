@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { useModelScene } from "../hooks/useModelScene";
+import { createRng, randomBetween, type RngFunction } from "../utils/random";
 import {
   FROG_CROAK_AUDIO_URL,
   FROG_CROAK_CLIP_SECONDS,
@@ -26,9 +27,12 @@ interface FrogProps {
   phaseOffset: number;
 }
 
-const scheduleNextAction = () =>
-  FROG_RANDOM_ACTION_MIN_SECONDS +
-  Math.random() * FROG_RANDOM_ACTION_VARIATION_SECONDS;
+const scheduleNextAction = (rng: RngFunction) =>
+  randomBetween(
+    rng,
+    FROG_RANDOM_ACTION_MIN_SECONDS,
+    FROG_RANDOM_ACTION_MIN_SECONDS + FROG_RANDOM_ACTION_VARIATION_SECONDS
+  );
 
 const FROG_COMBO_WINDOW_SECONDS = 1.2;
 const FROG_TRICK_DURATION_SECONDS = 0.95;
@@ -103,6 +107,7 @@ const Frog: React.FC<FrogProps> = ({
   const clickComboRef = useRef(0);
   const attentionUntilRef = useRef(0);
   const elapsedTimeRef = useRef(0);
+  const rngRef = useRef(createRng(0xf20c0a5));
 
   const getAudioElement = useCallback(() => {
     if (typeof Audio === "undefined") return null;
@@ -127,7 +132,7 @@ const Frog: React.FC<FrogProps> = ({
     audio.pause();
     audio.volume = FROG_CROAK_VOLUME;
     if (Number.isFinite(audio.duration) && audio.duration > FROG_CROAK_CLIP_SECONDS) {
-      audio.currentTime = Math.random() * (audio.duration - FROG_CROAK_CLIP_SECONDS);
+      audio.currentTime = randomBetween(rngRef.current, 0, audio.duration - FROG_CROAK_CLIP_SECONDS);
     } else {
       audio.currentTime = 0;
     }
@@ -147,7 +152,7 @@ const Frog: React.FC<FrogProps> = ({
       trickStartTimeRef.current = elapsedTimeRef.current;
       attentionUntilRef.current = elapsedTimeRef.current + FROG_ATTENTION_SECONDS;
     }
-    nextActionAtRef.current = elapsedTimeRef.current + scheduleNextAction();
+    nextActionAtRef.current = elapsedTimeRef.current + scheduleNextAction(rngRef.current);
     playCroak();
   }, [playCroak]);
 
@@ -167,7 +172,7 @@ const Frog: React.FC<FrogProps> = ({
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     elapsedTimeRef.current = time;
-    nextActionAtRef.current ??= time + scheduleNextAction();
+    nextActionAtRef.current ??= time + scheduleNextAction(rngRef.current);
 
     const group = groupRef.current;
     if (!group) return;
