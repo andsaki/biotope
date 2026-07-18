@@ -4,7 +4,7 @@
   height: 100vh;
   margin: 0;
   border: none;
-  background-color: var(--app-background-color, #4A90E2);
+  background-color: var(--app-background-color, #376FAF);
   overflow: hidden;
   transition: background-color 2s ease;
   font-family: sans-serif;
