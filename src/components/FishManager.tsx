@@ -40,6 +40,22 @@ const NORMAL_FISH_MARK_ROTATION: [number, number, number] = [0, 0, Math.PI / 4];
 const FLATFISH_MARK_POSITION: [number, number, number] = [0.02, 0.015, 0];
 const FLATFISH_MARK_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
 
+const getFishAccentBaseOpacity = (isFlatfish: boolean, colorPattern: string) => {
+  if (isFlatfish) {
+    return 0.42;
+  }
+
+  return colorPattern === "flash" ? 0.92 : 0.72;
+};
+
+const getFishAccentBaseGlow = (isFlatfish: boolean, colorPattern: string) => {
+  if (isFlatfish) {
+    return 0.08;
+  }
+
+  return colorPattern === "flash" ? 0.26 : 0.18;
+};
+
 const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const { season } = useSeason();
   const rainIntensity = getRainIntensity(weather);
@@ -112,6 +128,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
 
   // 各魚モデルの位置を動的に更新するための参照を作成する
   const fishRefs = useRef<THREE.Group[]>([]);
+  const accentMaterialRefs = useRef<THREE.MeshStandardMaterial[]>([]);
 
   // useFrameを1つに統合してパフォーマンス向上
   // 状態更新を排除し、refのみを更新することで再レンダリングを削減
@@ -154,6 +171,24 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
           0
         );
       }
+
+      const accentMaterial = accentMaterialRefs.current[index];
+      if (accentMaterial) {
+        const isFlatfish = fish.type === "flatfish";
+        const baseOpacity = getFishAccentBaseOpacity(isFlatfish, fish.colorPattern);
+        const baseGlow = getFishAccentBaseGlow(isFlatfish, fish.colorPattern);
+        const weatherVisibilityBoost = rainIntensity * 0.08 + cloudIntensity * 0.04;
+        const reactionBoost = waterReactionStrength * (isFlatfish ? 0.08 : 0.16);
+        const pulse = Math.sin(timeRef.current * 3.8 + fish.swimPhase) * 0.5 + 0.5;
+
+        accentMaterial.opacity = THREE.MathUtils.clamp(
+          baseOpacity + weatherVisibilityBoost + reactionBoost,
+          0,
+          1
+        );
+        accentMaterial.emissiveIntensity =
+          baseGlow + reactionBoost * 0.9 + pulse * (isFlatfish ? 0.025 : 0.045);
+      }
     });
   }, 30);
 
@@ -170,7 +205,8 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
         const rotation: [number, number, number] = isFlatfish
           ? [FISH_MODEL_ROTATION.FLATFISH, 0, 0]
           : [FISH_MODEL_ROTATION.NORMAL, 0, 0];
-        const accentOpacity = isFlatfish ? 0.42 : fish.colorPattern === "flash" ? 0.92 : 0.72;
+        const accentOpacity = getFishAccentBaseOpacity(isFlatfish, fish.colorPattern);
+        const accentGlow = getFishAccentBaseGlow(isFlatfish, fish.colorPattern);
         const accentScale: [number, number, number] = isFlatfish
           ? [fish.size * 0.95, fish.size * 0.42, fish.size * 0.95]
           : [fish.size * 0.68, fish.size * 0.32, fish.size * 0.68];
@@ -205,9 +241,14 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
               geometry={isFlatfish ? flatfishAccentGeometry : normalAccentGeometry}
             >
               <meshStandardMaterial
+                ref={(material) => {
+                  if (material) {
+                    accentMaterialRefs.current[index] = material;
+                  }
+                }}
                 color={fish.accentColor}
                 emissive={fish.accentColor}
-                emissiveIntensity={isFlatfish ? 0.08 : 0.18}
+                emissiveIntensity={accentGlow}
                 flatShading
                 metalness={0}
                 roughness={0.72}
