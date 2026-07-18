@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useThrottledFrame } from "@/hooks/useThrottledFrame";
+import { createRng, randomBetween } from "@/utils/random";
 import {
   SNOW_COUNT,
   SNOW_SPAWN_X_RANGE,
@@ -75,22 +76,24 @@ interface SnowEffectProps {
 
 const SnowEffect: React.FC<SnowEffectProps> = React.memo(({ intensity = 1 }) => {
   const snowRef = useRef<THREE.Points>(null);
+  const rngRef = useRef(createRng(0x5f0f1a7e));
 
   // 雪のパーティクル生成
   const snowParticles = useMemo(() => {
     const positions = new Float32Array(SNOW_COUNT * 3);
     const velocities = new Float32Array(SNOW_COUNT * 3);
+    const rng = rngRef.current;
 
     for (let i = 0; i < SNOW_COUNT; i++) {
       // 初期位置
-      positions[i * 3] = (Math.random() - 0.5) * SNOW_SPAWN_X_RANGE;
-      positions[i * 3 + 1] = Math.random() * SNOW_SPAWN_Y_RANGE + SNOW_SPAWN_Y_OFFSET;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * SNOW_SPAWN_Z_RANGE;
+      positions[i * 3] = randomBetween(rng, -SNOW_SPAWN_X_RANGE / 2, SNOW_SPAWN_X_RANGE / 2);
+      positions[i * 3 + 1] = randomBetween(rng, SNOW_SPAWN_Y_OFFSET, SNOW_SPAWN_Y_OFFSET + SNOW_SPAWN_Y_RANGE);
+      positions[i * 3 + 2] = randomBetween(rng, -SNOW_SPAWN_Z_RANGE / 2, SNOW_SPAWN_Z_RANGE / 2);
 
       // 落下速度
-      velocities[i * 3] = (Math.random() - 0.5) * SNOW_VELOCITY_X_DRIFT; // X方向のドリフト
-      velocities[i * 3 + 1] = -(SNOW_VELOCITY_Y_BASE + Math.random() * SNOW_VELOCITY_Y_RANGE); // Y方向（下向き）
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * SNOW_VELOCITY_Z_DRIFT; // Z方向のドリフト
+      velocities[i * 3] = randomBetween(rng, -SNOW_VELOCITY_X_DRIFT / 2, SNOW_VELOCITY_X_DRIFT / 2); // X方向のドリフト
+      velocities[i * 3 + 1] = -randomBetween(rng, SNOW_VELOCITY_Y_BASE, SNOW_VELOCITY_Y_BASE + SNOW_VELOCITY_Y_RANGE); // Y方向（下向き）
+      velocities[i * 3 + 2] = randomBetween(rng, -SNOW_VELOCITY_Z_DRIFT / 2, SNOW_VELOCITY_Z_DRIFT / 2); // Z方向のドリフト
     }
 
     return { positions, velocities };
@@ -123,9 +126,10 @@ const SnowEffect: React.FC<SnowEffectProps> = React.memo(({ intensity = 1 }) => 
 
       // 地面に達したらリセット
       if (positions[i * 3 + 1] < SNOW_RESET_Y_THRESHOLD) {
-        positions[i * 3] = (Math.random() - 0.5) * SNOW_RESET_X_RANGE;
-        positions[i * 3 + 1] = SNOW_RESET_Y_BASE + Math.random() * SNOW_RESET_Y_RANGE;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * SNOW_RESET_Z_RANGE;
+        const rng = rngRef.current;
+        positions[i * 3] = randomBetween(rng, -SNOW_RESET_X_RANGE / 2, SNOW_RESET_X_RANGE / 2);
+        positions[i * 3 + 1] = randomBetween(rng, SNOW_RESET_Y_BASE, SNOW_RESET_Y_BASE + SNOW_RESET_Y_RANGE);
+        positions[i * 3 + 2] = randomBetween(rng, -SNOW_RESET_Z_RANGE / 2, SNOW_RESET_Z_RANGE / 2);
       }
     }
 
