@@ -1,4 +1,5 @@
 import type { Season } from "@/contexts";
+import { createRng, randomBetween } from "@/utils/random";
 
 export const createWaterTexture = (context: AudioContext) => {
   const duration = 10;
@@ -7,8 +8,9 @@ export const createWaterTexture = (context: AudioContext) => {
   const data = buffer.getChannelData(0);
 
   let last = 0;
+  const rng = createRng(0x0ceabed);
   for (let i = 0; i < frameCount; i++) {
-    const random = (Math.random() * 2 - 1) * 0.2;
+    const random = randomBetween(rng, -0.2, 0.2);
     last = last * 0.95 + random * 0.05;
     data[i] = last * 0.6;
   }
