@@ -24,6 +24,18 @@ import {
   disposeObjectMaterials,
 } from "@/fish/materials";
 import { updateFishMovement } from "@/fish/movement";
+import {
+  FISH_EYE_COLOR,
+  FISH_EYE_HIGHLIGHT_COLOR,
+  FLATFISH_EYE_POSITIONS,
+  FLATFISH_MARK_POSITION,
+  FLATFISH_MARK_ROTATION,
+  getFishAccentBaseGlow,
+  getFishAccentBaseOpacity,
+  NORMAL_FISH_EYE_POSITIONS,
+  NORMAL_FISH_MARK_POSITION,
+  NORMAL_FISH_MARK_ROTATION,
+} from "@/fish/visualDetails";
 
 /**
  * 魚群の管理コンポーネント
@@ -35,36 +47,6 @@ interface FishManagerProps {
 }
 
 const WATER_REACTION_SECONDS = 2.2;
-const NORMAL_FISH_MARK_POSITION: [number, number, number] = [0.05, 0.08, 0];
-const NORMAL_FISH_MARK_ROTATION: [number, number, number] = [0, 0, Math.PI / 4];
-const FLATFISH_MARK_POSITION: [number, number, number] = [0.02, 0.015, 0];
-const FLATFISH_MARK_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
-const NORMAL_FISH_EYE_POSITIONS: [number, number, number][] = [
-  [0.18, 0.075, 0.045],
-  [0.18, 0.075, -0.045],
-];
-const FLATFISH_EYE_POSITIONS: [number, number, number][] = [
-  [0.08, 0.042, 0.055],
-  [0.08, 0.042, -0.055],
-];
-const FISH_EYE_COLOR = "#08131b";
-const FISH_EYE_HIGHLIGHT_COLOR = "#dff7ff";
-
-const getFishAccentBaseOpacity = (isFlatfish: boolean, colorPattern: string) => {
-  if (isFlatfish) {
-    return 0.42;
-  }
-
-  return colorPattern === "flash" ? 0.92 : 0.72;
-};
-
-const getFishAccentBaseGlow = (isFlatfish: boolean, colorPattern: string) => {
-  if (isFlatfish) {
-    return 0.08;
-  }
-
-  return colorPattern === "flash" ? 0.26 : 0.18;
-};
 
 const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
   const { season } = useSeason();
