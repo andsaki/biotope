@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { globalIgnores } from 'eslint/config'
 
 export default tseslint.config([
-  globalIgnores(['dist', 'tmp']),
+  globalIgnores(['dist', 'temp', 'tmp']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -25,6 +25,14 @@ export default tseslint.config([
         { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Math',
+          property: 'random',
+          message: 'Use createRng/randomBetween from src/utils/random for reproducible scene behavior.',
+        },
+      ],
     },
   },
 ])
