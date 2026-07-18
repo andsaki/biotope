@@ -16,6 +16,7 @@ import {
   NORMAL_FISH_SPAWN,
   NORMAL_FISH_SPEED_VARIATION,
 } from "@/constants/fish";
+import { createRng, randomBetween, type RngFunction } from "@/utils/random";
 import { createDirectionChangeTime } from "./movement";
 import type { Fish } from "./types";
 
@@ -61,39 +62,41 @@ const SEASON_FISH_PROFILES: Record<Season, SeasonFishProfile> = {
 export const getSeasonFishProfile = (season: Season) =>
   SEASON_FISH_PROFILES[season];
 
-const randomBetween = (min: number, max: number) =>
-  Math.random() * (max - min) + min;
-
-const createNormalFish = (id: number, fishSpeed: number, fishColor: string): Fish => {
-  const direction = Math.random() * Math.PI * 2;
-  const cruiseY = randomBetween(NORMAL_FISH_SPAWN.Y_MIN, NORMAL_FISH_SPAWN.Y_MAX);
+const createNormalFish = (
+  id: number,
+  fishSpeed: number,
+  fishColor: string,
+  rng: RngFunction
+): Fish => {
+  const direction = randomBetween(rng, 0, Math.PI * 2);
+  const cruiseY = randomBetween(rng, NORMAL_FISH_SPAWN.Y_MIN, NORMAL_FISH_SPAWN.Y_MAX);
 
   return {
     id,
-    x: randomBetween(NORMAL_FISH_SPAWN.X_MIN, NORMAL_FISH_SPAWN.X_MAX),
+    x: randomBetween(rng, NORMAL_FISH_SPAWN.X_MIN, NORMAL_FISH_SPAWN.X_MAX),
     y: cruiseY,
-    z: randomBetween(NORMAL_FISH_SPAWN.Z_MIN, NORMAL_FISH_SPAWN.Z_MAX),
-    speed: fishSpeed + (Math.random() * NORMAL_FISH_SPEED_VARIATION - NORMAL_FISH_SPEED_VARIATION / 2),
+    z: randomBetween(rng, NORMAL_FISH_SPAWN.Z_MIN, NORMAL_FISH_SPAWN.Z_MAX),
+    speed: fishSpeed + randomBetween(rng, -NORMAL_FISH_SPEED_VARIATION / 2, NORMAL_FISH_SPEED_VARIATION / 2),
     directionX: direction,
     directionY: 0,
     targetDirectionX: direction,
     cruiseY,
-    swimPhase: Math.random() * Math.PI * 2,
+    swimPhase: randomBetween(rng, 0, Math.PI * 2),
     directionChangeTime: createDirectionChangeTime(),
     color: fishColor,
-    size: NORMAL_FISH_SIZE_MIN + Math.random() * NORMAL_FISH_SIZE_VARIATION,
+    size: randomBetween(rng, NORMAL_FISH_SIZE_MIN, NORMAL_FISH_SIZE_MIN + NORMAL_FISH_SIZE_VARIATION),
     type: "normal",
   };
 };
 
-const createFlatfish = (id: number, fishColor: string): Fish => {
-  const direction = Math.random() * Math.PI * 2;
+const createFlatfish = (id: number, fishColor: string, rng: RngFunction): Fish => {
+  const direction = randomBetween(rng, 0, Math.PI * 2);
 
   return {
     id,
-    x: randomBetween(NORMAL_FISH_SPAWN.X_MIN, NORMAL_FISH_SPAWN.X_MAX),
+    x: randomBetween(rng, NORMAL_FISH_SPAWN.X_MIN, NORMAL_FISH_SPAWN.X_MAX),
     y: FLATFISH_GROUND_Y,
-    z: randomBetween(NORMAL_FISH_SPAWN.Z_MIN, NORMAL_FISH_SPAWN.Z_MAX),
+    z: randomBetween(rng, NORMAL_FISH_SPAWN.Z_MIN, NORMAL_FISH_SPAWN.Z_MAX),
     speed: FLATFISH_SPEED,
     directionX: direction,
     directionY: 0,
@@ -102,20 +105,24 @@ const createFlatfish = (id: number, fishColor: string): Fish => {
     swimPhase: 0,
     directionChangeTime: createDirectionChangeTime(),
     color: fishColor,
-    size: FLATFISH_SIZE_MIN + Math.random() * FLATFISH_SIZE_VARIATION,
+    size: randomBetween(rng, FLATFISH_SIZE_MIN, FLATFISH_SIZE_MIN + FLATFISH_SIZE_VARIATION),
     type: "flatfish",
-    waitTime: FLATFISH_WAIT_TIME_MIN + Math.random() * FLATFISH_WAIT_TIME_VARIATION,
+    waitTime: randomBetween(rng, FLATFISH_WAIT_TIME_MIN, FLATFISH_WAIT_TIME_MIN + FLATFISH_WAIT_TIME_VARIATION),
     isMoving: false,
   };
 };
 
 export const createFishList = (season: Season): Fish[] => {
   const { fishSpeed, fishColor, normalCount, flatfishCount } = getSeasonFishProfile(season);
+  const rng = createRng(`fish:${season}`.split("").reduce(
+    (seed, char) => Math.imul(seed ^ char.charCodeAt(0), 16777619),
+    2166136261
+  ));
   const normalFish = Array.from({ length: normalCount }, (_, index) =>
-    createNormalFish(index, fishSpeed, fishColor)
+    createNormalFish(index, fishSpeed, fishColor, rng)
   );
   const flatfish = Array.from({ length: flatfishCount }, (_, index) =>
-    createFlatfish(normalCount + index, fishColor)
+    createFlatfish(normalCount + index, fishColor, rng)
   );
 
   return [...normalFish, ...flatfish];
