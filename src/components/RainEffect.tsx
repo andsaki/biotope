@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThrottledFrame } from '../hooks/useThrottledFrame';
+import { createRng, type RngFunction, randomBetween } from '../utils/random';
 import {
   RAIN_DROP_COUNT,
   RAIN_DROP_SIZE,
@@ -17,18 +18,15 @@ interface RainDrop {
   velocity: [number, number];
 }
 
-const spawnRainDrop = (): RainDrop => ({
+const spawnRainDrop = (rng: RngFunction): RainDrop => ({
   position: [
-    Math.random() * (RAIN_SPAWN_AREA.X_MAX - RAIN_SPAWN_AREA.X_MIN) +
-      RAIN_SPAWN_AREA.X_MIN,
-    Math.random() * (RAIN_SPAWN_AREA.Y_MAX - RAIN_SPAWN_AREA.Y_MIN) +
-      RAIN_SPAWN_AREA.Y_MIN,
-    Math.random() * (RAIN_SPAWN_AREA.Z_MAX - RAIN_SPAWN_AREA.Z_MIN) +
-      RAIN_SPAWN_AREA.Z_MIN,
+    randomBetween(rng, RAIN_SPAWN_AREA.X_MIN, RAIN_SPAWN_AREA.X_MAX),
+    randomBetween(rng, RAIN_SPAWN_AREA.Y_MIN, RAIN_SPAWN_AREA.Y_MAX),
+    randomBetween(rng, RAIN_SPAWN_AREA.Z_MIN, RAIN_SPAWN_AREA.Z_MAX),
   ],
   velocity: [
-    RAIN_DROP_SPEED.X_BASE + (Math.random() - 0.5) * RAIN_DROP_SPEED.X_VARIATION,
-    -(RAIN_DROP_SPEED.Y_BASE + Math.random() * RAIN_DROP_SPEED.Y_VARIATION),
+    RAIN_DROP_SPEED.X_BASE + randomBetween(rng, -RAIN_DROP_SPEED.X_VARIATION / 2, RAIN_DROP_SPEED.X_VARIATION / 2),
+    -randomBetween(rng, RAIN_DROP_SPEED.Y_BASE, RAIN_DROP_SPEED.Y_BASE + RAIN_DROP_SPEED.Y_VARIATION),
   ],
 });
 
@@ -39,6 +37,7 @@ interface RainEffectProps {
 
 const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1, gustIntensity = 0 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const rngRef = useRef(createRng(0x4a175eed));
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const material = useMemo(
     () =>
@@ -63,7 +62,7 @@ const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1, gustIntensity = 
 
   // 雨粒の初期データを生成（一度だけ）
   const rainDrops = useMemo<RainDrop[]>(() => {
-    return Array.from({ length: RAIN_DROP_COUNT }, spawnRainDrop);
+    return Array.from({ length: RAIN_DROP_COUNT }, () => spawnRainDrop(rngRef.current));
   }, []);
 
   // アニメーション
@@ -80,7 +79,7 @@ const RainEffect: React.FC<RainEffectProps> = ({ intensity = 1, gustIntensity = 
 
       // 地面に到達したらリセット
       if (drop.position[1] < RAIN_RESET_Y) {
-        const nextDrop = spawnRainDrop();
+        const nextDrop = spawnRainDrop(rngRef.current);
         drop.position = nextDrop.position;
         drop.velocity = nextDrop.velocity;
       }
