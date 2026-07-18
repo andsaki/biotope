@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useSeason } from "../contexts";
 import { useModelScene } from "../hooks/useModelScene";
 import { useThrottledFrame } from "../hooks/useThrottledFrame";
+import { createRng, randomBetween } from "../utils/random";
 import {
   LEAF_COUNT,
   LEAF_SPREAD_X,
@@ -36,20 +37,21 @@ const FallenLeaves: React.FC = React.memo(() => {
   const isWinter = season === "winter";
 
   // 落ち葉の初期位置データ（コンポーネント再レンダリング時に位置が変わらないようにuseMemoで固定）
-  const leafData = useMemo(() =>
-    Array.from({ length: LEAF_COUNT }, () => ({
-      x: (Math.random() - 0.5) * LEAF_SPREAD_X,
-      z: (Math.random() - 0.5) * LEAF_SPREAD_Z,
-      rotationY: Math.random() * Math.PI * 2,
-      rotationX: Math.random() * LEAF_GROUND_TILT - LEAF_GROUND_TILT / 2, // 地面での傾き
-      rotationZ: Math.random() * LEAF_GROUND_TILT - LEAF_GROUND_TILT / 2, // 地面での傾き
-      scale: LEAF_BASE_SCALE + Math.random() * LEAF_SCALE_VARIATION,
-      floatSpeed: LEAF_FLOAT_SPEED_BASE + Math.random() * LEAF_FLOAT_SPEED_VARIATION, // 浮き沈みの速度
-      driftSpeed: LEAF_DRIFT_SPEED_BASE + Math.random() * LEAF_DRIFT_SPEED_VARIATION, // 横移動の速度
-      rotationSpeed: LEAF_ROTATION_SPEED_BASE + Math.random() * LEAF_ROTATION_SPEED_VARIATION, // 回転速度
-      phaseOffset: Math.random() * Math.PI * 2, // 位相オフセット
-    }))
-  , []);
+  const leafData = useMemo(() => {
+    const rng = createRng(0x7ea1f411);
+    return Array.from({ length: LEAF_COUNT }, () => ({
+      x: randomBetween(rng, -LEAF_SPREAD_X / 2, LEAF_SPREAD_X / 2),
+      z: randomBetween(rng, -LEAF_SPREAD_Z / 2, LEAF_SPREAD_Z / 2),
+      rotationY: randomBetween(rng, 0, Math.PI * 2),
+      rotationX: randomBetween(rng, -LEAF_GROUND_TILT / 2, LEAF_GROUND_TILT / 2), // 地面での傾き
+      rotationZ: randomBetween(rng, -LEAF_GROUND_TILT / 2, LEAF_GROUND_TILT / 2), // 地面での傾き
+      scale: randomBetween(rng, LEAF_BASE_SCALE, LEAF_BASE_SCALE + LEAF_SCALE_VARIATION),
+      floatSpeed: randomBetween(rng, LEAF_FLOAT_SPEED_BASE, LEAF_FLOAT_SPEED_BASE + LEAF_FLOAT_SPEED_VARIATION), // 浮き沈みの速度
+      driftSpeed: randomBetween(rng, LEAF_DRIFT_SPEED_BASE, LEAF_DRIFT_SPEED_BASE + LEAF_DRIFT_SPEED_VARIATION), // 横移動の速度
+      rotationSpeed: randomBetween(rng, LEAF_ROTATION_SPEED_BASE, LEAF_ROTATION_SPEED_BASE + LEAF_ROTATION_SPEED_VARIATION), // 回転速度
+      phaseOffset: randomBetween(rng, 0, Math.PI * 2), // 位相オフセット
+    }));
+  }, []);
 
   // 3Dモデルのcloneを事前に作成してパフォーマンス向上
   const leafClones = useMemo(() =>
