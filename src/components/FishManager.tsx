@@ -63,13 +63,13 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       const clone = normalFishScene.clone();
       applyLowPolyNormalFishMaterial(
         clone,
-        fishProfile.fishColor,
-        fishProfile.fishAccentColor,
-        index
+        fishList[index]?.color ?? fishProfile.fishColor,
+        fishList[index]?.accentColor ?? fishProfile.fishAccentColor,
+        fishList[index]?.colorPattern ?? "back"
       );
       return clone;
     });
-  }, [fishProfile.fishAccentColor, fishProfile.fishColor, fishProfile.normalCount, normalFishScene]);
+  }, [fishList, fishProfile.fishAccentColor, fishProfile.fishColor, fishProfile.normalCount, normalFishScene]);
 
   const flatfishClones = useMemo(() => {
     return Array.from({ length: fishProfile.flatfishCount }, (_, index) => {
