@@ -7,7 +7,7 @@ interface BottleReadAfterglowProps {
   onComplete: () => void;
 }
 
-const AFTERGLOW_LIFETIME = 1.75;
+const AFTERGLOW_LIFETIME = 3.2;
 
 const afterglowSeeds: readonly {
   angle: number;
@@ -24,6 +24,10 @@ const afterglowSeeds: readonly {
   { angle: 4.7, radius: 0.24, speed: 0.88, size: 0.021, lift: 0.14 },
   { angle: 5.62, radius: 0.36, speed: 0.7, size: 0.017, lift: 0.11 },
   { angle: 6.05, radius: 0.3, speed: 0.92, size: 0.015, lift: 0.2 },
+  { angle: 0.44, radius: 0.48, speed: 0.55, size: 0.014, lift: 0.22 },
+  { angle: 1.92, radius: 0.44, speed: 0.64, size: 0.016, lift: 0.24 },
+  { angle: 3.1, radius: 0.5, speed: 0.58, size: 0.013, lift: 0.18 },
+  { angle: 5.18, radius: 0.46, speed: 0.62, size: 0.015, lift: 0.26 },
 ];
 
 export const BottleReadAfterglow = ({
@@ -69,9 +73,10 @@ export const BottleReadAfterglow = ({
     const progress = Math.min(1, age / AFTERGLOW_LIFETIME);
     const fade = Math.pow(1 - progress, 1.7);
 
-    groupRef.current.scale.setScalar(1 + progress * 0.9);
-    groupRef.current.rotation.y = age * 0.55;
-    sparkleMaterialRef.opacity = fade * 0.72;
+    groupRef.current.scale.setScalar(1 + progress * 1.2);
+    groupRef.current.position.y = -0.12 + progress * 0.18;
+    groupRef.current.rotation.y = age * 0.46;
+    sparkleMaterialRef.opacity = fade * 0.82;
 
     if (progress >= 1 && !completedRef.current) {
       completedRef.current = true;
