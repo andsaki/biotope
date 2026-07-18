@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThrottledFrame } from '../hooks/useThrottledFrame';
+import { createRng, randomBetween } from '../utils/random';
 import {
   CLOUD_COUNT,
   CLOUD_POSITION_X_RANGE,
@@ -81,22 +82,24 @@ const CloudsComponent: React.FC<CloudsProps> = ({ timeScale, weather }) => {
 
   const clouds = useMemo<CloudInstance[]>(() => {
     const instances: CloudInstance[] = [];
+    const rng = createRng(0xc10d5eed);
     for (let i = 0; i < CLOUD_COUNT; i++) {
-      const x = Math.random() * CLOUD_POSITION_X_RANGE + CLOUD_POSITION_X_OFFSET;
-      const y = CLOUD_POSITION_Y_BASE + Math.random() * CLOUD_POSITION_Y_RANGE;
-      const z = Math.random() * CLOUD_POSITION_Z_RANGE + CLOUD_POSITION_Z_OFFSET;
-      const scale = CLOUD_SCALE_BASE + Math.random() * CLOUD_SCALE_RANGE;
-      const speed = CLOUD_SPEED_BASE + Math.random() * CLOUD_SPEED_RANGE;
-      const numParts = CLOUD_PARTS_MIN + Math.floor(Math.random() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
+      const x = randomBetween(rng, CLOUD_POSITION_X_OFFSET, CLOUD_POSITION_X_OFFSET + CLOUD_POSITION_X_RANGE);
+      const y = randomBetween(rng, CLOUD_POSITION_Y_BASE, CLOUD_POSITION_Y_BASE + CLOUD_POSITION_Y_RANGE);
+      const z = randomBetween(rng, CLOUD_POSITION_Z_OFFSET, CLOUD_POSITION_Z_OFFSET + CLOUD_POSITION_Z_RANGE);
+      const scale = randomBetween(rng, CLOUD_SCALE_BASE, CLOUD_SCALE_BASE + CLOUD_SCALE_RANGE);
+      const speed = randomBetween(rng, CLOUD_SPEED_BASE, CLOUD_SPEED_BASE + CLOUD_SPEED_RANGE);
+      const numParts =
+        CLOUD_PARTS_MIN + Math.floor(rng() * (CLOUD_PARTS_MAX - CLOUD_PARTS_MIN + 1));
       const parts: Array<{ position: [number, number, number]; scale: number }> = [];
       for (let j = 0; j < numParts; j++) {
         parts.push({
           position: [
-            (Math.random() - 0.5) * CLOUD_PART_POSITION_X_RANGE,
-            (Math.random() - 0.5) * CLOUD_PART_POSITION_Y_RANGE,
-            (Math.random() - 0.5) * CLOUD_PART_POSITION_Z_RANGE,
+            randomBetween(rng, -CLOUD_PART_POSITION_X_RANGE / 2, CLOUD_PART_POSITION_X_RANGE / 2),
+            randomBetween(rng, -CLOUD_PART_POSITION_Y_RANGE / 2, CLOUD_PART_POSITION_Y_RANGE / 2),
+            randomBetween(rng, -CLOUD_PART_POSITION_Z_RANGE / 2, CLOUD_PART_POSITION_Z_RANGE / 2),
           ],
-          scale: CLOUD_PART_SCALE_BASE + Math.random() * CLOUD_PART_SCALE_RANGE,
+          scale: randomBetween(rng, CLOUD_PART_SCALE_BASE, CLOUD_PART_SCALE_BASE + CLOUD_PART_SCALE_RANGE),
         });
       }
       instances.push({
