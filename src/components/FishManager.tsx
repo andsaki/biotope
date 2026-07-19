@@ -275,7 +275,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
         const baseGlow = getFishAccentBaseGlow(isFlatfish, fish.colorPattern);
         const weatherVisibilityBoost = rainIntensity * 0.08 + cloudIntensity * 0.04;
         const reactionBoost = waterReactionStrength * (isFlatfish ? 0.08 : 0.16);
-        const pulse = Math.sin(timeRef.current * 3.8 + fish.swimPhase) * 0.5 + 0.5;
+        const pulse = Math.sin(timeRef.current * fish.accentPulseSpeed + fish.swimPhase) * 0.5 + 0.5;
 
         accentMaterial.opacity = THREE.MathUtils.clamp(
           baseOpacity + weatherVisibilityBoost + reactionBoost,

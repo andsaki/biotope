@@ -38,6 +38,8 @@ export interface Fish {
   accentColor: string;
   /** 魚の配色パターン */
   colorPattern: FishColorPattern;
+  /** 差し色の明滅速度（個体差） */
+  accentPulseSpeed: number;
   /** 魚のサイズ */
   size: number;
   /** 魚の種類 */
