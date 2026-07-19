@@ -183,7 +183,7 @@ const SceneCanvas = ({
       <MemoizedSundialBase />
 
       <Suspense fallback={null}>
-        <MemoizedFishManager weather={weather} waterSignal={waterSignal} />
+        <MemoizedFishManager weather={weather} waterSignal={waterSignal} isDay={isDay} />
       </Suspense>
       <Suspense fallback={null}>
         <WaterPlantsLarge />
