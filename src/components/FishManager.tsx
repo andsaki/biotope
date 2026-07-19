@@ -139,24 +139,18 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
     []
   );
 
-  // 晴天ほど水中に光が差し、背側の受光ハイライトが強まり水中影も締まる
+  // 晴天ほど水中に光が差し、背側の受光ハイライト・瞳のキャッチライトが
+  // 強まり、水中影も締まる。3要素を同じ光量係数でまとめて更新する
   useEffect(() => {
     const underwaterBrightness = getUnderwaterBrightness(rainIntensity, cloudIntensity);
-    fishSheenMaterial.opacity = THREE.MathUtils.lerp(
-      FISH_DORSAL_SHEEN_OPACITY_MIN,
-      FISH_DORSAL_SHEEN_OPACITY_MAX,
-      underwaterBrightness
-    );
-    fishShadowMaterial.opacity = THREE.MathUtils.lerp(
-      FISH_UNDERBODY_SHADOW_OPACITY_MIN,
-      FISH_UNDERBODY_SHADOW_OPACITY_MAX,
-      underwaterBrightness
-    );
-    fishEyeHighlightMaterial.opacity = THREE.MathUtils.lerp(
-      FISH_EYE_HIGHLIGHT_OPACITY_MIN,
-      FISH_EYE_HIGHLIGHT_OPACITY_MAX,
-      underwaterBrightness
-    );
+    const weatherOpacityTargets: [THREE.Material, number, number][] = [
+      [fishSheenMaterial, FISH_DORSAL_SHEEN_OPACITY_MIN, FISH_DORSAL_SHEEN_OPACITY_MAX],
+      [fishShadowMaterial, FISH_UNDERBODY_SHADOW_OPACITY_MIN, FISH_UNDERBODY_SHADOW_OPACITY_MAX],
+      [fishEyeHighlightMaterial, FISH_EYE_HIGHLIGHT_OPACITY_MIN, FISH_EYE_HIGHLIGHT_OPACITY_MAX],
+    ];
+    for (const [material, min, max] of weatherOpacityTargets) {
+      material.opacity = THREE.MathUtils.lerp(min, max, underwaterBrightness);
+    }
   }, [
     cloudIntensity,
     fishEyeHighlightMaterial,
