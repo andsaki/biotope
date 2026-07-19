@@ -21,6 +21,10 @@ export const FISH_UNDERBODY_SHADOW_ROTATION: [number, number, number] = [Math.PI
 export const NORMAL_FISH_UNDERBODY_SHADOW_POSITION: [number, number, number] = [0, -0.13, 0];
 export const FLATFISH_UNDERBODY_SHADOW_POSITION: [number, number, number] = [0, -0.018, 0];
 
+// 天候で変わる水中影の不透明度（晴天は締まり、曇天は拡散して和らぐ）
+export const FISH_UNDERBODY_SHADOW_OPACITY_MIN = 0.1;
+export const FISH_UNDERBODY_SHADOW_OPACITY_MAX = 0.22;
+
 // 背側の受光ハイライト（水中影と対になるカウンターシェーディング）
 export const FISH_DORSAL_SHEEN_COLOR = "#d8f0ff";
 export const FISH_DORSAL_SHEEN_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
