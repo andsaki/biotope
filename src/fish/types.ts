@@ -40,6 +40,8 @@ export interface Fish {
   colorPattern: FishColorPattern;
   /** 差し色の明滅速度（個体差） */
   accentPulseSpeed: number;
+  /** クリックで驚いた際に速度ブーストが残る秒数 */
+  startleTime: number;
   /** 魚のサイズ */
   size: number;
   /** 魚の種類 */

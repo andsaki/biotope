@@ -103,6 +103,7 @@ const createNormalFish = (
       NORMAL_FISH_ACCENT_PULSE_SPEED_MIN,
       NORMAL_FISH_ACCENT_PULSE_SPEED_MAX
     ),
+    startleTime: 0,
     size: randomBetween(rng, NORMAL_FISH_SIZE_MIN, NORMAL_FISH_SIZE_MIN + NORMAL_FISH_SIZE_VARIATION),
     type: "normal",
   };
@@ -138,6 +139,7 @@ const createFlatfish = (
       FLATFISH_ACCENT_PULSE_SPEED_MIN,
       FLATFISH_ACCENT_PULSE_SPEED_MAX
     ),
+    startleTime: 0,
     size: randomBetween(rng, FLATFISH_SIZE_MIN, FLATFISH_SIZE_MIN + FLATFISH_SIZE_VARIATION),
     type: "flatfish",
     waitTime: randomBetween(rng, FLATFISH_WAIT_TIME_MIN, FLATFISH_WAIT_TIME_MIN + FLATFISH_WAIT_TIME_VARIATION),

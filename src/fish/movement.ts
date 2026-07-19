@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {
   FISH_BOUNDARY,
   FISH_MOVEMENT,
+  FISH_STARTLE,
   FLATFISH_GROUND_Y,
   FLATFISH_MOVE_TIME_MIN,
   FLATFISH_MOVE_TIME_VARIATION,
@@ -39,6 +40,28 @@ const nextFishRandom = (fish: Fish) => {
   return rng();
 };
 
+/** クリックされた魚を驚かせ、逃げる向きへ切り替えて速度ブーストを与える */
+export const startleFish = (fish: Fish) => {
+  const jitter = (nextFishRandom(fish) - 0.5) * FISH_STARTLE.TURN_JITTER;
+  fish.targetDirectionX = fish.directionX + Math.PI + jitter;
+  fish.directionChangeTime = FISH_STARTLE.COMMIT_SECONDS;
+  fish.startleTime = FISH_STARTLE.DURATION_SECONDS;
+  if (fish.type === "flatfish") {
+    fish.isMoving = true;
+    fish.waitTime = FLATFISH_MOVE_TIME_MIN;
+  }
+};
+
+/** 驚き状態の残り時間を減衰させ、速度倍率への上乗せ量を返す */
+const consumeStartleBoost = (fish: Fish, delta: number) => {
+  if (fish.startleTime <= 0) {
+    return 0;
+  }
+  const strength = Math.min(1, fish.startleTime / FISH_STARTLE.DURATION_SECONDS);
+  fish.startleTime = Math.max(0, fish.startleTime - delta);
+  return strength * FISH_STARTLE.SPEED_BOOST;
+};
+
 const steerTowardCenterIfNeeded = (fish: Fish, margin: number) => {
   const nearBoundary =
     fish.x < FISH_BOUNDARY.X_MIN + margin ||
@@ -58,6 +81,7 @@ const steerTowardCenterIfNeeded = (fish: Fish, margin: number) => {
 
 const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
   const { delta, weatherSpeedMultiplier, waterReactionStrength } = context;
+  const startleBoost = consumeStartleBoost(fish, delta);
   let newWaitTime = fish.waitTime ?? 0;
   let newIsMoving = fish.isMoving ?? false;
   let newX = fish.x;
@@ -95,7 +119,7 @@ const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
     const travelDistance =
       fish.speed *
       weatherSpeedMultiplier *
-      (1 + waterReactionStrength * 0.16) *
+      (1 + waterReactionStrength * 0.16 + startleBoost) *
       delta *
       FISH_MOVEMENT.FRAME_MULTIPLIER;
     newX = THREE.MathUtils.clamp(
@@ -122,6 +146,7 @@ const updateFlatfishMovement = (fish: Fish, context: FishMotionContext) => {
 
 const updateNormalFishMovement = (fish: Fish, context: FishMotionContext) => {
   const { delta, elapsedTime, weatherDepthOffset, weatherSpeedMultiplier, waterReactionStrength } = context;
+  const startleBoost = consumeStartleBoost(fish, delta);
 
   fish.directionChangeTime -= delta;
   if (fish.directionChangeTime <= 0) {
@@ -149,7 +174,7 @@ const updateNormalFishMovement = (fish: Fish, context: FishMotionContext) => {
   const travelDistance =
     fish.speed *
     weatherSpeedMultiplier *
-    (1 + waterReactionStrength * 0.38) *
+    (1 + waterReactionStrength * 0.38 + startleBoost) *
     delta *
     FISH_MOVEMENT.FRAME_MULTIPLIER;
   const newX = THREE.MathUtils.clamp(
