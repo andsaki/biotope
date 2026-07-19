@@ -31,6 +31,8 @@ import {
   FISH_DORSAL_SHEEN_ROTATION,
   FISH_EYE_COLOR,
   FISH_EYE_HIGHLIGHT_COLOR,
+  FISH_EYE_HIGHLIGHT_OPACITY_MAX,
+  FISH_EYE_HIGHLIGHT_OPACITY_MIN,
   FISH_UNDERBODY_SHADOW_COLOR,
   FISH_UNDERBODY_SHADOW_OPACITY_MAX,
   FISH_UNDERBODY_SHADOW_OPACITY_MIN,
@@ -150,7 +152,18 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       FISH_UNDERBODY_SHADOW_OPACITY_MAX,
       underwaterBrightness
     );
-  }, [cloudIntensity, fishShadowMaterial, fishSheenMaterial, rainIntensity]);
+    fishEyeHighlightMaterial.opacity = THREE.MathUtils.lerp(
+      FISH_EYE_HIGHLIGHT_OPACITY_MIN,
+      FISH_EYE_HIGHLIGHT_OPACITY_MAX,
+      underwaterBrightness
+    );
+  }, [
+    cloudIntensity,
+    fishEyeHighlightMaterial,
+    fishShadowMaterial,
+    fishSheenMaterial,
+    rainIntensity,
+  ]);
 
   const timeRef = useRef(0);
   const previousWaterSignalRef = useRef(waterSignal);

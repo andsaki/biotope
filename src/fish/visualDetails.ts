@@ -16,6 +16,9 @@ export const FLATFISH_EYE_POSITIONS: [number, number, number][] = [
 
 export const FISH_EYE_COLOR = "#08131b";
 export const FISH_EYE_HIGHLIGHT_COLOR = "#dff7ff";
+// 天候で変わる瞳のキャッチライト不透明度（晴天ほど光を強く受ける）
+export const FISH_EYE_HIGHLIGHT_OPACITY_MIN = 0.5;
+export const FISH_EYE_HIGHLIGHT_OPACITY_MAX = 0.9;
 export const FISH_UNDERBODY_SHADOW_COLOR = "#07141d";
 export const FISH_UNDERBODY_SHADOW_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
 export const NORMAL_FISH_UNDERBODY_SHADOW_POSITION: [number, number, number] = [0, -0.13, 0];
