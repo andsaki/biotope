@@ -32,6 +32,8 @@ import {
   FISH_EYE_COLOR,
   FISH_EYE_HIGHLIGHT_COLOR,
   FISH_UNDERBODY_SHADOW_COLOR,
+  FISH_UNDERBODY_SHADOW_OPACITY_MAX,
+  FISH_UNDERBODY_SHADOW_OPACITY_MIN,
   FISH_UNDERBODY_SHADOW_ROTATION,
   FLATFISH_DORSAL_SHEEN_POSITION,
   FLATFISH_EYE_POSITIONS,
@@ -135,7 +137,7 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
     []
   );
 
-  // 晴天ほど水中に光が差し、背側の受光ハイライトが強まる
+  // 晴天ほど水中に光が差し、背側の受光ハイライトが強まり水中影も締まる
   useEffect(() => {
     const underwaterBrightness = getUnderwaterBrightness(rainIntensity, cloudIntensity);
     fishSheenMaterial.opacity = THREE.MathUtils.lerp(
@@ -143,7 +145,12 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       FISH_DORSAL_SHEEN_OPACITY_MAX,
       underwaterBrightness
     );
-  }, [cloudIntensity, fishSheenMaterial, rainIntensity]);
+    fishShadowMaterial.opacity = THREE.MathUtils.lerp(
+      FISH_UNDERBODY_SHADOW_OPACITY_MIN,
+      FISH_UNDERBODY_SHADOW_OPACITY_MAX,
+      underwaterBrightness
+    );
+  }, [cloudIntensity, fishShadowMaterial, fishSheenMaterial, rainIntensity]);
 
   const timeRef = useRef(0);
   const previousWaterSignalRef = useRef(waterSignal);
