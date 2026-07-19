@@ -4,13 +4,18 @@ import * as THREE from "three";
 import { useModelScene } from "../hooks/useModelScene";
 import { createRng, randomBetween, type RngFunction } from "../utils/random";
 import {
+  FROG_ATTENTION_SECONDS,
+  FROG_COMBO_WINDOW_SECONDS,
   FROG_CROAK_AUDIO_URL,
   FROG_CROAK_CLIP_SECONDS,
   FROG_CROAK_VOLUME,
   FROG_JUMP_DURATION,
   FROG_JUMP_HEIGHT,
+  FROG_LANDING_RIPPLE_SECONDS,
+  FROG_LOW_POLY_COLORS,
   FROG_RANDOM_ACTION_MIN_SECONDS,
   FROG_RANDOM_ACTION_VARIATION_SECONDS,
+  FROG_TRICK_DURATION_SECONDS,
   LILY_WAVE_AMPLITUDE,
   LILY_WAVE_FREQUENCY,
   LILY_WAVE_TIME_SCALE,
@@ -33,17 +38,6 @@ const scheduleNextAction = (rng: RngFunction) =>
     FROG_RANDOM_ACTION_MIN_SECONDS,
     FROG_RANDOM_ACTION_MIN_SECONDS + FROG_RANDOM_ACTION_VARIATION_SECONDS
   );
-
-const FROG_COMBO_WINDOW_SECONDS = 1.2;
-const FROG_TRICK_DURATION_SECONDS = 0.95;
-const FROG_ATTENTION_SECONDS = 2.8;
-const FROG_LANDING_RIPPLE_SECONDS = 0.65;
-const FROG_LOW_POLY_COLORS = {
-  body: "#294b2f",
-  back: "#19341f",
-  belly: "#6f8a55",
-  accent: "#0f2416",
-};
 
 const applyLowPolyFrogMaterial = (model: THREE.Object3D) => {
   let meshIndex = 0;
