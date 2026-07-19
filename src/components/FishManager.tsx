@@ -25,16 +25,20 @@ import {
 } from "@/fish/materials";
 import { updateFishMovement } from "@/fish/movement";
 import {
+  FISH_DORSAL_SHEEN_COLOR,
+  FISH_DORSAL_SHEEN_ROTATION,
   FISH_EYE_COLOR,
   FISH_EYE_HIGHLIGHT_COLOR,
   FISH_UNDERBODY_SHADOW_COLOR,
   FISH_UNDERBODY_SHADOW_ROTATION,
+  FLATFISH_DORSAL_SHEEN_POSITION,
   FLATFISH_EYE_POSITIONS,
   FLATFISH_MARK_POSITION,
   FLATFISH_MARK_ROTATION,
   FLATFISH_UNDERBODY_SHADOW_POSITION,
   getFishAccentBaseGlow,
   getFishAccentBaseOpacity,
+  NORMAL_FISH_DORSAL_SHEEN_POSITION,
   NORMAL_FISH_EYE_POSITIONS,
   NORMAL_FISH_MARK_POSITION,
   NORMAL_FISH_MARK_ROTATION,
@@ -113,6 +117,20 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       }),
     []
   );
+  const fishSheenGeometry = useMemo(
+    () => new THREE.CircleGeometry(0.14, 10),
+    []
+  );
+  const fishSheenMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: FISH_DORSAL_SHEEN_COLOR,
+        transparent: true,
+        opacity: 0.1,
+        depthWrite: false,
+      }),
+    []
+  );
 
   const timeRef = useRef(0);
   const previousWaterSignalRef = useRef(waterSignal);
@@ -168,6 +186,8 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       fishEyeHighlightMaterial.dispose();
       fishShadowGeometry.dispose();
       fishShadowMaterial.dispose();
+      fishSheenGeometry.dispose();
+      fishSheenMaterial.dispose();
     };
   }, [
     fishEyeGeometry,
@@ -176,6 +196,8 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
     fishEyeMaterial,
     fishShadowGeometry,
     fishShadowMaterial,
+    fishSheenGeometry,
+    fishSheenMaterial,
     flatfishAccentGeometry,
     normalAccentGeometry,
   ]);
@@ -272,6 +294,12 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
         const shadowScale: [number, number, number] = isFlatfish
           ? [fish.size * 0.95, fish.size * 0.34, 1]
           : [fish.size * 0.78, fish.size * 0.22, 1];
+        const sheenPosition = isFlatfish
+          ? FLATFISH_DORSAL_SHEEN_POSITION
+          : NORMAL_FISH_DORSAL_SHEEN_POSITION;
+        const sheenScale: [number, number, number] = isFlatfish
+          ? [fish.size * 0.7, fish.size * 0.28, 1]
+          : [fish.size * 0.58, fish.size * 0.16, 1];
 
         return (
           <group
@@ -302,6 +330,13 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
               scale={shadowScale}
               geometry={fishShadowGeometry}
               material={fishShadowMaterial}
+            />
+            <mesh
+              position={sheenPosition}
+              rotation={FISH_DORSAL_SHEEN_ROTATION}
+              scale={sheenScale}
+              geometry={fishSheenGeometry}
+              material={fishSheenMaterial}
             />
             <mesh
               position={isFlatfish ? FLATFISH_MARK_POSITION : NORMAL_FISH_MARK_POSITION}
