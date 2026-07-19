@@ -26,6 +26,8 @@ import {
 import { updateFishMovement } from "@/fish/movement";
 import {
   FISH_DORSAL_SHEEN_COLOR,
+  FISH_DORSAL_SHEEN_OPACITY_MAX,
+  FISH_DORSAL_SHEEN_OPACITY_MIN,
   FISH_DORSAL_SHEEN_ROTATION,
   FISH_EYE_COLOR,
   FISH_EYE_HIGHLIGHT_COLOR,
@@ -38,6 +40,7 @@ import {
   FLATFISH_UNDERBODY_SHADOW_POSITION,
   getFishAccentBaseGlow,
   getFishAccentBaseOpacity,
+  getUnderwaterBrightness,
   NORMAL_FISH_DORSAL_SHEEN_POSITION,
   NORMAL_FISH_EYE_POSITIONS,
   NORMAL_FISH_MARK_POSITION,
@@ -131,6 +134,16 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal }) => {
       }),
     []
   );
+
+  // 晴天ほど水中に光が差し、背側の受光ハイライトが強まる
+  useEffect(() => {
+    const underwaterBrightness = getUnderwaterBrightness(rainIntensity, cloudIntensity);
+    fishSheenMaterial.opacity = THREE.MathUtils.lerp(
+      FISH_DORSAL_SHEEN_OPACITY_MIN,
+      FISH_DORSAL_SHEEN_OPACITY_MAX,
+      underwaterBrightness
+    );
+  }, [cloudIntensity, fishSheenMaterial, rainIntensity]);
 
   const timeRef = useRef(0);
   const previousWaterSignalRef = useRef(waterSignal);
