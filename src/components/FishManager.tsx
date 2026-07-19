@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { useSeason } from "../contexts";
-import { useLoader } from "@react-three/fiber";
+import { useLoader, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -18,12 +18,13 @@ import {
   type WeatherSnapshot,
 } from "@/utils/weather";
 import { createFishList, getSeasonFishProfile } from "@/fish/createFish";
+import type { Fish } from "@/fish/types";
 import {
   applyLowPolyFlatfishMaterial,
   applyLowPolyNormalFishMaterial,
   disposeObjectMaterials,
 } from "@/fish/materials";
-import { updateFishMovement } from "@/fish/movement";
+import { startleFish, updateFishMovement } from "@/fish/movement";
 import {
   FISH_DORSAL_SHEEN_COLOR,
   FISH_DORSAL_SHEEN_OPACITY_MAX,
@@ -297,6 +298,11 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal, isDay }
     });
   }, 30);
 
+  const handleFishClick = (fish: Fish) => (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    startleFish(fish);
+  };
+
   return (
     <group>
       {fishList.map((fish, index) => {
@@ -333,6 +339,13 @@ const FishManager: React.FC<FishManagerProps> = ({ weather, waterSignal, isDay }
         return (
           <group
             key={fish.id}
+            onClick={handleFishClick(fish)}
+            onPointerOver={() => {
+              document.body.style.cursor = "pointer";
+            }}
+            onPointerOut={() => {
+              document.body.style.cursor = "auto";
+            }}
             ref={(el) => {
               if (el) {
                 fishRefs.current[index] = el;

@@ -92,6 +92,14 @@ export const FISH_MOVEMENT = {
   FLATFISH_Z_DRIFT_DAMPING: 0.6, // ヒラメの奥行き方向移動の減衰
 } as const;
 
+// クリックで驚いて逃げる反応
+export const FISH_STARTLE = {
+  DURATION_SECONDS: 0.9, // 速度ブーストが続く時間
+  SPEED_BOOST: 0.8, // 驚いた瞬間の速度倍率の上乗せ
+  COMMIT_SECONDS: 0.5, // 逃げる向きへ切り替えるまでの猶予
+  TURN_JITTER: 0.9, // 反転方向へ加えるばらつき（ラジアン）
+} as const;
+
 // 魚の境界
 export const FISH_BOUNDARY = {
   X_MIN: -6.0,
