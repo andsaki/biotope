@@ -63,6 +63,20 @@ export const FROG_CROAK_AUDIO_URL =
   "https://upload.wikimedia.org/wikipedia/commons/0/0c/Buergeria_buergeri.ogg";
 export const FROG_CROAK_CLIP_SECONDS = 2.4;
 
+// カエルのインタラクション挙動
+export const FROG_COMBO_WINDOW_SECONDS = 1.2;
+export const FROG_TRICK_DURATION_SECONDS = 0.95;
+export const FROG_ATTENTION_SECONDS = 2.8;
+export const FROG_LANDING_RIPPLE_SECONDS = 0.65;
+
+// カエルのローポリ配色
+export const FROG_LOW_POLY_COLORS = {
+  body: "#294b2f",
+  back: "#19341f",
+  belly: "#6f8a55",
+  accent: "#0f2416",
+} as const;
+
 // 水面の波の設定
 export const WATER_HEIGHT_BASE = 8;
 export const WATER_HEIGHT_AMPLITUDE = 0.5;
