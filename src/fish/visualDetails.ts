@@ -27,6 +27,16 @@ export const FISH_DORSAL_SHEEN_ROTATION: [number, number, number] = [Math.PI / 2
 export const NORMAL_FISH_DORSAL_SHEEN_POSITION: [number, number, number] = [0, 0.12, 0];
 export const FLATFISH_DORSAL_SHEEN_POSITION: [number, number, number] = [0, 0.016, 0];
 
+// 天候で変わる受光ハイライトの不透明度（曇天/雨天は光が差さず弱まる）
+export const FISH_DORSAL_SHEEN_OPACITY_MIN = 0.05;
+export const FISH_DORSAL_SHEEN_OPACITY_MAX = 0.14;
+
+/** 晴天ほど1に近づく水中の明るさ係数を返す */
+export const getUnderwaterBrightness = (
+  rainIntensity: number,
+  cloudIntensity: number
+) => Math.max(0, 1 - rainIntensity * 0.6 - cloudIntensity * 0.3);
+
 export const getFishAccentBaseOpacity = (
   isFlatfish: boolean,
   colorPattern: FishColorPattern
