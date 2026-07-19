@@ -3,6 +3,8 @@ import {
   FISH_ACCENT_COLOR,
   FISH_COLOR,
   FISH_SPEED,
+  FLATFISH_ACCENT_PULSE_SPEED_MAX,
+  FLATFISH_ACCENT_PULSE_SPEED_MIN,
   FLATFISH_COUNT,
   FLATFISH_GROUND_Y,
   FLATFISH_SIZE_MIN,
@@ -10,6 +12,8 @@ import {
   FLATFISH_SPEED,
   FLATFISH_WAIT_TIME_MIN,
   FLATFISH_WAIT_TIME_VARIATION,
+  NORMAL_FISH_ACCENT_PULSE_SPEED_MAX,
+  NORMAL_FISH_ACCENT_PULSE_SPEED_MIN,
   NORMAL_FISH_COUNT,
   NORMAL_FISH_SIZE_MIN,
   NORMAL_FISH_SIZE_VARIATION,
@@ -94,6 +98,11 @@ const createNormalFish = (
     color: fishColor,
     accentColor: fishAccentColor,
     colorPattern,
+    accentPulseSpeed: randomBetween(
+      rng,
+      NORMAL_FISH_ACCENT_PULSE_SPEED_MIN,
+      NORMAL_FISH_ACCENT_PULSE_SPEED_MAX
+    ),
     size: randomBetween(rng, NORMAL_FISH_SIZE_MIN, NORMAL_FISH_SIZE_MIN + NORMAL_FISH_SIZE_VARIATION),
     type: "normal",
   };
@@ -124,6 +133,11 @@ const createFlatfish = (
     color: fishColor,
     accentColor: fishAccentColor,
     colorPattern: "back",
+    accentPulseSpeed: randomBetween(
+      rng,
+      FLATFISH_ACCENT_PULSE_SPEED_MIN,
+      FLATFISH_ACCENT_PULSE_SPEED_MAX
+    ),
     size: randomBetween(rng, FLATFISH_SIZE_MIN, FLATFISH_SIZE_MIN + FLATFISH_SIZE_VARIATION),
     type: "flatfish",
     waitTime: randomBetween(rng, FLATFISH_WAIT_TIME_MIN, FLATFISH_WAIT_TIME_MIN + FLATFISH_WAIT_TIME_VARIATION),

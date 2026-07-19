@@ -51,6 +51,12 @@ export const NORMAL_FISH_SPEED_VARIATION = 0.02;
 export const NORMAL_FISH_SIZE_MIN = 0.2;
 export const NORMAL_FISH_SIZE_VARIATION = 0.3;
 
+// 差し色の明滅速度の個体差
+export const NORMAL_FISH_ACCENT_PULSE_SPEED_MIN = 3.2;
+export const NORMAL_FISH_ACCENT_PULSE_SPEED_MAX = 4.6;
+export const FLATFISH_ACCENT_PULSE_SPEED_MIN = 2.2;
+export const FLATFISH_ACCENT_PULSE_SPEED_MAX = 3.0;
+
 // フラットフィッシュの配置
 export const FLATFISH_GROUND_Y = -0.9; // 地面に密着
 
