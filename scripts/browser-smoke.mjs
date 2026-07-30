@@ -15,6 +15,11 @@ const launchOptions = existsSync(executablePath)
   ? { executablePath, headless: true }
   : { headless: true };
 
+const isIgnoredNetworkUrl = (resourceUrl) => {
+  const resource = new URL(resourceUrl, url);
+  return resource.pathname === "/api/weather" || resource.pathname === "/api/daily-message";
+};
+
 let browser;
 
 try {
@@ -36,11 +41,28 @@ try {
 
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const consoleIssues = [];
+const networkIssues = [];
 
 page.on("console", (message) => {
   if (message.type() === "error" || message.type() === "warning") {
     consoleIssues.push(`${message.type()}: ${message.text()}`);
   }
+});
+
+page.on("response", (response) => {
+  if (response.status() < 400 || isIgnoredNetworkUrl(response.url())) {
+    return;
+  }
+
+  networkIssues.push(`${response.status()} ${response.url()}`);
+});
+
+page.on("requestfailed", (request) => {
+  if (isIgnoredNetworkUrl(request.url())) {
+    return;
+  }
+
+  networkIssues.push(`${request.failure()?.errorText ?? "failed"} ${request.url()}`);
 });
 
 try {
@@ -92,6 +114,10 @@ try {
 
   if (filteredIssues.length > 0) {
     throw new Error(`console warning/error: ${filteredIssues.join("\n")}`);
+  }
+
+  if (networkIssues.length > 0) {
+    throw new Error(`network error: ${networkIssues.join("\n")}`);
   }
 
   console.log(
