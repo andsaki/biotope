@@ -1,10 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import type { ReactNode } from "react";
+
 import { useRealTime } from "../../hooks/useRealTime";
 import { DayPeriodContext, RealTimeContext } from "./context";
-
-export type { RealTime } from "./context";
 
 /**
  * 時間コンテキストのプロバイダー
@@ -23,5 +21,3 @@ export const TimeProvider: React.FC<{ children: ReactNode }> = ({
     </DayPeriodContext.Provider>
   );
 };
-
-export { useDayPeriod, useClockTime, useTime } from "./hooks";
