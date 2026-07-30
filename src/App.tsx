@@ -1,4 +1,4 @@
-import React, { useMemo, memo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, memo, useState, useEffect, useCallback, useRef } from "react";
 
 import { SeasonProvider, TimeProvider, useDayPeriod } from "./contexts";
 import WindDirectionDisplay from "./components/WindDirectionDisplay";
@@ -62,6 +62,7 @@ const AppContent = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
   const [waterSignal, setWaterSignal] = useState(0);
+  const screenshotCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const performanceMonitorEnabled = useMemo(isPerformanceMonitorRequested, []);
   const isLoading = !(assetsLoaded && minDelayElapsed);
 
@@ -108,6 +109,10 @@ const AppContent = () => {
     setWaterSignal((signal) => signal + 1);
   }, [uxHints]);
 
+  const handleCanvasReady = useCallback((canvas: HTMLCanvasElement | null) => {
+    screenshotCanvasRef.current = canvas;
+  }, []);
+
   const appStyle: AppStyle = {
     "--app-background-color": backgroundColor,
   };
@@ -133,6 +138,7 @@ const AppContent = () => {
         waterSignal={waterSignal}
         onAssetsLoaded={handleAssetsLoaded}
         onBottleMessageRead={handleBottleMessageRead}
+        onCanvasReady={handleCanvasReady}
         onProgress={handleProgress}
         onWaterInteract={handleWaterInteract}
       />
@@ -149,6 +155,7 @@ const AppContent = () => {
         onReopenHints={!isLoading ? uxHints.reopenHints : undefined}
         onPanelOpened={uxHints.markPanelOpened}
         onAmbientToggle={uxHints.markAmbientToggled}
+        screenshotCanvasRef={screenshotCanvasRef}
       />
       {/* 風向きコンパス - ローディング完了後のみ表示 */}
       {!isLoading && (

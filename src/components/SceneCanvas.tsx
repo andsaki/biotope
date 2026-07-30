@@ -58,7 +58,10 @@ const LoadingTracker = ({ onLoaded, onProgress }: LoadingTrackerProps) => {
 
   useEffect(() => {
     if (active) {
-      const percentComplete = (loaded / total) * 100;
+      const percentComplete =
+        total > 0
+          ? Math.min(100, Math.max(0, (loaded / total) * 100))
+          : Math.min(100, Math.max(0, progress));
       const text = `3Dモデルを読み込み中... (${loaded}/${total})`;
       onProgress(percentComplete, text);
     } else {
@@ -82,6 +85,7 @@ interface SceneCanvasProps {
   waterSignal: number;
   onAssetsLoaded: () => void;
   onBottleMessageRead: () => void;
+  onCanvasReady: (canvas: HTMLCanvasElement | null) => void;
   onProgress: (progress: number, loadingText: string) => void;
   onWaterInteract: () => void;
 }
@@ -98,6 +102,7 @@ const SceneCanvas = ({
   waterSignal,
   onAssetsLoaded,
   onBottleMessageRead,
+  onCanvasReady,
   onProgress,
   onWaterInteract,
 }: SceneCanvasProps) => {
@@ -119,6 +124,7 @@ const SceneCanvas = ({
       powerPreference: "high-performance",
       alpha: false,
       stencil: false,
+      preserveDrawingBuffer: true,
     }),
     [isMobile]
   );
@@ -135,6 +141,7 @@ const SceneCanvas = ({
       dpr={canvasDpr}
       frameloop="always"
       performance={{ min: 0.5 }}
+      onCreated={({ gl }) => onCanvasReady(gl.domElement)}
     >
       <LoadingTracker onLoaded={onAssetsLoaded} onProgress={onProgress} />
       {!isDay && (

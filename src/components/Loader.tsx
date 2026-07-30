@@ -12,6 +12,10 @@ interface LoaderProps {
 }
 
 const Loader = ({ progress = 0, loadingText = "読み込み中...", isExiting = false }: LoaderProps) => {
+  const clampedProgress = Number.isFinite(progress)
+    ? Math.min(100, Math.max(0, progress))
+    : 0;
+
   // 4匹の蛍 - それぞれ独立した経路を持つ
   const fireflies = [
     { delay: 0, x: [0, 30, -20, 10, 0], y: [0, -25, -15, -30, 0], duration: 4 },
@@ -77,7 +81,7 @@ const Loader = ({ progress = 0, loadingText = "読み込み中...", isExiting = 
         <div className={styles.progressContainer}>
           {/* 進捗パーセンテージ */}
           <div className={styles.percentage}>
-            {Math.round(progress)}%
+            {Math.round(clampedProgress)}%
           </div>
 
           {/* ローディングテキスト */}
@@ -89,7 +93,7 @@ const Loader = ({ progress = 0, loadingText = "読み込み中...", isExiting = 
           <div className={styles.progressBar}>
             <div
               className={styles.progressBarFill}
-              style={{ width: `${progress}%` }}
+              style={{ width: `${clampedProgress}%` }}
             />
           </div>
         </div>

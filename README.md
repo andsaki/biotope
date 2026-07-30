@@ -17,6 +17,7 @@ React、TypeScript、Three.jsを使用した、季節の移り変わりを静か
   - 日時計（影の動き）
   - 漂流する瓶（クリックで季節×時間帯の便箋表示）
   - 風向きコンパス
+  - スクリーンショット保存（日時・季節ウォーターマーク付きPNG）
 - **3Dモデル統合**:
   - **魚**: カレイ（底生魚の動き：待機→瞬間移動）
   - **植物**: 蓮の葉（夏・波に連動）、水草
@@ -27,7 +28,7 @@ React、TypeScript、Three.jsを使用した、季節の移り変わりを静か
 ## 技術スタック
 
 - **フロントエンド**: React 19 + TypeScript
-- **ビルドツール**: Vite 7
+- **ビルドツール**: Vite 8
 - **3D描画**: Three.js + @react-three/fiber + @react-three/drei
 - **物理エンジン**: @react-three/rapier
 - **デザインシステム**: トークンベースのスタイリング (tokens.ts)
@@ -113,8 +114,8 @@ src/
 │   ├── waterPlants.ts           # 水草・蓮の葉定数
 │   ├── rocks.ts                 # 岩の配置定数
 │   ├── stars.ts                 # 星空の定数
-│   └── sundial.ts               # 日時計の定数
-│   └── core/                 # アプリ全体の基礎定数（時間・システム色など）
+│   ├── sundial.ts               # 日時計の定数
+│   └── core/                    # アプリ全体の基礎定数（時間・システム色など）
 └── assets/                  # 静的資産（R2アップロード対象）
     ├── cc0____yellow_striped_flounder.glb       # カレイ3Dモデル
     ├── cc0__deep_autumn__5k_followers_milestone.glb  # 落ち葉3Dモデル
