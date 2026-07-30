@@ -7,6 +7,7 @@ const reactVendors = ["react", "react-dom"];
 const threeCoreVendors = ["three"];
 const reactThreeVendors = ["@react-three/fiber"];
 const matchesPackage = (id: string, pkg: string) => id.includes(`/node_modules/${pkg}/`);
+const shouldAnalyzeBundle = process.env.BUILD_ANALYZE === "1";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -25,10 +26,11 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    visualizer({
-      open: true, // Automatically open the report in the browser
-      filename: "dist/stats.html", // Output file
-    }),
+    shouldAnalyzeBundle &&
+      visualizer({
+        open: false,
+        filename: "dist/stats.html",
+      }),
   ],
   build: {
     minify: 'esbuild',
