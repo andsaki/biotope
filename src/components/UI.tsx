@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type RefObject } from "react";
 import { useSeason } from "../contexts";
 import SimulationClock from "./SimulationClock";
 import { BottleJournalPanel } from "./BottleJournalPanel";
@@ -7,6 +7,7 @@ import { UiOpenButton } from "./UiOpenButton";
 import { FloatingUiHint } from "./FloatingUiHint";
 import { UiPanelCloseButton } from "./UiPanelCloseButton";
 import { InlineAmbientHint } from "./InlineAmbientHint";
+import { ScreenshotButton } from "./ScreenshotButton";
 import { tokens } from "@/styles/tokens";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useAmbientSound } from "@/hooks/useAmbientSound";
@@ -22,6 +23,7 @@ interface UIProps {
   onReopenHints?: () => void;
   onPanelOpened?: () => void;
   onAmbientToggle?: () => void;
+  screenshotCanvasRef?: RefObject<HTMLCanvasElement | null>;
 }
 
 /**
@@ -37,6 +39,7 @@ const UI: React.FC<UIProps> = ({
   onReopenHints,
   onPanelOpened,
   onAmbientToggle,
+  screenshotCanvasRef,
 }) => {
   const { season, setSeason } = useSeason();
   const isMobile = useIsMobile();
@@ -313,6 +316,13 @@ const UI: React.FC<UIProps> = ({
                 <span aria-hidden="true">✉</span>
                 最近の便り
               </button>
+
+              {screenshotCanvasRef && (
+                <ScreenshotButton
+                  canvasRef={screenshotCanvasRef}
+                  isMobile={isMobile}
+                />
+              )}
             </div>
           </div>
 
