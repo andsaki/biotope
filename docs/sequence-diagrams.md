@@ -37,32 +37,32 @@ sequenceDiagram
     Scene-->>User: ビオトープ環境表示
 ```
 
-## 2. 時間シミュレーションフロー
+## 2. リアルタイム時計フロー
 
 ```mermaid
 sequenceDiagram
-    participant Hook as useSimulatedTime
-    participant State as React State
+    participant Provider as TimeProvider
+    participant Hook as useRealTime
+    participant Context as TimeContext
     participant Interval as setInterval
-    participant Components as LightingController
+    participant Components as Sun / LightingController / UI
 
-    Hook->>State: 初期化 (時刻 = 17:00, isDay = true)
+    Provider->>Hook: useRealTime()
+    Hook->>Hook: 日本時間を取得
     Hook->>Interval: setInterval 開始 (1秒ごと)
 
     loop 1秒ごとに実行
         Interval->>Hook: 時間更新トリガー
-        Hook->>Hook: totalSeconds 計算
-        Note over Hook: (prev.minutes * 60 + prev.seconds + 48) % 86400
-        Hook->>Hook: 新しい分・秒を計算
+        Hook->>Hook: Asia/Tokyo の時分秒を計算
         Hook->>Hook: 昼夜判定
-        Note over Hook: isDay = (minutes >= 360 && minutes < 1080)
-        Hook->>State: setSimulatedTime({ minutes, seconds })
-        Hook->>State: setIsDay(newIsDay)
-        State-->>Components: 時間・昼夜状態を通知
-        Components->>Components: 照明を更新
+        Note over Hook: isDay = 6:00 以上 18:00 未満
+        Hook-->>Provider: { isDay, realTime }
+        Provider->>Context: DayPeriodContext / RealTimeContext を更新
+        Context-->>Components: 必要な時間情報のみ通知
+        Components->>Components: 太陽・照明・時計表示を更新
     end
 
-    Note over Hook,Components: 24時間が実時間の30分で経過<br/>(1秒 = 48シミュレーション秒)
+    Note over Provider,Components: 昼夜判定と時計表示を別 Context に分離し、不要な再レンダリングを抑制
 ```
 
 ## 3. 照明システム制御フロー (リファクタリング後)
@@ -189,14 +189,15 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Time as useSimulatedTime
+    participant Time as useClockTime
+    participant SunHook as useSunPosition
     participant Base as SundialBase
     participant Gnomon as SundialGnomon
     participant DirectionalLight as 太陽光
     participant Shadow as Shadow Map
 
-    Time->>Gnomon: { simulatedTime } 更新
-    Time->>DirectionalLight: 時刻に応じて位置更新
+    Time->>SunHook: { hours, minutes, seconds } 更新
+    SunHook->>DirectionalLight: 時刻に応じて位置更新
 
     Gnomon->>Gnomon: 影用設定確認
     Note over Gnomon: castShadow = true
@@ -367,4 +368,3 @@ graph TB
     style UI fill:#DDA0DD,color:#000
     style Debug fill:#FFA07A,color:#000
 ```
-
