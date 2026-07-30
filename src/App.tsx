@@ -40,6 +40,7 @@ const getWindDirectionFromDegrees = (
 const MemoizedWindDirectionDisplay = memo(WindDirectionDisplay);
 
 const MINIMUM_LOADER_MS = 300;
+const MAXIMUM_LOADER_MS = 12_000;
 type AppStyle = React.CSSProperties & { "--app-background-color"?: string };
 
 /**
@@ -76,6 +77,19 @@ const AppContent = () => {
     }, MINIMUM_LOADER_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (assetsLoaded) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setAssetsLoaded(true);
+      setLoadingProgress(100);
+      setLoadingText("完了");
+    }, MAXIMUM_LOADER_MS);
+    return () => clearTimeout(timer);
+  }, [assetsLoaded]);
 
   useEffect(() => {
     if (isLoading) {
