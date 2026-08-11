@@ -63,6 +63,7 @@ const AppContent = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("初期化中...");
   const [waterSignal, setWaterSignal] = useState(0);
+  const [isUiPanelOpen, setIsUiPanelOpen] = useState(false);
   const screenshotCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const performanceMonitorEnabled = useMemo(isPerformanceMonitorRequested, []);
   const isLoading = !(assetsLoaded && minDelayElapsed);
@@ -168,6 +169,7 @@ const AppContent = () => {
         onDismissHints={uxHints.dismissHints}
         onReopenHints={!isLoading ? uxHints.reopenHints : undefined}
         onPanelOpened={uxHints.markPanelOpened}
+        onPanelOpenChange={setIsUiPanelOpen}
         onAmbientToggle={uxHints.markAmbientToggled}
         screenshotCanvasRef={screenshotCanvasRef}
       />
@@ -177,6 +179,7 @@ const AppContent = () => {
           windDirection={windDirection}
           weather={weather}
           locationStatus={locationStatus}
+          isUiPanelOpen={isUiPanelOpen}
           onRequestPreciseLocation={requestPreciseLocation}
         />
       )}

@@ -50,6 +50,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
   const [volume, setVolumeState] = useState(0.6);
   const [isReady, setIsReady] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
+  const [sampleVersion, setSampleVersion] = useState(0);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
@@ -148,6 +149,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
             const decoded = await context.decodeAudioData(arrayBuffer);
             if (!cancelled) {
               sampleBuffersRef.current[key] = decoded;
+              setSampleVersion((version) => version + 1);
             }
           } catch (error) {
             if (shouldLogAmbientSampleFailure()) {
@@ -211,7 +213,7 @@ export const useAmbientSound = (): AmbientSoundControls => {
       newSource.stop();
       newSource.disconnect();
     };
-  }, [season, isDay, isSupported]);
+  }, [season, isDay, isSupported, sampleVersion]);
 
   // ミュート/音量制御
   useEffect(() => {

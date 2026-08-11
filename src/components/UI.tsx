@@ -22,6 +22,7 @@ interface UIProps {
   onDismissHints?: () => void;
   onReopenHints?: () => void;
   onPanelOpened?: () => void;
+  onPanelOpenChange?: (isOpen: boolean) => void;
   onAmbientToggle?: () => void;
   screenshotCanvasRef?: RefObject<HTMLCanvasElement | null>;
 }
@@ -38,6 +39,7 @@ const UI: React.FC<UIProps> = ({
   onDismissHints,
   onReopenHints,
   onPanelOpened,
+  onPanelOpenChange,
   onAmbientToggle,
   screenshotCanvasRef,
 }) => {
@@ -72,6 +74,13 @@ const UI: React.FC<UIProps> = ({
     winter: "冬",
   };
 
+  const seasonLabels = {
+    spring: "春に切り替える",
+    summer: "夏に切り替える",
+    autumn: "秋に切り替える",
+    winter: "冬に切り替える",
+  };
+
   const handleOpenPanel = () => {
     setIsSeasonPanelOpen(true);
     onPanelOpened?.();
@@ -86,6 +95,10 @@ const UI: React.FC<UIProps> = ({
     ambientControls.toggleMute();
     onAmbientToggle?.();
   };
+
+  useEffect(() => {
+    onPanelOpenChange?.(isSeasonPanelOpen);
+  }, [isSeasonPanelOpen, onPanelOpenChange]);
 
   useEffect(() => {
     if (!isSeasonPanelOpen) {
@@ -285,9 +298,18 @@ const UI: React.FC<UIProps> = ({
               }}
             >
               <button
+                className="glass-control-button"
+                type="button"
                 onClick={handleAmbientToggle}
                 disabled={!ambientControls.isSupported}
                 aria-pressed={ambientControls.isMuted}
+                aria-label={
+                  ambientControls.isSupported
+                    ? ambientControls.isMuted
+                      ? "環境音をオンにする"
+                      : "環境音をオフにする"
+                    : "環境音はこの環境では利用できません"
+                }
                 style={{
                   ...getAmbientButtonStyle(ambientControls.isMuted),
                   width: isMobile ? '100%' : 'auto',
@@ -309,8 +331,11 @@ const UI: React.FC<UIProps> = ({
               )}
 
               <button
+                className="glass-control-button"
+                type="button"
                 onClick={handleJournalToggle}
                 aria-expanded={isJournalOpen}
+                aria-label={isJournalOpen ? "最近の便りを閉じる" : "最近の便りを開く"}
                 style={getPanelButtonStyle()}
               >
                 <span aria-hidden="true">✉</span>
@@ -339,7 +364,11 @@ const UI: React.FC<UIProps> = ({
             }}
           >
             <button
+              className="glass-control-button"
+              type="button"
               onClick={() => handleSeasonChange("spring")}
+              aria-label={seasonLabels.spring}
+              aria-pressed={season === "spring"}
               style={{
                 ...getButtonStyle(season === "spring"),
                 ...(isMobile && { fontSize: '15px' }),
@@ -348,7 +377,11 @@ const UI: React.FC<UIProps> = ({
               {seasonIcons.spring}
             </button>
             <button
+              className="glass-control-button"
+              type="button"
               onClick={() => handleSeasonChange("summer")}
+              aria-label={seasonLabels.summer}
+              aria-pressed={season === "summer"}
               style={{
                 ...getButtonStyle(season === "summer"),
                 ...(isMobile && { fontSize: '15px' }),
@@ -357,7 +390,11 @@ const UI: React.FC<UIProps> = ({
               {seasonIcons.summer}
             </button>
             <button
+              className="glass-control-button"
+              type="button"
               onClick={() => handleSeasonChange("autumn")}
+              aria-label={seasonLabels.autumn}
+              aria-pressed={season === "autumn"}
               style={{
                 ...getButtonStyle(season === "autumn"),
                 ...(isMobile && { fontSize: '15px' }),
@@ -366,7 +403,11 @@ const UI: React.FC<UIProps> = ({
               {seasonIcons.autumn}
             </button>
             <button
+              className="glass-control-button"
+              type="button"
               onClick={() => handleSeasonChange("winter")}
+              aria-label={seasonLabels.winter}
+              aria-pressed={season === "winter"}
               style={{
                 ...getButtonStyle(season === "winter"),
                 ...(isMobile && { fontSize: '15px' }),

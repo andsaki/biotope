@@ -77,21 +77,21 @@ src/
 │   ├── WaterSurface.tsx         # 水面（波紋アニメーション）
 │   ├── WaterPlantsLarge.tsx     # 水草・蓮の葉（3Dモデル・波連動）
 │   ├── FallenLeaves.tsx         # 秋の落ち葉（3Dモデル・水面浮遊）
-│   ├── ParticleLayer.tsx        # 季節別パーティクル（形状最適化）
+│   ├── ParticleLayerInstanced.tsx # 季節別パーティクル（インスタンス化）
 │   ├── SeasonalEffects.tsx      # 季節エフェクト統合
 │   ├── Sun.tsx                  # 太陽
 │   ├── SceneLights.tsx          # ライティング
-│   ├── Clock.tsx                # リアルタイム時計表示
+│   ├── SimulationClock.tsx      # リアルタイム時計表示
 │   ├── WindDirectionDisplay.tsx # 風向きコンパス表示
 │   └── UI.tsx                   # メインUI
 ├── hooks/                   # カスタムフック
 │   ├── useRealTime.ts           # 日本時間管理
 │   ├── useWindDirection.ts      # 風向き管理
-│   ├── useLoader.ts             # ローディング管理
+│   ├── useWeather.ts            # 気象データ取得・補間
 │   └── useBottleAnimation.ts    # 瓶の漂流アニメーション
 ├── contexts/                # 状態管理
-│   ├── SeasonContext.tsx        # 季節管理（リアルタイム判定対応）
-│   └── TimeContext.tsx          # 時間情報共有
+│   ├── SeasonContext/           # 季節管理（Provider / hooks / context）
+│   └── TimeContext/             # 時間情報共有（昼夜・時計表示を分離）
 ├── styles/                  # デザインシステム
 │   └── tokens.ts                # デザイントークン（色、影、サイズなど）
 ├── utils/                   # ユーティリティ関数
@@ -518,7 +518,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ## パーティクルシステムの改善
 
-**実装**: `ParticleLayer.tsx`
+**実装**: `ParticleLayerInstanced.tsx`
 
 季節ごとにパーティクルの形状を最適化（キューブから自然な形状へ）:
 

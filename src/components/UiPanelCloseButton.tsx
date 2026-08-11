@@ -6,6 +6,8 @@ interface UiPanelCloseButtonProps {
 
 export const UiPanelCloseButton = ({ onClose }: UiPanelCloseButtonProps) => (
   <button
+    className="glass-control-button"
+    type="button"
     onClick={onClose}
     aria-label="UIパネルを閉じる"
     style={{

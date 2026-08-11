@@ -154,6 +154,8 @@ export const ScreenshotButton = ({
       }}
     >
       <button
+        className="glass-control-button"
+        type="button"
         onClick={handleScreenshot}
         disabled={isSaving || !canvasRef.current}
         aria-label="スクリーンショットを保存"

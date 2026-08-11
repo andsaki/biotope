@@ -70,3 +70,11 @@
   border: 2px solid rgba(255, 250, 239, 0.72);
   border-radius: 999px;
 }
+
+.glass-control-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.96);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 5px rgba(78, 176, 222, 0.34),
+    0 8px 28px rgba(0, 0, 0, 0.34) !important;
+}
