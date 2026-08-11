@@ -15,8 +15,11 @@ export const UiOpenButton = ({
   onOpen,
 }: UiOpenButtonProps) => (
   <button
+    className="glass-control-button"
+    type="button"
     onClick={onOpen}
     aria-label="UIパネルを開く"
+    title="UIパネルを開く"
     style={{
       position: "fixed",
       top: isMobile ? tokens.positioning.mobile.top : tokens.positioning.pc.top,

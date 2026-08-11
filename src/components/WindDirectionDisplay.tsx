@@ -13,6 +13,7 @@ interface WindDirectionDisplayProps {
   /** 現在の天気 */
   weather: WeatherSnapshot;
   locationStatus: WeatherLocationStatus;
+  isUiPanelOpen?: boolean;
   onRequestPreciseLocation: () => void;
 }
 
@@ -48,12 +49,14 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
   windDirection,
   weather,
   locationStatus,
+  isUiPanelOpen = false,
   onRequestPreciseLocation,
 }) => {
   const { rotation, kanji } = windDirectionMap[windDirection];
   const [expanded, setExpanded] = useState(false);
   const isMobile = useIsMobile();
   const size = isMobile ? panelSize.mobile : panelSize.pc;
+  const isObscuredByUiPanel = isMobile && isUiPanelOpen;
   const sourceText = weather.locationSource === 'browser'
     ? '現在地の実天気'
     : weather.source === 'open-meteo'
@@ -83,12 +86,15 @@ const WindDirectionDisplay: React.FC<WindDirectionDisplayProps> = ({
           inset 0 1px 0 rgba(255, 255, 255, 0.22),
           inset 0 -1px 0 rgba(0, 0, 0, 0.28)
         `,
-        opacity: 1,
-        transform: 'none',
+        opacity: isObscuredByUiPanel ? 0 : 1,
+        pointerEvents: isObscuredByUiPanel ? 'none' : 'auto',
+        transform: isObscuredByUiPanel ? 'translateY(-8px)' : 'none',
         transformOrigin: 'top left',
+        transition: tokens.transitions.base,
       }}
     >
       <button
+        className="glass-control-button"
         type="button"
         aria-expanded={expanded}
         aria-label={expanded ? '天気パネルを閉じる' : '天気パネルを開く'}
