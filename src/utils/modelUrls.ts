@@ -2,7 +2,8 @@ import plantModel from "../assets/Potted Plant/scene.gltf?url";
 import frogModel from "../assets/Frog/Frog_by_get3dmodels.glb?url";
 
 const R2_BASE = "https://biotope-r2-worker.ruby-on-rails-api.workers.dev/assets";
-const isLocal = import.meta.env.VITE_ENVIRONMENT === "local";
+const shouldUseLocalModels =
+  import.meta.env.DEV && import.meta.env.VITE_ENVIRONMENT === "local";
 
 type ModelEntry =
   | {
@@ -43,7 +44,7 @@ export const getModelUrl = (key: ModelKey): string => {
   const local = "local" in entry ? entry.local : undefined;
   const remote = "remote" in entry ? entry.remote : undefined;
 
-  if (local && (isLocal || !remote)) {
+  if (local && (shouldUseLocalModels || !remote)) {
     return local;
   }
   if (remote) {
