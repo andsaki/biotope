@@ -31,3 +31,20 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Browser smoke
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/biotope-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173 > /dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat /tmp/biotope-preview.log
+              exit 1
+            fi
+            sleep 1
+          done
+          SMOKE_URL=http://127.0.0.1:4173 npm run smoke:browser
